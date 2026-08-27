@@ -62,7 +62,14 @@ export function WordMatchGame({ examId, timeLimitSeconds, words }: { examId: num
     if (finishedRef.current) return;
     finishedRef.current = true;
     const timeSpent = Math.round((Date.now() - startRef.current) / 1000);
-    const r = await submitWordMatchExam(examId, { totalWords: words.length, correctMatches: placedRef.current.size, timeSpent });
+    const placedNow = placedRef.current;
+    const details = words.map((w) => ({
+      ref: w.text,
+      expected: w.category,
+      respuesta: placedNow.get(w.id) ?? null,
+      correct: placedNow.get(w.id) === w.category,
+    }));
+    const r = await submitWordMatchExam(examId, { totalWords: words.length, correctMatches: placedNow.size, timeSpent, details });
     setResult(r);
     setFinished(true);
   };

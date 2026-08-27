@@ -1,44 +1,40 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
+import { requireUser } from "@/lib/session";
+import { startOrGetExamAttempt, finishExamAttempt } from "@/lib/exams/engine";
 
-export async function submitWordMatchExam(
-  examId: number,
-  data: { totalWords: number; correctMatches: number; timeSpent: number }
-) {
-  const session = await auth();
-  const userId = Number((session?.user as any)?.id ?? 0);
-  if (!userId) return { passed: false, percentage: 0, arCardId: null as number | null };
+type WordMatchPayload = {
+  totalWords: number;
+  correctMatches: number;
+  timeSpent: number; // segundos
+  details: { ref: string; expected: string; respuesta: string | null; correct: boolean }[];
+};
 
-  const exam = await prisma.exam.findUnique({ where: { id: examId } });
+export async function submitWordMatchExam(examId: number, data: WordMatchPayload) {
+  const user = await requireUser();
+  if (user.role !== "estudiante") return { passed: false, percentage: 0, arCardId: null as number | null };
+
+  const start = await startOrGetExamAttempt(user.id, examId);
+  if (!start.ok) return { passed: false, percentage: 0, arCardId: null as number | null, motivo: start.motivo };
+
   const percentage = data.totalWords > 0 ? Math.round((data.correctMatches / data.totalWords) * 100) : 0;
-  const timeLimitSec = (exam?.time_limit ?? 0) * 60;
-  const overTime = timeLimitSec > 0 && data.timeSpent > timeLimitSec + 5;
-  const passed = !overTime && percentage >= (exam?.min_score ?? 70);
 
-  await prisma.examResult.create({
-    data: {
-      exam_id: examId,
-      user_id: userId,
-      score: percentage,
-      total_words: data.totalWords,
-      correct_matches: data.correctMatches,
-      time_spent: data.timeSpent,
-      passed,
-    },
+  const res = await finishExamAttempt({
+    attemptId: start.attemptId,
+    alumnoId: user.id,
+    scorePct: percentage,
+    timeSpentMs: Math.max(0, data.timeSpent) * 1000,
+    details: data.details.map((d) => ({
+      item_ref: d.ref,
+      expected: d.expected,
+      respuesta: d.respuesta,
+      is_correct: d.correct,
+    })),
   });
-  await prisma.examAttempt.create({ data: { exam_id: examId, user_id: userId, score: percentage, passed, time_spent: data.timeSpent } });
-
-  let arCardId: number | null = null;
-  if (passed && exam?.ar_card_id) {
-    arCardId = exam.ar_card_id;
-    const exists = await prisma.userArCard.findFirst({ where: { user_id: userId, ar_card_id: exam.ar_card_id } });
-    if (!exists) await prisma.userArCard.create({ data: { user_id: userId, ar_card_id: exam.ar_card_id, unlocked_by: "exam", source_id: examId } });
-  }
 
   revalidatePath("/exams");
   revalidatePath("/exams/history");
-  return { passed, percentage, arCardId };
+  revalidatePath("/map");
+  return { passed: res.passed, percentage: res.scorePct, arCardId: res.rewardCardId };
 }

@@ -13,18 +13,20 @@ export default function RegisterPage() {
       username: String(formData.get("username") ?? ""),
       email: String(formData.get("email") ?? ""),
       password: String(formData.get("password") ?? ""),
-      curso: Number(formData.get("curso") ?? 1),
+      nombre: String(formData.get("nombre") ?? ""),
+      apellido: String(formData.get("apellido") ?? ""),
     };
     const parsed = registerSchema.safeParse(data);
     if (!parsed.success) redirect("/register?error=validation");
-    const { username, email, password, curso } = parsed.data;
+    const { username, email, password, nombre, apellido } = parsed.data;
     const exists = await prisma.usuario.findFirst({ where: { OR: [{ username }, { email: email || undefined }] } });
     if (exists) redirect("/register?error=exists");
     const hash = await bcrypt.hash(password, 10);
+    // El alumno queda SIN inscripción: un administrador lo asigna luego a un paralelo.
     await prisma.usuario.create({
-      data: { username, email: email || null, password: hash, role: "estudiante", curso, activo: true },
+      data: { username, email: email || null, password: hash, role: "estudiante", nombre, apellido, activo: true },
     });
-    redirect("/login");
+    redirect("/login?registered=1");
   }
 
   return (
@@ -32,14 +34,17 @@ export default function RegisterPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Crear cuenta</CardTitle>
-          <CardDescription>Únete como estudiante</CardDescription>
+          <CardDescription>Regístrate como estudiante. El administrador te asignará a un paralelo.</CardDescription>
         </CardHeader>
         <CardContent>
           <form action={registerAction} className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="nombre" placeholder="Nombre" required />
+              <Input name="apellido" placeholder="Apellido" required />
+            </div>
             <Input name="username" placeholder="Usuario" required />
             <Input name="email" type="email" placeholder="Email (opcional)" />
             <Input name="password" type="password" placeholder="Contraseña" required />
-            <Input name="curso" type="number" placeholder="Curso ID (1)" defaultValue={1} required />
             <Button type="submit" variant="gradient" className="w-full">
               Registrarse
             </Button>

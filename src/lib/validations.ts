@@ -19,7 +19,8 @@ export const registerSchema = z.object({
     .regex(/[a-z]/, "Debe tener minúscula")
     .regex(/[0-9]/, "Debe tener número")
     .regex(/[^A-Za-z0-9]/, "Debe tener símbolo"),
-  curso: z.coerce.number().int().min(1),
+  nombre: z.string().min(1, "Nombre requerido").max(120),
+  apellido: z.string().min(1, "Apellido requerido").max(120),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

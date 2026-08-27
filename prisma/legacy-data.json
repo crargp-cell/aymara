@@ -1,0 +1,3057 @@
+{
+  "diccionario": [
+    {
+      "id": 1,
+      "aymara": "alwa",
+      "espanol": "amanecer",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 2,
+      "aymara": "ampara",
+      "espanol": "mano",
+      "activo": true,
+      "categoria": "Cuerpo",
+      "curso": null
+    },
+    {
+      "id": 3,
+      "aymara": "anata",
+      "espanol": "juego",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 4,
+      "aymara": "ancha",
+      "espanol": "mucho",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 5,
+      "aymara": "añu",
+      "espanol": "perro",
+      "activo": true,
+      "categoria": "Animal",
+      "curso": null
+    },
+    {
+      "id": 6,
+      "aymara": "aru",
+      "espanol": "palabra",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 7,
+      "aymara": "asaña",
+      "espanol": "dormir",
+      "activo": true,
+      "categoria": "Actividad",
+      "curso": null
+    },
+    {
+      "id": 8,
+      "aymara": "atipaña",
+      "espanol": "ganar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 9,
+      "aymara": "awicha",
+      "espanol": "abuela",
+      "activo": true,
+      "categoria": "Familia",
+      "curso": null
+    },
+    {
+      "id": 10,
+      "aymara": "awki",
+      "espanol": "abuelo",
+      "activo": true,
+      "categoria": "Familia",
+      "curso": null
+    },
+    {
+      "id": 11,
+      "aymara": "ch'ama",
+      "espanol": "fuerza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 12,
+      "aymara": "ch'usi",
+      "espanol": "frío",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 13,
+      "aymara": "chaka",
+      "espanol": "puente",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 14,
+      "aymara": "ch'uxña",
+      "espanol": "verde",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 15,
+      "aymara": "ch'iqchi",
+      "espanol": "sucio",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 16,
+      "aymara": "ch'uwa",
+      "espanol": "claro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 17,
+      "aymara": "chiq'i",
+      "espanol": "mojado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 18,
+      "aymara": "chuqila",
+      "espanol": "maní",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 19,
+      "aymara": "ch'iji",
+      "espanol": "seco",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 20,
+      "aymara": "chuq'a",
+      "espanol": "dulce",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 21,
+      "aymara": "chiri",
+      "espanol": "frío",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 22,
+      "aymara": "ch'uqi",
+      "espanol": "papa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 23,
+      "aymara": "ch'allwa",
+      "espanol": "pescado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 24,
+      "aymara": "ch'amanchäwi",
+      "espanol": "trabajo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 25,
+      "aymara": "chhuxla",
+      "espanol": "enfermo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 26,
+      "aymara": "ch'usaqäwi",
+      "espanol": "tristeza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 27,
+      "aymara": "chhuxk'äwi",
+      "espanol": "obscuridad",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 28,
+      "aymara": "chhiyara",
+      "espanol": "amanecer",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 29,
+      "aymara": "chhijña",
+      "espanol": "despertar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 30,
+      "aymara": "ch'ukhu",
+      "espanol": "negro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 31,
+      "aymara": "ch'uwa",
+      "espanol": "limpio",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 32,
+      "aymara": "chhichhi",
+      "espanol": "gallina",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 33,
+      "aymara": "chhupi",
+      "espanol": "verde",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 34,
+      "aymara": "chh'ulla",
+      "espanol": "pálido",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 35,
+      "aymara": "chh'ipita",
+      "espanol": "rojo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 36,
+      "aymara": "chh'ajña",
+      "espanol": "amarillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 37,
+      "aymara": "chh'ajña",
+      "espanol": "azul",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 38,
+      "aymara": "chhupina",
+      "espanol": "rosa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 39,
+      "aymara": "chh'ajchi",
+      "espanol": "cordero",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 40,
+      "aymara": "chh'ukhuna",
+      "espanol": "vaca",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 41,
+      "aymara": "chhajwa",
+      "espanol": "montaña",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 42,
+      "aymara": "chh'ojña",
+      "espanol": "hierba",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 43,
+      "aymara": "chh'ajña",
+      "espanol": "flor",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 44,
+      "aymara": "chhumpi",
+      "espanol": "marrón",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 45,
+      "aymara": "chhuchhuna",
+      "espanol": "arena",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 46,
+      "aymara": "chh'aja",
+      "espanol": "polvo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 47,
+      "aymara": "chh'uma",
+      "espanol": "agua",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 48,
+      "aymara": "chhujña",
+      "espanol": "rápido",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 49,
+      "aymara": "chhullku",
+      "espanol": "viejo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 50,
+      "aymara": "chhuyma",
+      "espanol": "corazón",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 51,
+      "aymara": "chhama",
+      "espanol": "pierna",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 52,
+      "aymara": "chhujña",
+      "espanol": "sangre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 53,
+      "aymara": "chh'uma",
+      "espanol": "río",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 54,
+      "aymara": "chhuyña",
+      "espanol": "largo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 55,
+      "aymara": "chhajwa",
+      "espanol": "calor",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 56,
+      "aymara": "chhuñuña",
+      "espanol": "fuego",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 57,
+      "aymara": "chhurura",
+      "espanol": "tierra",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 58,
+      "aymara": "chh'ajña",
+      "espanol": "huevo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 59,
+      "aymara": "chhuchhuna",
+      "espanol": "nieve",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 60,
+      "aymara": "chh'ijña",
+      "espanol": "luz",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 61,
+      "aymara": "chhijlla",
+      "espanol": "palo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 62,
+      "aymara": "chhucha",
+      "espanol": "hoja",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 63,
+      "aymara": "chh'uma",
+      "espanol": "lluvia",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 64,
+      "aymara": "chh'ila",
+      "espanol": "estrella",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 65,
+      "aymara": "chh'uxña",
+      "espanol": "luna",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 66,
+      "aymara": "chh'ajña",
+      "espanol": "sol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 67,
+      "aymara": "chh'uku",
+      "espanol": "tarde",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 68,
+      "aymara": "chh'uqi",
+      "espanol": "noche",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 69,
+      "aymara": "chhuchhuna",
+      "espanol": "polvo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 70,
+      "aymara": "chh'ajña",
+      "espanol": "rojo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 71,
+      "aymara": "chhuxña",
+      "espanol": "blanco",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 72,
+      "aymara": "chhujña",
+      "espanol": "carne",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 73,
+      "aymara": "chhuxña",
+      "espanol": "pan",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 74,
+      "aymara": "chhujña",
+      "espanol": "mesa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 75,
+      "aymara": "chhajña",
+      "espanol": "silla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 76,
+      "aymara": "chhujña",
+      "espanol": "casa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 77,
+      "aymara": "chh'ajña",
+      "espanol": "puerta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 78,
+      "aymara": "chh'ichhila",
+      "espanol": "ventana",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 79,
+      "aymara": "chh'ajña",
+      "espanol": "pared",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 80,
+      "aymara": "chh'axña",
+      "espanol": "techo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 81,
+      "aymara": "chh'ajña",
+      "espanol": "piso",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 82,
+      "aymara": "chhujña",
+      "espanol": "llave",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 83,
+      "aymara": "chhuchhuna",
+      "espanol": "cerradura",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 84,
+      "aymara": "chh'ajña",
+      "espanol": "bolsa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 85,
+      "aymara": "chhuchhuna",
+      "espanol": "caja",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 86,
+      "aymara": "chh'ujña",
+      "espanol": "plato",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 87,
+      "aymara": "chh'ajña",
+      "espanol": "taza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 88,
+      "aymara": "chhuxña",
+      "espanol": "cuchara",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 89,
+      "aymara": "chhujña",
+      "espanol": "tenedor",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 90,
+      "aymara": "chh'ajña",
+      "espanol": "cuchillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 91,
+      "aymara": "chh'ichhila",
+      "espanol": "comida",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 92,
+      "aymara": "chh'ajña",
+      "espanol": "bebida",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 93,
+      "aymara": "chhuxña",
+      "espanol": "fruta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 94,
+      "aymara": "chhujña",
+      "espanol": "verdura",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 95,
+      "aymara": "chh'ajña",
+      "espanol": "carne",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 96,
+      "aymara": "chh'uchhuna",
+      "espanol": "pescado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 97,
+      "aymara": "chh'ajña",
+      "espanol": "pollo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 98,
+      "aymara": "chhuchhuna",
+      "espanol": "cerdo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 99,
+      "aymara": "chh'ajña",
+      "espanol": "vaca",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 100,
+      "aymara": "chh'ajña",
+      "espanol": "huevo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 101,
+      "aymara": "chhuchhuna",
+      "espanol": "queso",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 102,
+      "aymara": "chh'ajña",
+      "espanol": "pan",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 103,
+      "aymara": "chh'ajña",
+      "espanol": "mantequilla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 104,
+      "aymara": "chh'ichhila",
+      "espanol": "aceite",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 105,
+      "aymara": "chh'ajña",
+      "espanol": "sal",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 106,
+      "aymara": "chhuchhuna",
+      "espanol": "azúcar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 107,
+      "aymara": "chh'ajña",
+      "espanol": "pimienta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 108,
+      "aymara": "chh'ajña",
+      "espanol": "ajo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 109,
+      "aymara": "chh'ajña",
+      "espanol": "cebolla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 110,
+      "aymara": "chh'ajña",
+      "espanol": "tomate",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 111,
+      "aymara": "chh'ajña",
+      "espanol": "patata",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 112,
+      "aymara": "chh'ajña",
+      "espanol": "zanahoria",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 113,
+      "aymara": "chh'ichhila",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 114,
+      "aymara": "chh'ajña",
+      "espanol": "lechuga",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 115,
+      "aymara": "chh'ajña",
+      "espanol": "maíz",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 116,
+      "aymara": "chh'ajña",
+      "espanol": "arroz",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 117,
+      "aymara": "chh'ajña",
+      "espanol": "frijoles",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 118,
+      "aymara": "chh'ajña",
+      "espanol": "pasta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 119,
+      "aymara": "chh'ajña",
+      "espanol": "pan",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 120,
+      "aymara": "chh'ichhila",
+      "espanol": "leche",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 121,
+      "aymara": "chh'ajña",
+      "espanol": "agua",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 122,
+      "aymara": "chh'ajña",
+      "espanol": "jugo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 123,
+      "aymara": "chh'ajña",
+      "espanol": "té",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 124,
+      "aymara": "chh'ajña",
+      "espanol": "café",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 125,
+      "aymara": "chh'ajña",
+      "espanol": "cerveza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 126,
+      "aymara": "chh'ajña",
+      "espanol": "vino",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 127,
+      "aymara": "chh'ajña",
+      "espanol": "licor",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 128,
+      "aymara": "chh'ajña",
+      "espanol": "jugo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 129,
+      "aymara": "chh'ajña",
+      "espanol": "refresco",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 130,
+      "aymara": "chh'ajña",
+      "espanol": "hielo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 131,
+      "aymara": "chh'ajña",
+      "espanol": "sopa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 132,
+      "aymara": "chh'ajña",
+      "espanol": "ensalada",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 133,
+      "aymara": "chh'ajña",
+      "espanol": "postre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 134,
+      "aymara": "chh'ajña",
+      "espanol": "helado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 135,
+      "aymara": "chh'ajña",
+      "espanol": "pastel",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 136,
+      "aymara": "chh'ajña",
+      "espanol": "chocolate",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 137,
+      "aymara": "chh'ajña",
+      "espanol": "dulce",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 138,
+      "aymara": "chh'ajña",
+      "espanol": "caramelo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 139,
+      "aymara": "chh'ajña",
+      "espanol": "galleta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 140,
+      "aymara": "chh'ajña",
+      "espanol": "mermelada",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 141,
+      "aymara": "chh'ajña",
+      "espanol": "miel",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 142,
+      "aymara": "chh'ajña",
+      "espanol": "mantequilla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 143,
+      "aymara": "chh'ajña",
+      "espanol": "yogur",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 144,
+      "aymara": "chh'ajña",
+      "espanol": "nata",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 145,
+      "aymara": "chh'ajña",
+      "espanol": "flan",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 146,
+      "aymara": "chh'ajña",
+      "espanol": "pudín",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 147,
+      "aymara": "chh'ajña",
+      "espanol": "natillas",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 148,
+      "aymara": "chh'ajña",
+      "espanol": "gelatina",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 149,
+      "aymara": "chh'ajña",
+      "espanol": "tarta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 150,
+      "aymara": "chh'ajña",
+      "espanol": "bizcocho",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 151,
+      "aymara": "chh'ajña",
+      "espanol": "torta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 152,
+      "aymara": "chh'ajña",
+      "espanol": "relleno",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 153,
+      "aymara": "chh'ajña",
+      "espanol": "compota",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 154,
+      "aymara": "chh'ajña",
+      "espanol": "salsa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 155,
+      "aymara": "chh'ajña",
+      "espanol": "guarnición",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 156,
+      "aymara": "chh'ajña",
+      "espanol": "aderezo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 157,
+      "aymara": "chh'ajña",
+      "espanol": "condimento",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 158,
+      "aymara": "chh'ajña",
+      "espanol": "especia",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 159,
+      "aymara": "chh'ajña",
+      "espanol": "hierba",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 160,
+      "aymara": "chh'ajña",
+      "espanol": "perejil",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 161,
+      "aymara": "chh'ajña",
+      "espanol": "albahaca",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 162,
+      "aymara": "chh'ajña",
+      "espanol": "orégano",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 163,
+      "aymara": "chh'ajña",
+      "espanol": "romero",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 164,
+      "aymara": "chh'ajña",
+      "espanol": "tomillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 165,
+      "aymara": "chh'ajña",
+      "espanol": "menta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 166,
+      "aymara": "chh'ajña",
+      "espanol": "canela",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 167,
+      "aymara": "chh'ajña",
+      "espanol": "vainilla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 168,
+      "aymara": "chh'ajña",
+      "espanol": "clavo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 169,
+      "aymara": "chh'ajña",
+      "espanol": "jengibre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 170,
+      "aymara": "chh'ajña",
+      "espanol": "mostaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 171,
+      "aymara": "chh'ajña",
+      "espanol": "mayonesa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 172,
+      "aymara": "chh'ajña",
+      "espanol": "ketchup",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 173,
+      "aymara": "chh'ajña",
+      "espanol": "vinagre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 174,
+      "aymara": "chh'ajña",
+      "espanol": "aceituna",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 175,
+      "aymara": "chh'ajña",
+      "espanol": "pepinillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 176,
+      "aymara": "chh'ajña",
+      "espanol": "almendra",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 177,
+      "aymara": "chh'ajña",
+      "espanol": "nuez",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 178,
+      "aymara": "chh'ajña",
+      "espanol": "avellana",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 179,
+      "aymara": "chh'ajña",
+      "espanol": "pistacho",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 180,
+      "aymara": "chh'ajña",
+      "espanol": "anacardo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 181,
+      "aymara": "chh'ajña",
+      "espanol": "maní",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 182,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 183,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 184,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 185,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 186,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 187,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 188,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 189,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 190,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 191,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 192,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 193,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 194,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 195,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 196,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 197,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 198,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 199,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 200,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 201,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 202,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 203,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 204,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 205,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 206,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 207,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 208,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 209,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 210,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 211,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 212,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 213,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 214,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 215,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 216,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 217,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 218,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 219,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 220,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 221,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 222,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 223,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 224,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 225,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 226,
+      "aymara": "chh'ajña",
+      "espanol": "sésamo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 227,
+      "aymara": "chh'ajña",
+      "espanol": "linaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 228,
+      "aymara": "chh'ajña",
+      "espanol": "chía",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 229,
+      "aymara": "chh'ajña",
+      "espanol": "calabaza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 230,
+      "aymara": "chh'ajña",
+      "espanol": "girasol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 231,
+      "aymara": "chh'ajña",
+      "espanol": "amapola",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 232,
+      "aymara": "achachila",
+      "espanol": "ancestro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 233,
+      "aymara": "akaña",
+      "espanol": "éste",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 234,
+      "aymara": "alaxa",
+      "espanol": "arriba",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 235,
+      "aymara": "alkasiña",
+      "espanol": "descansar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 236,
+      "aymara": "amaya",
+      "espanol": "espíritu",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 237,
+      "aymara": "amawta",
+      "espanol": "sabio",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 238,
+      "aymara": "anataña",
+      "espanol": "jugar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 239,
+      "aymara": "anqara",
+      "espanol": "sopa de quinua",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 240,
+      "aymara": "api",
+      "espanol": "bebida de maíz",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 241,
+      "aymara": "apthapi",
+      "espanol": "compartir comida",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 242,
+      "aymara": "awicha",
+      "espanol": "abuela",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 243,
+      "aymara": "awki",
+      "espanol": "abuelo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 244,
+      "aymara": "axullitu",
+      "espanol": "comida típica",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 245,
+      "aymara": "aya",
+      "espanol": "difunto",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 246,
+      "aymara": "aycha",
+      "espanol": "carne",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 247,
+      "aymara": "ayni",
+      "espanol": "trabajo comunitario",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 248,
+      "aymara": "chacha",
+      "espanol": "hombre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 249,
+      "aymara": "chacha warmi",
+      "espanol": "pareja",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 250,
+      "aymara": "ch'alla",
+      "espanol": "ritual de ofrenda",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 251,
+      "aymara": "chhuxña",
+      "espanol": "blanco",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 252,
+      "aymara": "chuq'i",
+      "espanol": "papa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 253,
+      "aymara": "ch'uspa",
+      "espanol": "bolsa",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 254,
+      "aymara": "jaqi",
+      "espanol": "persona",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 255,
+      "aymara": "japu",
+      "espanol": "oreja",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 256,
+      "aymara": "jichha",
+      "espanol": "ahora",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 257,
+      "aymara": "jisk'a",
+      "espanol": "pequeño",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 258,
+      "aymara": "jiwasa",
+      "espanol": "nosotros",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 259,
+      "aymara": "jucha",
+      "espanol": "pecado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 260,
+      "aymara": "k'echi",
+      "espanol": "hierba",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 261,
+      "aymara": "k'isimira",
+      "espanol": "estrella",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 262,
+      "aymara": "k'uchu",
+      "espanol": "esquina",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 263,
+      "aymara": "kama",
+      "espanol": "hasta",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 264,
+      "aymara": "kamisa",
+      "espanol": "saludos",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 265,
+      "aymara": "kapu",
+      "espanol": "sombrero",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 266,
+      "aymara": "kari",
+      "espanol": "varón",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 267,
+      "aymara": "kasa",
+      "espanol": "hombre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 268,
+      "aymara": "kawki",
+      "espanol": "hermano",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 269,
+      "aymara": "khunu",
+      "espanol": "nieve",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 270,
+      "aymara": "kipa",
+      "espanol": "atrás",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 271,
+      "aymara": "k'ullu",
+      "espanol": "madera",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 272,
+      "aymara": "k'usillu",
+      "espanol": "mono",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 273,
+      "aymara": "lawa",
+      "espanol": "sopa de maíz",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 274,
+      "aymara": "lluqu",
+      "espanol": "izquierda",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 275,
+      "aymara": "lupi",
+      "espanol": "sol",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 276,
+      "aymara": "machaqa",
+      "espanol": "nuevo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 277,
+      "aymara": "maka",
+      "espanol": "golpear",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 278,
+      "aymara": "malku",
+      "espanol": "montaña",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 279,
+      "aymara": "mama",
+      "espanol": "madre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 280,
+      "aymara": "mana",
+      "espanol": "no",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 281,
+      "aymara": "manq'a",
+      "espanol": "comida",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 282,
+      "aymara": "masi",
+      "espanol": "compañero",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 283,
+      "aymara": "mayja",
+      "espanol": "diferente",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 284,
+      "aymara": "maya",
+      "espanol": "uno",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 285,
+      "aymara": "mikhuna",
+      "espanol": "alimento",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 286,
+      "aymara": "misi",
+      "espanol": "gato",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 287,
+      "aymara": "munay",
+      "espanol": "querer",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 288,
+      "aymara": "munayni",
+      "espanol": "quiero",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 289,
+      "aymara": "munata",
+      "espanol": "amado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 290,
+      "aymara": "nayra",
+      "espanol": "ojo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 291,
+      "aymara": "ñanaka",
+      "espanol": "nosotros",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 292,
+      "aymara": "ñawi",
+      "espanol": "rostro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 293,
+      "aymara": "ñuñu",
+      "espanol": "pecho",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 294,
+      "aymara": "p'iqi",
+      "espanol": "cabeza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 295,
+      "aymara": "pacha",
+      "espanol": "tiempo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 296,
+      "aymara": "pachakuti",
+      "espanol": "ciclo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 297,
+      "aymara": "pampja",
+      "espanol": "abajo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 298,
+      "aymara": "panka",
+      "espanol": "hoja",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 299,
+      "aymara": "paxi",
+      "espanol": "luna",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 300,
+      "aymara": "phaxi",
+      "espanol": "mes",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 301,
+      "aymara": "phuyu",
+      "espanol": "nube",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 302,
+      "aymara": "piqi",
+      "espanol": "cabeza",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 303,
+      "aymara": "puriña",
+      "espanol": "caminar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 304,
+      "aymara": "pusña",
+      "espanol": "cuatro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 305,
+      "aymara": "q'ala",
+      "espanol": "desnudo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 306,
+      "aymara": "qhathu",
+      "espanol": "mercado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 307,
+      "aymara": "qillqaña",
+      "espanol": "escribir",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 308,
+      "aymara": "qucha",
+      "espanol": "lago",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 309,
+      "aymara": "q'umu",
+      "espanol": "codo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 310,
+      "aymara": "q'upi",
+      "espanol": "corto",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 311,
+      "aymara": "quta",
+      "espanol": "lago",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 312,
+      "aymara": "q'uwa",
+      "espanol": "tabaco",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 313,
+      "aymara": "riwa",
+      "espanol": "canal",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 314,
+      "aymara": "riwri",
+      "espanol": "frente",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 315,
+      "aymara": "saqi",
+      "espanol": "sal",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 316,
+      "aymara": "sasaña",
+      "espanol": "cansarse",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 317,
+      "aymara": "sata",
+      "espanol": "nombre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 318,
+      "aymara": "sikuri",
+      "espanol": "flautista",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 319,
+      "aymara": "suma",
+      "espanol": "bonito",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 320,
+      "aymara": "suru",
+      "espanol": "tobillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 321,
+      "aymara": "taipa",
+      "espanol": "lleno",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 322,
+      "aymara": "tawa",
+      "espanol": "cuatro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 323,
+      "aymara": "thakhina",
+      "espanol": "caminata",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 324,
+      "aymara": "thanta",
+      "espanol": "viejo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 325,
+      "aymara": "tinku",
+      "espanol": "encuentro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 326,
+      "aymara": "tiqi",
+      "espanol": "semilla",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 327,
+      "aymara": "titi",
+      "espanol": "puma",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 328,
+      "aymara": "tunta",
+      "espanol": "papa deshidratada",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 329,
+      "aymara": "tunka",
+      "espanol": "diez",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 330,
+      "aymara": "uch'uku",
+      "espanol": "guardián",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 331,
+      "aymara": "uñt'ata",
+      "espanol": "aprendido",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 332,
+      "aymara": "utjiri",
+      "espanol": "creador",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 333,
+      "aymara": "waka",
+      "espanol": "vaca",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 334,
+      "aymara": "wali",
+      "espanol": "bien",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 335,
+      "aymara": "waña",
+      "espanol": "quemar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 336,
+      "aymara": "waqay",
+      "espanol": "llorar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 337,
+      "aymara": "wawa",
+      "espanol": "niño",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 338,
+      "aymara": "wichay",
+      "espanol": "arriba",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 339,
+      "aymara": "wila",
+      "espanol": "sangre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 340,
+      "aymara": "wilanchay",
+      "espanol": "familia",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 341,
+      "aymara": "wiqu",
+      "espanol": "brazo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 342,
+      "aymara": "yaku",
+      "espanol": "agua",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 343,
+      "aymara": "yana",
+      "espanol": "negro",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 344,
+      "aymara": "yapu",
+      "espanol": "tierra cultivable",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 345,
+      "aymara": "yati",
+      "espanol": "saber",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 346,
+      "aymara": "yatichaña",
+      "espanol": "enseñar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 347,
+      "aymara": "yatiña",
+      "espanol": "conocer",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 348,
+      "aymara": "yawa",
+      "espanol": "helado",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 349,
+      "aymara": "wayna",
+      "espanol": "joven",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 350,
+      "aymara": "yujra",
+      "espanol": "pelo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 351,
+      "aymara": "yuli",
+      "espanol": "amarillo",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 352,
+      "aymara": "yuri",
+      "espanol": "río",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 353,
+      "aymara": "pay-suma",
+      "espanol": "gracias",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 354,
+      "aymara": "yuqalla",
+      "espanol": "niño",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 355,
+      "aymara": "aka",
+      "espanol": "este",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 356,
+      "aymara": "uka",
+      "espanol": "aquel",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 357,
+      "aymara": "pachamama",
+      "espanol": "madre tierra",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 358,
+      "aymara": "tata",
+      "espanol": "padre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 359,
+      "aymara": "jaqi",
+      "espanol": "gente",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 360,
+      "aymara": "yatiña",
+      "espanol": "saber",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 361,
+      "aymara": "munasiña",
+      "espanol": "amor",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 362,
+      "aymara": "uñt'aña",
+      "espanol": "aprender",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 363,
+      "aymara": "jach'a uru",
+      "espanol": "día grande",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 364,
+      "aymara": "yatiqaña",
+      "espanol": "estudiar",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 365,
+      "aymara": "thakhi",
+      "espanol": "camino",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 366,
+      "aymara": "wawa",
+      "espanol": "niño",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 367,
+      "aymara": "warmi",
+      "espanol": "mujer",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    },
+    {
+      "id": 368,
+      "aymara": "chacha",
+      "espanol": "hombre",
+      "activo": true,
+      "categoria": "",
+      "curso": null
+    }
+  ],
+  "topics": [
+    {
+      "id": 1,
+      "lesson_id": 1,
+      "title": "El alfabeto aymara",
+      "content": "El aymara es un idioma fonémico: cada sonido se escribe siempre con la misma letra, sin excepciones ni reglas de ortografía irregulares como en español.\n\nVocales\nEl aymara tiene solo tres vocales: a, i, u. No existen las vocales e ni o como fonemas propios (los sonidos que en español escribimos con e/o son variantes de i/u cuando están junto a las consonantes q, qh, q', x).\n\nConsonantes: tres series\nLa mayoría de las consonantes del aymara aparecen en tres series según cómo se pronuncian:\n\n- Simple: se pronuncia igual que en español (p, t, k, q, ch...)\n- Aspirada (se escribe con h): sale con un golpe de aire extra al pronunciarla (ph, th, kh, qh, chh)\n- Eyectiva (se escribe con apóstrofo '): se pronuncia cerrando la glotis y soltando el aire de golpe (p', t', k', q', ch')\n\nEjemplo con la serie bilabial (labios):\n- p → simple (como en \"pata\")\n- ph → aspirada (con soplido)\n- p' → eyectiva (sonido \"explosivo\")\n\nPunto de articulación\nAdemás de la serie, cada consonante tiene un punto de articulación (dónde se produce el sonido en la boca):\n- Bilabial: p, ph, p'\n- Dental/alveolar: t, th, t'\n- Postalveolar: ch, ch'\n- Velar: k, kh, k'\n- Postvelar/uvular: q, qh, q' (esta letra \"suena\" parecida a la k pero se pronuncia más atrás, casi en la garganta)\n\nOtras letras\ns, j, x, l, ll, m, n, ñ, r, w, y — se pronuncian de forma parecida a como aparecen en español o quechua.\n\nCon este alfabeto ya podés leer y escribir cualquier palabra aymara sin ambigüedad: uma (agua), aymara aru (idioma aymara), qhana (claro/luz).",
+      "order": 1,
+      "activo": true,
+      "created_at": "2025-12-14T05:12:14.000Z",
+      "updated_at": "2026-08-26T21:31:35.346Z"
+    },
+    {
+      "id": 2,
+      "lesson_id": 2,
+      "title": "Lección 2: El sistema de 4 personas gramaticales en Aymara",
+      "content": "A diferencia del español, que distingue 3 personas gramaticales (yo, tú, él), el aymara distingue 4, porque separa dos formas distintas de decir \"nosotros\".\n\nLos pronombres personales\n1ª persona — naya (yo)\n2ª persona — juma (tú/usted)\n3ª persona — jupa (él/ella)\n4ª persona — jiwasa (nosotros inclusivo: \"tú y yo\")\n\nLa cuarta persona: jiwasa\njiwasa se usa cuando la persona con la que hablás está incluida en el \"nosotros\". Por ejemplo, si le decís a un amigo \"vamos a comer\", en aymara usás jiwasa porque tu amigo va a venir con vos.\n\nNosotros exclusivo: nanaka\nCuando el \"nosotros\" NO incluye a la persona con la que hablás (por ejemplo, \"nosotros los estudiantes\", hablándole a un profesor que no es estudiante), se usa nanaka.\n\nPlurales de las demás personas\n- jumanaka — ustedes\n- jupanaka — ellos/ellas\n\nResumen\n- yo → naya\n- tú → juma\n- él/ella → jupa\n- nosotros, incluyéndote → jiwasa\n- nosotros, sin incluirte → nanaka\n- ustedes → jumanaka\n- ellos/ellas → jupanaka\n\nEsta distinción inclusivo/exclusivo es una de las características más particulares del aymara (y también existe en el quechua), y no tiene un equivalente directo en español.",
+      "order": 1,
+      "activo": true,
+      "created_at": "2025-12-14T05:12:14.000Z",
+      "updated_at": "2026-08-26T21:31:35.437Z"
+    },
+    {
+      "id": 3,
+      "lesson_id": 3,
+      "title": "Lección 3: Sufijos básicos y Reglas de Uso",
+      "content": "Los números en aymara\n1 — maya\n2 — paya\n3 — kimsa\n4 — pusi\n5 — phisqa\n6 — suxta\n7 — paqallqu\n8 — kimsaqallqu\n9 — llatunka\n10 — tunka\n\nEl aymara es una lengua aglutinante: en vez de usar palabras sueltas como \"y\" o \"con\", agrega sufijos (partículas) al final de las palabras para construir significados más complejos.\n\nFormar los números del 11 al 19\nSe usa tunka (10) + el número + el sufijo -ni (\"con\"):\n- tunka mayani — 11 (diez con uno)\n- tunka payani — 12 (diez con dos)\n- tunka kimsani — 13 (diez con tres)\n\nLas decenas\nSe combina el número con tunka:\n- paya tunka — 20 (dos dieces)\n- kimsa tunka — 30 (tres dieces)\n- pusi tunka — 40 (cuatro dieces)\n\nDos sufijos básicos para practicar\n- -naka → marca el plural: jaqi (persona) → jaqinaka (personas)\n- -ni → indica posesión o \"con algo\": uta (casa) → utani (con casa / tiene casa)\n\nRegla de uso\nLos sufijos siempre van pegados al final de la palabra y nunca cambian de forma según lo que venga antes (a diferencia del español, donde \"el/la/los/las\" cambian según género y número). Una vez que aprendés un sufijo, lo podés usar igual con cualquier palabra.",
+      "order": 1,
+      "activo": true,
+      "created_at": "2025-12-14T05:12:14.000Z",
+      "updated_at": "2026-08-26T21:31:35.439Z"
+    },
+    {
+      "id": 4,
+      "lesson_id": 4,
+      "title": "Lección 4: Léxico temático",
+      "content": "Vocabulario temático: los colores en aymara\n\n- janq'u — blanco\n- ch'iyara — negro\n- wila — rojo\n- q'illu — amarillo\n- ch'uxña — verde\n- larama — azul\n- ch'umphi — marrón/café\n\nUsar un color con un sustantivo\nEn aymara, el adjetivo de color va antes del sustantivo, igual que en inglés:\n- wila panqara — flor roja (wila = rojo, panqara = flor)\n- ch'uxña qullu — cerro verde\n- janq'u anu — perro blanco\n\nCombinar el color con repetición\nPara decir que algo tiene un color mezclado o difuso, se repite la palabra:\n- ch'uxña-ch'uxña — verdoso / lleno de verde\n\nPracticá diciendo en voz alta el color de tres objetos que tengas cerca, usando la estructura color + sustantivo.",
+      "order": 1,
+      "activo": true,
+      "created_at": "2025-12-14T05:12:14.000Z",
+      "updated_at": "2026-08-26T21:31:35.443Z"
+    }
+  ],
+  "lessons": [
+    {
+      "id": 1,
+      "exam_id": null,
+      "title": "Lección 1: Introducción al Aymara1",
+      "description": "Esta lección cubre los conceptos básicos del idioma Aymara.",
+      "curso": 1,
+      "orden": 1,
+      "activo": true,
+      "grants_ar_marker": true,
+      "ar_card_id": 2,
+      "maestro_id": 1,
+      "default_topic_id": 1
+    },
+    {
+      "id": 2,
+      "exam_id": null,
+      "title": "Lección 2: Vocabulario Común",
+      "description": "En esta lección aprenderás vocabulario común en Aymara.",
+      "curso": 1,
+      "orden": 2,
+      "activo": true,
+      "grants_ar_marker": false,
+      "ar_card_id": null,
+      "maestro_id": 1,
+      "default_topic_id": 2
+    },
+    {
+      "id": 3,
+      "exam_id": null,
+      "title": "Lección 3: Números y Cantidades",
+      "description": "En esta lección aprenderás los números y cómo contar en Aymara.",
+      "curso": 2,
+      "orden": 3,
+      "activo": true,
+      "grants_ar_marker": false,
+      "ar_card_id": null,
+      "maestro_id": 2,
+      "default_topic_id": 3
+    },
+    {
+      "id": 4,
+      "exam_id": null,
+      "title": "Lección 4: Colores en Aymara",
+      "description": "En esta lección aprenderás los colores en Aymara.",
+      "curso": 2,
+      "orden": 4,
+      "activo": true,
+      "grants_ar_marker": false,
+      "ar_card_id": null,
+      "maestro_id": 2,
+      "default_topic_id": 4
+    },
+    {
+      "id": 8,
+      "exam_id": null,
+      "title": "Lección de prueba maestro",
+      "description": "",
+      "curso": 1,
+      "orden": 1,
+      "activo": true,
+      "grants_ar_marker": false,
+      "ar_card_id": null,
+      "maestro_id": 32,
+      "default_topic_id": null
+    }
+  ]
+}

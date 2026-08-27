@@ -1,39 +1,31 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Topbar } from "@/components/layout/Topbar";
+import { requireRole } from "@/lib/session";
+import { assertMaestroOwnsContent } from "@/lib/rbac";
 import Link from "next/link";
 
 async function assertCanEditExercise(exerciseId: number) {
-  const session = await auth();
-  const role = (session?.user as any)?.role;
-  const userId = Number((session?.user as any)?.id ?? 0);
-  const exercise = await prisma.exercise.findUnique({ where: { id: exerciseId } });
-  if (!exercise) return null;
-  if (role === "admin") return exercise;
-  const owns = await prisma.lesson.findFirst({ where: { id: exercise.lesson_id, maestro_id: userId } });
-  return owns ? exercise : null;
+  const user = await requireRole(["maestro", "admin"]);
+  const { ok } = await assertMaestroOwnsContent(user.role, user.id, "exercise", exerciseId);
+  if (!ok) return null;
+  return prisma.exercise.findUnique({ where: { id: exerciseId } });
 }
 
 export default async function AdminExerciseDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  const role = (session?.user as any)?.role;
-  const userId = Number((session?.user as any)?.id ?? 0);
-  if (!["maestro", "admin"].includes(role)) redirect("/dashboard");
+  const user = await requireRole(["maestro", "admin"]);
 
   const { id } = await params;
   const exerciseId = Number(id);
+  const { ok } = await assertMaestroOwnsContent(user.role, user.id, "exercise", exerciseId);
+  if (!ok) notFound();
   const exercise = await prisma.exercise.findUnique({ where: { id: exerciseId } });
   if (!exercise) notFound();
-  if (role !== "admin") {
-    const owns = await prisma.lesson.findFirst({ where: { id: exercise.lesson_id, maestro_id: userId } });
-    if (!owns) notFound();
-  }
 
   const path = `/admin/exercises/${exerciseId}`;
 
@@ -128,8 +120,8 @@ export default async function AdminExerciseDetailPage({ params }: { params: Prom
 
   return (
     <div className="space-y-6">
-      <Topbar title={`Ejercicio #${exercise.id}`} subtitle={`Tipo: ${exercise.type} · Lección ${exercise.lesson_id}`} />
-      <Link href={`/admin/exercises?lesson_id=${exercise.lesson_id}`} className="text-sm text-primary hover:underline">
+      <Topbar title={`Ejercicio #${exercise.id}`} subtitle={`Tipo: ${exercise.type} · dificultad ${exercise.dificultad}`} />
+      <Link href="/admin/exercises" className="text-sm text-primary hover:underline">
         ← Volver a ejercicios
       </Link>
 

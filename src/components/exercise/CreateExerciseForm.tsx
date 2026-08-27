@@ -6,7 +6,17 @@ import { Button } from "@/components/ui/button";
 
 type Lesson = { id: number; title: string };
 
-export function CreateExerciseForm({ lessons, defaultLessonId, action }: { lessons: Lesson[]; defaultLessonId: number | string; action: (formData: FormData) => void }) {
+export function CreateExerciseForm({
+  lessons,
+  defaultLessonId,
+  action,
+  paraleloId,
+}: {
+  lessons: Lesson[];
+  defaultLessonId: number | string;
+  action: (formData: FormData) => void;
+  paraleloId?: number;
+}) {
   const [type, setType] = useState("text");
   const [options, setOptions] = useState<string[]>(["", ""]);
   const [correctIndex, setCorrectIndex] = useState(0);
@@ -15,10 +25,12 @@ export function CreateExerciseForm({ lessons, defaultLessonId, action }: { lesso
 
   return (
     <form action={action} className="grid md:grid-cols-2 gap-3">
-      <select name="lesson_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" required defaultValue={defaultLessonId}>
+      {paraleloId != null && <input type="hidden" name="paralelo_id" value={paraleloId} />}
+      <select name="attach_lesson_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue={defaultLessonId || ""}>
+        <option value="">No enlazar a ninguna lección (solo al pool)</option>
         {lessons.map((l) => (
           <option key={l.id} value={l.id}>
-            Lección {l.id}: {l.title.slice(0, 30)}
+            Enlazar a: {l.title.slice(0, 36)}
           </option>
         ))}
       </select>

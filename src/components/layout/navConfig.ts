@@ -1,24 +1,69 @@
-import { LayoutDashboard, Map, BookOpen, FileQuestion, Sparkles, Layers, BarChart3, Users, ScrollText, GraduationCap, Dumbbell, UserCog, ListOrdered } from "lucide-react";
+import {
+  LayoutDashboard,
+  Map,
+  BookOpen,
+  FileQuestion,
+  Sparkles,
+  Layers,
+  BarChart3,
+  Users,
+  ScrollText,
+  GraduationCap,
+  Dumbbell,
+  UserCog,
+  ListOrdered,
+  Trophy,
+  Search,
+  CalendarRange,
+  School,
+  ClipboardList,
+  MessageSquareWarning,
+  Boxes,
+} from "lucide-react";
 
-export const nav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, section: "Gestión" },
-  { href: "/map", label: "Mapa de Juego", icon: Map, section: "Actividades" },
-  { href: "/lessons", label: "Lecciones", icon: BookOpen, section: "Actividades" },
-  { href: "/exams", label: "Exámenes", icon: FileQuestion, section: "Actividades" },
-  { href: "/ar-cards", label: "Tarjetas AR", icon: Sparkles, section: "Actividades" },
-  { href: "/topics", label: "Temas", icon: Layers, section: "Gestión" },
-  { href: "/admin/lessons", label: "Mis lecciones", icon: GraduationCap, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/topics", label: "Mis temas", icon: Layers, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/exercises", label: "Mis ejercicios", icon: Dumbbell, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/exams", label: "Mis exámenes", icon: FileQuestion, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/ar-cards", label: "Tarjetas AR (crear)", icon: Sparkles, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/map-order", label: "Orden del mapa", icon: ListOrdered, section: "Contenido", roles: ["maestro", "admin"] },
-  { href: "/admin/students", label: "Panel alumnos", icon: Users, section: "Sistema", roles: ["maestro", "admin"] },
-  { href: "/admin/users", label: "Usuarios", icon: UserCog, section: "Sistema", roles: ["admin"] },
-  { href: "/admin/reports", label: "Reportes", icon: BarChart3, section: "Sistema", roles: ["admin"] },
-  { href: "/admin/access-logs", label: "Registro de accesos", icon: ScrollText, section: "Sistema", roles: ["admin"] },
-] as const;
+type Role = "estudiante" | "maestro" | "admin";
+
+export type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  section: string;
+  roles?: Role[];
+};
+
+export const nav: NavItem[] = [
+  // --- Aprender (todos) ---
+  { href: "/dashboard", label: "Inicio", icon: LayoutDashboard, section: "Aprender" },
+  { href: "/map", label: "Mapa de niveles", icon: Map, section: "Aprender" },
+  { href: "/lessons", label: "Lecciones", icon: BookOpen, section: "Aprender" },
+  { href: "/topics", label: "Temas", icon: Layers, section: "Aprender" },
+  { href: "/exams", label: "Exámenes", icon: FileQuestion, section: "Aprender" },
+  { href: "/ar-cards", label: "Tarjetas AR", icon: Sparkles, section: "Aprender" },
+  { href: "/logros", label: "Logros", icon: Trophy, section: "Aprender" },
+  { href: "/dictionary", label: "Diccionario", icon: Search, section: "Aprender" },
+
+  // --- Enseñar (maestro/admin) — contenido del paralelo ---
+  { href: "/admin/paralelo", label: "Paralelo de trabajo", icon: Boxes, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/lessons", label: "Lecciones", icon: GraduationCap, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/topics", label: "Temas y PDF", icon: Layers, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/exercises", label: "Ejercicios", icon: Dumbbell, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/exams", label: "Exámenes", icon: FileQuestion, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/ar-cards", label: "Tarjetas AR", icon: Sparkles, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/map-order", label: "Orden del mapa", icon: ListOrdered, section: "Enseñar", roles: ["maestro", "admin"] },
+  { href: "/admin/students", label: "Mis alumnos", icon: Users, section: "Enseñar", roles: ["maestro"] },
+  { href: "/admin/analitica", label: "Analítica", icon: BarChart3, section: "Enseñar", roles: ["maestro", "admin"] },
+
+  // --- Administración (admin) ---
+  { href: "/admin/gestiones", label: "Gestiones", icon: CalendarRange, section: "Administración", roles: ["admin"] },
+  { href: "/admin/grados", label: "Grados", icon: School, section: "Administración", roles: ["admin"] },
+  { href: "/admin/paralelos", label: "Paralelos", icon: Layers, section: "Administración", roles: ["admin"] },
+  { href: "/admin/students", label: "Alumnos e inscripciones", icon: ClipboardList, section: "Administración", roles: ["admin"] },
+  { href: "/admin/users", label: "Usuarios", icon: UserCog, section: "Administración", roles: ["admin"] },
+  { href: "/admin/supervision", label: "Supervisión", icon: MessageSquareWarning, section: "Administración", roles: ["admin"] },
+  { href: "/admin/reports", label: "Reportes", icon: BarChart3, section: "Administración", roles: ["admin"] },
+  { href: "/admin/access-logs", label: "Registro de accesos", icon: ScrollText, section: "Administración", roles: ["admin"] },
+];
 
 export function navForRole(role?: string) {
-  return nav.filter((item) => !("roles" in item) || (item.roles as readonly string[]).includes(role ?? ""));
+  return nav.filter((item) => !item.roles || item.roles.includes((role ?? "") as Role));
 }
