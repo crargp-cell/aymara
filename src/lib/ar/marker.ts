@@ -15,7 +15,12 @@ export async function saveUploadedMarker(imageBuffer: Buffer, pattBuffer: Buffer
   const code = `AR${Date.now()}`.slice(0, 20);
   await fs.mkdir(AR_DIR, { recursive: true });
 
-  const preview = await sharp(imageBuffer).resize(512, 512, { fit: "cover" }).png().toBuffer();
+  const preview = await sharp(imageBuffer)
+    .resize(512, 512, { fit: "contain", background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .normalize()
+    .sharpen({ sigma: 1.2, m1: 1, m2: 2 })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
   await fs.writeFile(path.join(AR_DIR, `marker_${code}.png`), preview);
 
   if (pattBuffer) {

@@ -63,7 +63,9 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
     const u = await guard();
     if (!u) return;
     const model = formData.get("model");
-    if (!(model instanceof File) || model.size === 0 || !model.name.toLowerCase().endsWith(".glb")) return;
+    if (!(model instanceof File) || model.size === 0) throw new Error("Selecciona un .glb");
+    if (!model.name.toLowerCase().endsWith(".glb")) throw new Error("Solo .glb");
+    if (model.size > 15 * 1024 * 1024) throw new Error("Máximo 15MB");
     const url = await saveArModel(card!.card_code, Buffer.from(await model.arrayBuffer()));
     await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, updated_by: u.id } });
     revalidatePath(`/admin/ar-cards/${cardId}`);
