@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# referencia del sistema PHP original — no forma parte de la reescritura, no se sube
+/sistema viejo/

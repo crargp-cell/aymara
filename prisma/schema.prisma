@@ -1,0 +1,568 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccessLogsActionEnum {
+  login_success
+  login_failed
+  logout
+  view
+  create
+  update
+  delete
+  @@map("access_logs_action_enum")
+}
+
+enum ArCardsUnlockTypeEnum {
+  lesson
+  exam
+  @@map("ar_cards_unlock_type_enum")
+}
+
+enum ContentOrderContentTypeEnum {
+  lesson
+  exam
+  @@map("content_order_content_type_enum")
+}
+
+enum ExamsTypeEnum {
+  conectar_palabras
+  ar_exam
+  @@map("exams_type_enum")
+}
+
+enum ExamDetailsConfigTypeEnum {
+  categories
+  ar_markers
+  ar_cards
+  @@map("exam_details_config_type_enum")
+}
+
+enum ExercisesTypeEnum {
+  text
+  multiple_choice
+  matching
+  fill_in_the_blank
+  @@map("exercises_type_enum")
+}
+
+enum ExercisesDificultadEnum {
+  facil
+  medio
+  dificil
+  @@map("exercises_dificultad_enum")
+}
+
+enum ExerciseAttemptsDifficultyLevelEnum {
+  facil
+  medio
+  dificil
+  @@map("exercise_attempts_difficulty_level_enum")
+}
+
+enum StatisticsAggregatedStatTypeEnum {
+  exercise
+  lesson
+  course
+  student
+  @@map("statistics_aggregated_stat_type_enum")
+}
+
+enum StatisticsAggregatedPredictedDifficultyEnum {
+  facil
+  medio
+  dificil
+  @@map("statistics_aggregated_predicted_difficulty_enum")
+}
+
+enum UserArCardsUnlockedByEnum {
+  lesson
+  exam
+  @@map("user_ar_cards_unlocked_by_enum")
+}
+
+enum UserAttemptDetailsDifficultyLevelEnum {
+  facil
+  medio
+  dificil
+  @@map("user_attempt_details_difficulty_level_enum")
+}
+
+enum UsuariosRoleEnum {
+  maestro
+  estudiante
+  admin
+  @@map("usuarios_role_enum")
+}
+
+model AccessLog {
+  id         BigInt               @id @default(autoincrement())
+  user_id    BigInt?
+  email      String?              @db.VarChar(190)
+  username   String?              @db.VarChar(190)
+  action     AccessLogsActionEnum
+  path       String               @db.VarChar(255)
+  method     String               @db.VarChar(10)
+  ip         String               @db.VarChar(45)
+  user_agent String?              @db.Text
+  status     Int                  @default(200) @db.SmallInt
+  message    String?              @db.VarChar(255)
+  created_at DateTime             @default(now()) @db.Timestamp(6)
+
+  @@map("access_logs")
+  @@index([created_at])
+  @@index([user_id, action])
+  @@index([action])
+}
+
+model Archivo {
+  id          Int      @id @default(autoincrement())
+  nombre      String   @db.VarChar(255)
+  ruta        String   @db.VarChar(255)
+  uploaded_by Int?
+  fecha_subida DateTime @default(now()) @db.Timestamp(6)
+  activo      Boolean
+  curso       Int
+
+  @@map("archivos")
+  @@index([uploaded_by])
+  @@index([curso])
+}
+
+model ArCard {
+  id             Int                    @id @default(autoincrement())
+  user_id        Int?
+  created_by     Int?
+  exercise_id    Int?
+  lesson_id      Int?
+  exam_id        Int?
+  card_code      String                 @unique @db.VarChar(50)
+  title          String?                @db.VarChar(255)
+  description    String?                @db.Text
+  marker_file    String                 @db.VarChar(255)
+  card_data      String?                @db.Text
+  created_at     DateTime?              @default(now()) @db.Timestamp(6)
+  unlocked_at    DateTime?              @default(now()) @db.Timestamp(6)
+  is_unlocked    Boolean                @default(false)
+  activo         Boolean                @default(true)
+  unlock_type    ArCardsUnlockTypeEnum? @default(lesson)
+  unlock_exam_id Int?
+
+  @@map("ar_cards")
+  @@unique([user_id, exercise_id])
+  @@index([user_id])
+  @@index([exercise_id])
+  @@index([lesson_id])
+  @@index([exam_id])
+  @@index([is_unlocked])
+}
+
+model ContentOrder {
+  id           Int                          @id @default(autoincrement())
+  curso_id     Int
+  content_type ContentOrderContentTypeEnum
+  content_id   Int
+  orden        Int
+  created_at   DateTime?                    @default(now()) @db.Timestamp(6)
+  updated_at   DateTime?                    @default(now()) @db.Timestamp(6)
+
+  @@map("content_order")
+  @@unique([curso_id, content_type, content_id])
+  @@index([curso_id, orden])
+  @@index([content_type, content_id])
+}
+
+model Curso {
+  id_cur Int    @id @default(autoincrement())
+  nombre String @db.VarChar(11)
+  id_doc Int
+
+  @@map("curso")
+  @@index([id_doc])
+}
+
+model Diccionario {
+  id       Int     @id @default(autoincrement())
+  aymara   String? @db.VarChar(50)
+  espanol  String? @db.VarChar(50)
+  activo   Boolean @default(true)
+  categoria String  @db.VarChar(50)
+  curso    Int?
+
+  @@map("diccionario")
+}
+
+model DifficultyLevel {
+  id                Int      @id @default(autoincrement())
+  level_code        String   @unique @db.VarChar(20)
+  level_name        String   @db.VarChar(50)
+  points_multiplier Decimal? @default(1.00) @db.Decimal(3, 2)
+  time_multiplier   Decimal? @default(1.00) @db.Decimal(3, 2)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("difficulty_levels")
+}
+
+model ErrorPattern {
+  id                Int       @id @default(autoincrement())
+  user_id           Int?
+  exercise_id       Int?
+  lesson_id         Int?
+  error_type        String    @db.VarChar(100)
+  error_description String?   @db.Text
+  frequency         Int?      @default(1)
+  pattern_data      String?   @db.Text
+  detected_at       DateTime? @default(now()) @db.Timestamp(6)
+  last_occurrence   DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("error_patterns")
+  @@index([user_id, exercise_id])
+  @@index([error_type])
+  @@index([lesson_id])
+}
+
+model Exam {
+  id             Int       @id @default(autoincrement())
+  lesson_id      Int?
+  position_order Int?
+  type           ExamsTypeEnum @default(conectar_palabras)
+  title          String    @db.VarChar(255)
+  description    String?   @db.Text
+  time_limit     Int?
+  start_date     DateTime? @db.Timestamp(6)
+  end_date       DateTime  @db.Timestamp(6)
+  min_score      Int?      @default(70)
+  ar_card_id     Int?
+  active         Boolean   @default(true)
+  created_by     Int
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("exams")
+  @@index([lesson_id])
+  @@index([created_by])
+  @@index([position_order])
+  @@index([ar_card_id])
+}
+
+model ExamAttempt {
+  id           Int       @id @default(autoincrement())
+  exam_id      Int
+  user_id      Int
+  started_at   DateTime? @default(now()) @db.Timestamp(6)
+  completed_at DateTime? @db.Timestamp(6)
+  time_spent   Int?
+  score        Decimal?  @db.Decimal(5, 2)
+  passed       Boolean?  @default(false)
+  result_id    Int?
+
+  @@map("exam_attempts")
+  @@index([exam_id])
+  @@index([user_id])
+  @@index([result_id])
+}
+
+model ExamDetail {
+  id           Int                       @id @default(autoincrement())
+  exam_id      Int
+  config_type  ExamDetailsConfigTypeEnum
+  config_value String                    @db.Text
+  created_at   DateTime?                 @default(now()) @db.Timestamp(6)
+  updated_at   DateTime?                 @default(now()) @db.Timestamp(6)
+
+  @@map("exam_details")
+  @@unique([exam_id, config_type])
+  @@index([exam_id])
+}
+
+model ExamResult {
+  id              Int       @id @default(autoincrement())
+  exam_id         Int?
+  user_id         Int
+  lesson_id       Int?
+  score           Int?      @default(0)
+  total_words     Int?      @default(0)
+  correct_matches Int?      @default(0)
+  time_spent      Decimal?  @default(0.00) @db.Decimal(10, 2)
+  difficulty      String?   @default("normal") @db.VarChar(20)
+  passed          Boolean?  @default(false)
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("exam_results")
+  @@index([user_id])
+  @@index([lesson_id])
+  @@index([exam_id])
+}
+
+model Exercise {
+  id         Int                     @id @default(autoincrement())
+  lesson_id  Int
+  type       ExercisesTypeEnum
+  question   String                  @db.Text
+  answer     String?                 @db.Text
+  dificultad ExercisesDificultadEnum @default(medio)
+  activo     Boolean                 @default(true)
+
+  @@map("exercises")
+  @@index([lesson_id])
+}
+
+model ExerciseAttempt {
+  id               Int                                   @id @default(autoincrement())
+  user_id          Int
+  exercise_id      Int
+  lesson_id        Int
+  attempt_number   Int?                                  @default(1)
+  user_answer      String?                               @db.Text
+  correct_answer   String?                               @db.Text
+  is_correct       Boolean?                              @default(false)
+  score            Int?                                  @default(0)
+  time_spent       Int?                                  @default(0)
+  error_type       String?                               @db.VarChar(100)
+  error_details    String?                               @db.Text
+  exercise_type    String?                               @db.VarChar(50)
+  difficulty_level ExerciseAttemptsDifficultyLevelEnum?  @default(medio)
+  created_at       DateTime?                             @default(now()) @db.Timestamp(6)
+
+  @@map("exercise_attempts")
+  @@index([user_id, exercise_id])
+  @@index([lesson_id])
+  @@index([attempt_number])
+  @@index([created_at])
+  @@index([exercise_id])
+  @@index([user_id, lesson_id])
+  @@index([is_correct])
+}
+
+model ExerciseType {
+  id               Int      @id @default(autoincrement())
+  type_code        String   @unique @db.VarChar(50)
+  type_name        String   @db.VarChar(100)
+  description      String?  @db.Text
+  requires_options Boolean? @default(false)
+  requires_pairs   Boolean? @default(false)
+  requires_answers Boolean? @default(false)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("exercise_types")
+}
+
+model FillInTheBlankAnswer {
+  id          Int    @id @default(autoincrement())
+  exercise_id Int
+  answer_text String @db.VarChar(255)
+
+  @@map("fill_in_the_blank_answers")
+  @@index([exercise_id])
+}
+
+model Lesson {
+  id               Int       @id @default(autoincrement())
+  exam_id          Int?
+  title            String    @db.VarChar(255)
+  description      String?   @db.Text
+  curso            Int
+  orden            Int       @default(1)
+  activo           Boolean   @default(true)
+  grants_ar_marker Boolean   @default(false)
+  ar_card_id       Int?
+  maestro_id       Int
+  default_topic_id Int?
+
+  @@map("lessons")
+  @@index([curso])
+  @@index([exam_id])
+  @@index([default_topic_id])
+  @@index([ar_card_id])
+}
+
+model LessonTopic {
+  id         Int       @id @default(autoincrement())
+  lesson_id  Int
+  title      String    @db.VarChar(255)
+  content    String?   @db.Text
+  order      Int?      @default(0)
+  activo     Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("lesson_topics")
+  @@index([lesson_id])
+  @@index([activo])
+}
+
+model MatchingPair {
+  id            Int    @id @default(autoincrement())
+  exercise_id   Int
+  aymara_word   String @db.VarChar(255)
+  spanish_word  String @db.VarChar(255)
+
+  @@map("matching_pairs")
+  @@index([exercise_id])
+}
+
+model MultipleChoiceOption {
+  id           Int     @id @default(autoincrement())
+  exercise_id  Int
+  option_text  String? @db.VarChar(255)
+  option_image String? @db.VarChar(255)
+  is_correct   Boolean
+
+  @@map("multiple_choice_options")
+  @@index([exercise_id])
+}
+
+model SearchHistory {
+  id          Int      @id @default(autoincrement())
+  headword    String   @db.VarChar(100)
+  gloss       String   @db.VarChar(255)
+  search_date DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("search_history")
+}
+
+model StatisticsAggregated {
+  id                     Int                                        @id @default(autoincrement())
+  user_id                Int?
+  exercise_id            Int?
+  lesson_id              Int?
+  curso_id               Int?
+  stat_type              StatisticsAggregatedStatTypeEnum
+  total_attempts         Int?                                       @default(0)
+  successful_attempts    Int?                                       @default(0)
+  failed_attempts        Int?                                       @default(0)
+  average_score          Decimal?                                   @default(0.00) @db.Decimal(5, 2)
+  average_time           Decimal?                                   @default(0.00) @db.Decimal(10, 2)
+  most_common_error      String?                                    @db.VarChar(100)
+  error_pattern          String?                                    @db.Text
+  difficulty_score       Decimal?                                   @default(0.00) @db.Decimal(5, 2)
+  neural_network_score   Decimal?                                   @default(0.00) @db.Decimal(5, 2)
+  predicted_difficulty   StatisticsAggregatedPredictedDifficultyEnum? @default(medio)
+  last_calculated        DateTime?                                  @default(now()) @db.Timestamp(6)
+  created_at             DateTime?                                  @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?                                  @default(now()) @db.Timestamp(6)
+
+  @@map("statistics_aggregated")
+  @@unique([user_id, exercise_id, lesson_id, curso_id, stat_type])
+  @@index([stat_type])
+  @@index([user_id])
+  @@index([exercise_id])
+  @@index([lesson_id])
+  @@index([curso_id])
+  @@index([last_calculated])
+}
+
+model TopicReading {
+  id                  Int       @id @default(autoincrement())
+  user_id             Int
+  topic_id            Int
+  lesson_id           Int
+  exercise_id         Int?
+  reading_completed   Boolean?  @default(false)
+  reading_started_at  DateTime? @db.Timestamp(6)
+  reading_completed_at DateTime? @db.Timestamp(6)
+  time_spent          Int?      @default(0)
+  forced_by_failures  Boolean?  @default(false)
+  failure_count       Int?      @default(0)
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  updated_at          DateTime? @default(now()) @db.Timestamp(6)
+
+  @@map("topic_readings")
+  @@unique([user_id, topic_id, exercise_id, forced_by_failures])
+  @@index([user_id, lesson_id])
+  @@index([reading_completed])
+  @@index([topic_id])
+  @@index([lesson_id])
+  @@index([exercise_id])
+}
+
+model UserArCard {
+  id          Int                       @id @default(autoincrement())
+  user_id     Int
+  ar_card_id  Int
+  unlocked_at DateTime?                 @default(now()) @db.Timestamp(6)
+  unlocked_by UserArCardsUnlockedByEnum? @default(lesson)
+  source_id   Int?
+
+  @@map("user_ar_cards")
+  @@unique([user_id, ar_card_id])
+  @@index([user_id])
+  @@index([ar_card_id])
+}
+
+model UserAttempt {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  lesson_id  Int
+  attempt_no Int
+  score      Int
+  errors     Int
+  streak     Int
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("user_attempts")
+  @@index([user_id, lesson_id])
+}
+
+model UserAttemptDetail {
+  id               Int                                  @id @default(autoincrement())
+  attempt_id       Int
+  exercise_id      Int
+  question_text    String?                              @db.Text
+  user_answer      String?                              @db.Text
+  correct_answer   String?                              @db.Text
+  is_correct       Boolean?
+  time_spent       Int?                                 @default(0)
+  difficulty_level UserAttemptDetailsDifficultyLevelEnum? @default(medio)
+  error_type       String?                              @db.VarChar(100)
+  created_at       DateTime?                            @default(now()) @db.Timestamp(6)
+  exercise_type    String?                              @db.VarChar(50)
+  user_answer_time DateTime?                            @default(now()) @db.Timestamp(6)
+
+  @@map("user_attempt_details")
+  @@index([attempt_id])
+}
+
+model UserProgress {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  lesson_id     Int
+  exercise_id   Int?
+  date          DateTime  @default(now()) @db.Date
+  errors        Int?      @default(0)
+  score         Int?      @default(0)
+  streak        Int?      @default(0)
+  current_index Int       @default(0)
+  total_exercises Int     @default(0)
+  in_progress   Boolean   @default(false)
+  last_seen_at  DateTime  @default(now()) @db.Timestamp(6)
+  attempt_no    Int       @default(1) @db.SmallInt
+  completed     Boolean   @default(false)
+  attempts      Int?      @default(1)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  last_exit_at  DateTime? @db.Timestamp(6)
+
+  @@map("user_progress")
+  @@unique([user_id, lesson_id, date])
+  @@index([exercise_id])
+  @@index([user_id, exercise_id])
+}
+
+model Usuario {
+  id       Int              @id @default(autoincrement())
+  username String           @db.VarChar(50)
+  password String           @db.VarChar(255)
+  role     UsuariosRoleEnum
+  activo   Boolean          @default(true)
+  email    String?          @unique @db.VarChar(100)
+  curso    Int
+
+  @@map("usuarios")
+  @@index([curso])
+}
