@@ -17,6 +17,15 @@ export function checkMatching(rawAnswer: string, pairs: { aymara_word: string }[
   }
 }
 
+export function checkMultipleChoice(
+  selectedOptionId: string | number,
+  options: { id: number; is_correct: boolean }[],
+): boolean {
+  const id = Number(selectedOptionId);
+  const opt = options.find((o) => o.id === id);
+  return !!opt?.is_correct;
+}
+
 export function checkFillInTheBlank(rawAnswer: string, validAnswers: string[]): boolean {
   try {
     const userArr = JSON.parse(rawAnswer) as string[];

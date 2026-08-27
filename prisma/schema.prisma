@@ -1,3 +1,9 @@
+// Plataforma educativa de Aymara — colegio ÚNICO, materia ÚNICA (Aymara).
+// Estructura de negocio: Colegio → Gestión → Grado → Paralelo → Profesor → Alumnos → Contenido.
+// Reglas invariantes (Negocio.md §36): el contenido pertenece al PARALELO, no al profesor;
+// nada académico se borra físicamente (se usan estados); el historial del alumno sobrevive a
+// cualquier cambio de profesor / paralelo / gestión.
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -5,6 +11,143 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UsuariosRoleEnum {
+  maestro
+  estudiante
+  admin
+  @@map("usuarios_role_enum")
+}
+
+/// Ciclo de vida de contenido / entidades académicas (Negocio.md §3, §33).
+enum EstadoContenido {
+  activo
+  inactivo
+  retirado
+  archivado
+  deshabilitado
+  @@map("estado_contenido_enum")
+}
+
+/// Ciclo de vida del alumno dentro de un paralelo (Negocio.md §2, §25).
+enum EstadoAlumno {
+  activo
+  inactivo
+  retirado
+  reincorporado
+  egresado
+  promovido
+  trasladado
+  repitente
+  @@map("estado_alumno_enum")
+}
+
+enum EstadoGestion {
+  planificada
+  activa
+  cerrada
+  archivada
+  @@map("estado_gestion_enum")
+}
+
+enum Dificultad {
+  facil
+  medio
+  dificil
+  @@map("dificultad_enum")
+}
+
+enum ExercisesTypeEnum {
+  text
+  multiple_choice
+  matching
+  fill_in_the_blank
+  @@map("exercises_type_enum")
+}
+
+enum ExamsTypeEnum {
+  conectar_palabras
+  ar_exam
+  @@map("exams_type_enum")
+}
+
+enum ExamAttemptPolicy {
+  best
+  last
+  first
+  average
+  @@map("exam_attempt_policy_enum")
+}
+
+enum PassPolicy {
+  por_minimo
+  todos
+  @@map("pass_policy_enum")
+}
+
+enum TipoCambio {
+  menor
+  mayor
+  @@map("tipo_cambio_enum")
+}
+
+enum MovimientoTipo {
+  alta
+  promocion
+  cambio_paralelo
+  retiro
+  reincorporacion
+  repitencia
+  @@map("movimiento_tipo_enum")
+}
+
+enum ArCardUnlockType {
+  lesson
+  exam
+  @@map("ar_card_unlock_type_enum")
+}
+
+enum LogroCategoria {
+  lecciones
+  racha
+  rendimiento
+  examenes
+  tarjetas
+  @@map("logro_categoria_enum")
+}
+
+enum ContentOrderContentTypeEnum {
+  lesson
+  exam
+  @@map("content_order_content_type_enum")
+}
+
+enum ExamDetailsConfigTypeEnum {
+  categories
+  ar_markers
+  ar_cards
+  @@map("exam_details_config_type_enum")
+}
+
+enum StatType {
+  exercise
+  lesson
+  paralelo
+  student
+  gestion
+  @@map("statistics_stat_type_enum")
+}
+
+enum PrediccionTipo {
+  riesgo_bajo_rendimiento
+  tendencia
+  refuerzo_sugerido
+  @@map("prediccion_tipo_enum")
 }
 
 enum AccessLogsActionEnum {
@@ -18,87 +161,818 @@ enum AccessLogsActionEnum {
   @@map("access_logs_action_enum")
 }
 
-enum ArCardsUnlockTypeEnum {
-  lesson
-  exam
-  @@map("ar_cards_unlock_type_enum")
+// ---------------------------------------------------------------------------
+// Estructura académica
+// ---------------------------------------------------------------------------
+
+model Usuario {
+  id                Int              @id @default(autoincrement())
+  username          String           @unique @db.VarChar(50)
+  password          String           @db.VarChar(255)
+  role              UsuariosRoleEnum
+  activo            Boolean          @default(true)
+  email             String?          @unique @db.VarChar(120)
+  nombre            String?          @db.VarChar(120)
+  apellido          String?          @db.VarChar(120)
+  codigo_estudiante String?          @unique @db.VarChar(40)
+  fecha_nacimiento  DateTime?        @db.Date
+  created_at        DateTime         @default(now()) @db.Timestamp(6)
+
+  paralelos_dirige  Paralelo[]             @relation("ParaleloProfesor")
+  asignaciones      AsignacionProfesor[]
+  inscripciones     Inscripcion[]
+  lesson_attempts   LessonAttempt[]
+  exercise_attempts ExerciseAttempt[]
+  exam_attempts     ExamAttempt[]
+  ar_cards          UserArCard[]
+  logros            LogroAlumno[]
+  progreso          UserProgress[]
+  topic_readings    TopicReading[]
+  predicciones      PrediccionAlumno[]
+
+  @@map("usuarios")
+  @@index([role])
 }
 
-enum ContentOrderContentTypeEnum {
-  lesson
-  exam
-  @@map("content_order_content_type_enum")
+model Gestion {
+  id           Int           @id @default(autoincrement())
+  nombre       String        @unique @db.VarChar(60)
+  anio         Int
+  fecha_inicio DateTime      @db.Date
+  fecha_fin    DateTime      @db.Date
+  estado       EstadoGestion @default(planificada)
+  es_actual    Boolean       @default(false)
+  created_at   DateTime      @default(now()) @db.Timestamp(6)
+
+  paralelos Paralelo[]
+
+  @@map("gestiones")
+  @@index([es_actual])
 }
 
-enum ExamsTypeEnum {
-  conectar_palabras
-  ar_exam
-  @@map("exams_type_enum")
+model Grado {
+  id         Int             @id @default(autoincrement())
+  nombre     String          @db.VarChar(60)
+  nivel      Int
+  estado     EstadoContenido @default(activo)
+  created_at DateTime        @default(now()) @db.Timestamp(6)
+
+  paralelos Paralelo[]
+
+  @@map("grados")
+  @@unique([nivel])
 }
 
-enum ExamDetailsConfigTypeEnum {
-  categories
-  ar_markers
-  ar_cards
-  @@map("exam_details_config_type_enum")
+model Paralelo {
+  id          Int             @id @default(autoincrement())
+  gestion_id  Int
+  grado_id    Int
+  nombre      String          @db.VarChar(10)
+  profesor_id Int?
+  estado      EstadoContenido @default(activo)
+  created_at  DateTime        @default(now()) @db.Timestamp(6)
+
+  gestion      Gestion              @relation(fields: [gestion_id], references: [id])
+  grado        Grado                @relation(fields: [grado_id], references: [id])
+  profesor     Usuario?             @relation("ParaleloProfesor", fields: [profesor_id], references: [id])
+  asignaciones AsignacionProfesor[]
+  inscripciones Inscripcion[]
+  lessons      Lesson[]
+  exercises    Exercise[]
+  exams        Exam[]
+  ar_cards     ArCard[]
+  archivos     Archivo[]
+  content_order ContentOrder[]
+  comentarios  ComentarioRevision[]
+
+  @@map("paralelos")
+  @@unique([gestion_id, grado_id, nombre])
+  @@index([profesor_id])
+  @@index([gestion_id])
 }
 
-enum ExercisesTypeEnum {
-  text
-  multiple_choice
-  matching
-  fill_in_the_blank
-  @@map("exercises_type_enum")
+/// Historial de "quién enseñó qué paralelo y cuándo" (Negocio.md §4, §35).
+model AsignacionProfesor {
+  id          Int       @id @default(autoincrement())
+  paralelo_id Int
+  profesor_id Int
+  fecha_desde DateTime  @default(now()) @db.Timestamp(6)
+  fecha_hasta DateTime? @db.Timestamp(6)
+  activo      Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(6)
+
+  paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
+  profesor Usuario  @relation(fields: [profesor_id], references: [id])
+
+  @@map("asignaciones_profesor")
+  @@index([paralelo_id])
+  @@index([profesor_id])
 }
 
-enum ExercisesDificultadEnum {
-  facil
-  medio
-  dificil
-  @@map("exercises_dificultad_enum")
+/// Una fila por (alumno, paralelo). El alumno acumula varias a lo largo de las
+/// gestiones y de los cambios de paralelo — el historial NO se destruye (Negocio.md §2, §25, §32).
+model Inscripcion {
+  id                Int          @id @default(autoincrement())
+  alumno_id         Int
+  paralelo_id       Int
+  estado            EstadoAlumno @default(activo)
+  fecha_inscripcion DateTime     @default(now()) @db.Timestamp(6)
+  fecha_baja        DateTime?    @db.Timestamp(6)
+  motivo            String?      @db.VarChar(255)
+  created_at        DateTime     @default(now()) @db.Timestamp(6)
+  updated_at        DateTime     @updatedAt @db.Timestamp(6)
+
+  alumno      Usuario                @relation(fields: [alumno_id], references: [id])
+  paralelo    Paralelo               @relation(fields: [paralelo_id], references: [id])
+  movimientos MovimientoAcademico[]
+
+  @@map("inscripciones")
+  @@unique([alumno_id, paralelo_id])
+  @@index([alumno_id])
+  @@index([paralelo_id])
+  @@index([estado])
 }
 
-enum ExerciseAttemptsDifficultyLevelEnum {
-  facil
-  medio
-  dificil
-  @@map("exercise_attempts_difficulty_level_enum")
+/// Auditoría de los procesos de gestión académica (alta, promoción, retiro, ...).
+model MovimientoAcademico {
+  id             Int            @id @default(autoincrement())
+  inscripcion_id Int
+  tipo           MovimientoTipo
+  fecha          DateTime       @default(now()) @db.Timestamp(6)
+  realizado_por  Int
+  datos_previos  Json?
+  datos_nuevos   Json?
+
+  inscripcion Inscripcion @relation(fields: [inscripcion_id], references: [id])
+
+  @@map("movimientos_academicos")
+  @@index([inscripcion_id])
 }
 
-enum StatisticsAggregatedStatTypeEnum {
-  exercise
-  lesson
-  course
-  student
-  @@map("statistics_aggregated_stat_type_enum")
+// ---------------------------------------------------------------------------
+// Contenido — SIEMPRE pertenece a un paralelo (Negocio.md §5, §31)
+// ---------------------------------------------------------------------------
+
+model Lesson {
+  id               Int             @id @default(autoincrement())
+  paralelo_id      Int
+  title            String          @db.VarChar(255)
+  description      String?         @db.Text
+  orden            Int             @default(1)
+  estado           EstadoContenido @default(activo)
+
+  // Criterio de completado (Negocio.md §9, §17, §35)
+  min_correct      Int             @default(1)
+  present_count    Int?
+  random_selection Boolean         @default(false)
+  pass_policy      PassPolicy      @default(por_minimo)
+
+  // Versionado de contenido (Negocio.md §15, §24-25)
+  content_epoch    Int             @default(1)
+  min_valid_version Int            @default(1)
+
+  // Recompensa
+  grants_ar        Boolean         @default(false)
+  ar_card_id       Int?
+
+  default_topic_id Int?
+  copiado_de       Int?
+  created_by       Int?
+  updated_by       Int?
+  created_at       DateTime        @default(now()) @db.Timestamp(6)
+  updated_at       DateTime        @updatedAt @db.Timestamp(6)
+
+  paralelo         Paralelo         @relation(fields: [paralelo_id], references: [id])
+  reward_card      ArCard?          @relation("LessonRewardCard", fields: [ar_card_id], references: [id])
+  topics           LessonTopic[]
+  lesson_exercises LessonExercise[]
+  versions         LessonVersion[]
+  attempts         LessonAttempt[]
+  prereq_de        ExamPrerequisito[]
+
+  @@map("lessons")
+  @@index([paralelo_id, orden])
+  @@index([ar_card_id])
 }
 
-enum StatisticsAggregatedPredictedDifficultyEnum {
-  facil
-  medio
-  dificil
-  @@map("statistics_aggregated_predicted_difficulty_enum")
+model LessonVersion {
+  id          Int        @id @default(autoincrement())
+  lesson_id   Int
+  version     Int
+  tipo_cambio TipoCambio
+  resumen     String     @db.VarChar(500)
+  created_by  Int?
+  created_at  DateTime   @default(now()) @db.Timestamp(6)
+  vigente     Boolean    @default(true)
+
+  lesson Lesson @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+
+  @@map("lesson_versions")
+  @@unique([lesson_id, version])
 }
 
-enum UserArCardsUnlockedByEnum {
-  lesson
-  exam
-  @@map("user_ar_cards_unlocked_by_enum")
+model LessonTopic {
+  id         Int             @id @default(autoincrement())
+  lesson_id  Int
+  title      String          @db.VarChar(255)
+  content    String?         @db.Text
+  archivo_id Int?
+  order      Int             @default(0)
+  estado     EstadoContenido @default(activo)
+  created_at DateTime        @default(now()) @db.Timestamp(6)
+  updated_at DateTime        @updatedAt @db.Timestamp(6)
+
+  lesson   Lesson         @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  archivo  Archivo?       @relation(fields: [archivo_id], references: [id])
+  readings TopicReading[]
+
+  @@map("lesson_topics")
+  @@index([lesson_id])
 }
 
-enum UserAttemptDetailsDifficultyLevelEnum {
-  facil
-  medio
-  dificil
-  @@map("user_attempt_details_difficulty_level_enum")
+model Archivo {
+  id           Int             @id @default(autoincrement())
+  nombre       String          @db.VarChar(255)
+  ruta         String          @db.VarChar(500)
+  mime         String?         @db.VarChar(120)
+  size_bytes   Int?
+  uploaded_by  Int?
+  paralelo_id  Int?
+  estado       EstadoContenido @default(activo)
+  fecha_subida DateTime        @default(now()) @db.Timestamp(6)
+
+  paralelo Paralelo?     @relation(fields: [paralelo_id], references: [id])
+  topics   LessonTopic[]
+
+  @@map("archivos")
+  @@index([paralelo_id])
 }
 
-enum UsuariosRoleEnum {
-  maestro
-  estudiante
-  admin
-  @@map("usuarios_role_enum")
+/// Ejercicios reutilizables: viven en el pool del paralelo y se enlazan a N
+/// lecciones mediante LessonExercise (Negocio.md §10, §18).
+model Exercise {
+  id              Int             @id @default(autoincrement())
+  paralelo_id     Int
+  lesson_id_origen Int?
+  type            ExercisesTypeEnum
+  question        String          @db.Text
+  answer          String?         @db.Text
+  dificultad      Dificultad      @default(medio)
+  estado          EstadoContenido @default(activo)
+  copiado_de      Int?
+  created_by      Int?
+  updated_by      Int?
+  created_at      DateTime        @default(now()) @db.Timestamp(6)
+  updated_at      DateTime        @updatedAt @db.Timestamp(6)
+
+  paralelo      Paralelo               @relation(fields: [paralelo_id], references: [id])
+  options       MultipleChoiceOption[]
+  pairs         MatchingPair[]
+  blanks        FillInTheBlankAnswer[]
+  lesson_links  LessonExercise[]
+  attempts      ExerciseAttempt[]
+
+  @@map("exercises")
+  @@index([paralelo_id])
 }
+
+model LessonExercise {
+  id          Int             @id @default(autoincrement())
+  lesson_id   Int
+  exercise_id Int
+  orden       Int             @default(0)
+  estado      EstadoContenido @default(activo)
+  added_at    DateTime        @default(now()) @db.Timestamp(6)
+
+  lesson   Lesson   @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exercise_id], references: [id])
+
+  @@map("lesson_exercises")
+  @@unique([lesson_id, exercise_id])
+  @@index([lesson_id, orden])
+  @@index([exercise_id])
+}
+
+model MultipleChoiceOption {
+  id           Int      @id @default(autoincrement())
+  exercise_id  Int
+  option_text  String?  @db.VarChar(255)
+  option_image String?  @db.VarChar(255)
+  is_correct   Boolean  @default(false)
+
+  exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@map("multiple_choice_options")
+  @@index([exercise_id])
+}
+
+model MatchingPair {
+  id           Int    @id @default(autoincrement())
+  exercise_id  Int
+  aymara_word  String @db.VarChar(255)
+  spanish_word String @db.VarChar(255)
+  orden        Int    @default(0)
+
+  exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@map("matching_pairs")
+  @@index([exercise_id])
+}
+
+model FillInTheBlankAnswer {
+  id          Int    @id @default(autoincrement())
+  exercise_id Int
+  answer_text String @db.VarChar(255)
+
+  exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+
+  @@map("fill_in_the_blank_answers")
+  @@index([exercise_id])
+}
+
+// ---------------------------------------------------------------------------
+// Historial de aprendizaje del alumno — se conserva SIEMPRE (Negocio.md §12-14)
+// ---------------------------------------------------------------------------
+
+/// Cabecera de un intento de lección. Guarda el subconjunto de ejercicios
+/// presentado (para que un sorteo aleatorio sea estable dentro del intento).
+model LessonAttempt {
+  id                     Int             @id @default(autoincrement())
+  alumno_id              Int
+  lesson_id              Int
+  paralelo_id            Int
+  attempt_no             Int             @default(1)
+  started_at             DateTime        @default(now()) @db.Timestamp(6)
+  finished_at            DateTime?       @db.Timestamp(6)
+  presented_exercise_ids Int[]
+  presented_count        Int             @default(0)
+  correct_count          Int             @default(0)
+  min_required           Int             @default(0)
+  score                  Int             @default(0)
+  passed                 Boolean         @default(false)
+  best_flag              Boolean         @default(false)
+  lesson_version         Int             @default(1)
+  estado                 EstadoContenido @default(activo)
+
+  alumno  Usuario           @relation(fields: [alumno_id], references: [id])
+  lesson  Lesson            @relation(fields: [lesson_id], references: [id])
+  details ExerciseAttempt[]
+
+  @@map("lesson_attempts")
+  @@index([alumno_id, lesson_id])
+  @@index([lesson_id])
+}
+
+/// Detalle: una fila por envío de ejercicio. NO guarda la respuesta correcta
+/// (Negocio.md §13, §22 — el fallo no revela la solución).
+model ExerciseAttempt {
+  id                Int                @id @default(autoincrement())
+  lesson_attempt_id Int?
+  alumno_id         Int
+  exercise_id       Int
+  lesson_id         Int
+  paralelo_id       Int?
+  exercise_type     ExercisesTypeEnum?
+  dificultad        Dificultad         @default(medio)
+  attempt_number    Int                @default(1)
+  user_answer       String?            @db.Text
+  is_correct        Boolean            @default(false)
+  score             Int                @default(0)
+  time_spent_ms     Int                @default(0)
+  error_type        String?            @db.VarChar(100)
+  error_details     String?            @db.Text
+  created_at        DateTime           @default(now()) @db.Timestamp(6)
+
+  lesson_attempt LessonAttempt? @relation(fields: [lesson_attempt_id], references: [id])
+  exercise       Exercise       @relation(fields: [exercise_id], references: [id])
+  alumno         Usuario        @relation(fields: [alumno_id], references: [id])
+
+  @@map("exercise_attempts")
+  @@index([alumno_id, exercise_id])
+  @@index([alumno_id, lesson_id])
+  @@index([lesson_id])
+  @@index([exercise_id])
+  @@index([is_correct])
+  @@index([created_at])
+}
+
+/// Caché de "posición actual / reanudar" de una lección. NO es historial.
+model UserProgress {
+  id              Int      @id @default(autoincrement())
+  alumno_id       Int
+  lesson_id       Int
+  lesson_version  Int      @default(1)
+  current_index   Int      @default(0)
+  total_exercises Int      @default(0)
+  best_score      Int      @default(0)
+  attempts        Int      @default(0)
+  completed       Boolean  @default(false)
+  in_progress     Boolean  @default(false)
+  last_seen_at    DateTime @default(now()) @db.Timestamp(6)
+  updated_at      DateTime @updatedAt @db.Timestamp(6)
+
+  alumno Usuario @relation(fields: [alumno_id], references: [id])
+
+  @@map("user_progress")
+  @@unique([alumno_id, lesson_id])
+  @@index([alumno_id])
+}
+
+model TopicReading {
+  id                   Int       @id @default(autoincrement())
+  alumno_id            Int
+  topic_id             Int
+  lesson_id            Int
+  reading_completed    Boolean   @default(false)
+  reading_started_at   DateTime? @db.Timestamp(6)
+  reading_completed_at DateTime? @db.Timestamp(6)
+  time_spent_ms        Int       @default(0)
+  forced_by_failures   Boolean   @default(false)
+  failure_count        Int       @default(0)
+  created_at           DateTime  @default(now()) @db.Timestamp(6)
+  updated_at           DateTime  @updatedAt @db.Timestamp(6)
+
+  alumno Usuario     @relation(fields: [alumno_id], references: [id])
+  topic  LessonTopic @relation(fields: [topic_id], references: [id])
+
+  @@map("topic_readings")
+  @@unique([alumno_id, topic_id, forced_by_failures])
+  @@index([alumno_id, lesson_id])
+  @@index([topic_id])
+}
+
+// ---------------------------------------------------------------------------
+// Exámenes (Negocio.md §16-23)
+// ---------------------------------------------------------------------------
+
+model Exam {
+  id             Int               @id @default(autoincrement())
+  paralelo_id    Int
+  type           ExamsTypeEnum     @default(conectar_palabras)
+  title          String            @db.VarChar(255)
+  description    String?           @db.Text
+  time_limit     Int?
+  start_date     DateTime?         @db.Timestamp(6)
+  end_date       DateTime?         @db.Timestamp(6)
+  min_score      Int               @default(70)
+  max_attempts   Int?
+  attempt_policy ExamAttemptPolicy @default(best)
+  ar_card_id     Int?
+  position_order Int?
+  estado         EstadoContenido   @default(activo)
+  copiado_de     Int?
+  created_by     Int?
+  updated_by     Int?
+  created_at     DateTime          @default(now()) @db.Timestamp(6)
+  updated_at     DateTime          @updatedAt @db.Timestamp(6)
+
+  paralelo      Paralelo           @relation(fields: [paralelo_id], references: [id])
+  reward_card   ArCard?            @relation("ExamRewardCard", fields: [ar_card_id], references: [id])
+  prerequisitos ExamPrerequisito[]
+  ar_cards      ExamArCard[]
+  details       ExamDetail[]
+  attempts      ExamAttempt[]
+
+  @@map("exams")
+  @@index([paralelo_id])
+  @@index([ar_card_id])
+}
+
+model ExamPrerequisito {
+  id        Int @id @default(autoincrement())
+  exam_id   Int
+  lesson_id Int
+
+  exam   Exam   @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lesson_id], references: [id])
+
+  @@map("exam_prerequisitos")
+  @@unique([exam_id, lesson_id])
+}
+
+model ExamArCard {
+  id         Int @id @default(autoincrement())
+  exam_id    Int
+  ar_card_id Int
+
+  exam    Exam   @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  ar_card ArCard @relation(fields: [ar_card_id], references: [id])
+
+  @@map("exam_ar_cards")
+  @@unique([exam_id, ar_card_id])
+}
+
+model ExamDetail {
+  id           Int                       @id @default(autoincrement())
+  exam_id      Int
+  config_type  ExamDetailsConfigTypeEnum
+  config_value String                    @db.Text
+  created_at   DateTime                  @default(now()) @db.Timestamp(6)
+  updated_at   DateTime                  @updatedAt @db.Timestamp(6)
+
+  exam Exam @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+
+  @@map("exam_details")
+  @@unique([exam_id, config_type])
+}
+
+model ExamAttempt {
+  id                 Int             @id @default(autoincrement())
+  exam_id            Int
+  alumno_id          Int
+  attempt_no         Int             @default(1)
+  started_at         DateTime        @default(now()) @db.Timestamp(6)
+  completed_at       DateTime?       @db.Timestamp(6)
+  time_spent_ms      Int             @default(0)
+  score              Decimal         @default(0) @db.Decimal(5, 2)
+  passed             Boolean         @default(false)
+  estado             EstadoContenido @default(activo)
+  ar_card_granted_id Int?
+
+  exam    Exam                @relation(fields: [exam_id], references: [id])
+  alumno  Usuario             @relation(fields: [alumno_id], references: [id])
+  details ExamAttemptDetail[]
+
+  @@map("exam_attempts")
+  @@index([exam_id])
+  @@index([alumno_id])
+}
+
+/// Detalle de un intento de examen, neutral a la modalidad (Negocio.md §23).
+model ExamAttemptDetail {
+  id              Int      @id @default(autoincrement())
+  exam_attempt_id Int
+  item_ref        String   @db.VarChar(255)
+  expected        String?  @db.VarChar(255)
+  respuesta       String?  @db.VarChar(255)
+  is_correct      Boolean  @default(false)
+  time_spent_ms   Int      @default(0)
+  created_at      DateTime @default(now()) @db.Timestamp(6)
+
+  exam_attempt ExamAttempt @relation(fields: [exam_attempt_id], references: [id], onDelete: Cascade)
+
+  @@map("exam_attempt_details")
+  @@index([exam_attempt_id])
+}
+
+// ---------------------------------------------------------------------------
+// Tarjetas AR — recompensas (Negocio.md §18-21)
+// ---------------------------------------------------------------------------
+
+/// Plantilla de una tarjeta AR (física, imprimible). NO representa la copia de
+/// un alumno — eso vive en UserArCard.
+model ArCard {
+  id               Int              @id @default(autoincrement())
+  paralelo_id      Int
+  card_code        String           @unique @db.VarChar(50)
+  title            String?          @db.VarChar(255)
+  description      String?          @db.Text
+  marker_file      String           @db.VarChar(255)
+  image_file       String?          @db.VarChar(255)
+  card_data        String?          @db.Text
+  unlock_type      ArCardUnlockType @default(lesson)
+  unlock_lesson_id Int?
+  unlock_exam_id   Int?
+  estado           EstadoContenido  @default(activo)
+  deshabilitado_por Int?
+  deshabilitado_at DateTime?        @db.Timestamp(6)
+  motivo           String?          @db.VarChar(255)
+  copiado_de       Int?
+  created_by       Int?
+  updated_by       Int?
+  created_at       DateTime         @default(now()) @db.Timestamp(6)
+  updated_at       DateTime         @updatedAt @db.Timestamp(6)
+
+  paralelo       Paralelo     @relation(fields: [paralelo_id], references: [id])
+  user_cards     UserArCard[]
+  exam_links     ExamArCard[]
+  lesson_rewards Lesson[]     @relation("LessonRewardCard")
+  exam_rewards   Exam[]       @relation("ExamRewardCard")
+
+  @@map("ar_cards")
+  @@index([paralelo_id])
+  @@index([unlock_lesson_id])
+  @@index([unlock_exam_id])
+}
+
+/// La copia de una tarjeta que un alumno desbloqueó. Se puede REVOCAR
+/// individualmente si fue obtenida por error (Negocio.md §21, §32); la fila se
+/// conserva siempre.
+model UserArCard {
+  id          Int              @id @default(autoincrement())
+  alumno_id   Int
+  ar_card_id  Int
+  unlocked_at DateTime         @default(now()) @db.Timestamp(6)
+  unlocked_by ArCardUnlockType @default(lesson)
+  source_id   Int?
+  revocado    Boolean          @default(false)
+  revocado_at DateTime?        @db.Timestamp(6)
+  revocado_por Int?
+  motivo      String?          @db.VarChar(255)
+
+  alumno  Usuario @relation(fields: [alumno_id], references: [id])
+  ar_card ArCard  @relation(fields: [ar_card_id], references: [id])
+
+  @@map("user_ar_cards")
+  @@unique([alumno_id, ar_card_id])
+  @@index([alumno_id])
+  @@index([ar_card_id])
+}
+
+// ---------------------------------------------------------------------------
+// Logros — automáticos, sin configuración manual (Negocio.md §24, §34)
+// ---------------------------------------------------------------------------
+
+model Logro {
+  id             Int            @id @default(autoincrement())
+  codigo         String         @unique @db.VarChar(60)
+  nombre         String         @db.VarChar(120)
+  descripcion    String?        @db.VarChar(255)
+  icono          String?        @db.VarChar(60)
+  categoria      LogroCategoria
+  criterio_tipo  String         @db.VarChar(60)
+  criterio_valor Int            @default(1)
+  activo         Boolean        @default(true)
+
+  alumnos LogroAlumno[]
+
+  @@map("logros")
+}
+
+model LogroAlumno {
+  id          Int      @id @default(autoincrement())
+  alumno_id   Int
+  logro_id    Int
+  unlocked_at DateTime @default(now()) @db.Timestamp(6)
+  progreso    Int?
+  contexto    Json?
+
+  alumno Usuario @relation(fields: [alumno_id], references: [id])
+  logro  Logro   @relation(fields: [logro_id], references: [id])
+
+  @@map("logro_alumnos")
+  @@unique([alumno_id, logro_id])
+  @@index([alumno_id])
+}
+
+// ---------------------------------------------------------------------------
+// Mapa / orden del contenido del paralelo
+// ---------------------------------------------------------------------------
+
+model ContentOrder {
+  id           Int                         @id @default(autoincrement())
+  paralelo_id  Int
+  content_type ContentOrderContentTypeEnum
+  content_id   Int
+  orden        Int
+  created_at   DateTime                    @default(now()) @db.Timestamp(6)
+  updated_at   DateTime                    @updatedAt @db.Timestamp(6)
+
+  paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
+
+  @@map("content_order")
+  @@unique([paralelo_id, content_type, content_id])
+  @@index([paralelo_id, orden])
+}
+
+// ---------------------------------------------------------------------------
+// Diccionario (recurso del colegio, no de un paralelo concreto)
+// ---------------------------------------------------------------------------
+
+model Diccionario {
+  id          Int             @id @default(autoincrement())
+  aymara      String?         @db.VarChar(80)
+  espanol     String?         @db.VarChar(120)
+  categoria   String          @default("") @db.VarChar(60)
+  estado      EstadoContenido @default(activo)
+  paralelo_id Int?
+
+  @@map("diccionario")
+  @@index([categoria])
+  @@index([paralelo_id])
+}
+
+model SearchHistory {
+  id          Int      @id @default(autoincrement())
+  headword    String   @db.VarChar(100)
+  gloss       String   @db.VarChar(255)
+  search_date DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("search_history")
+}
+
+// ---------------------------------------------------------------------------
+// Supervisión del administrador (Negocio.md §4, §29)
+// ---------------------------------------------------------------------------
+
+model ComentarioRevision {
+  id            Int      @id @default(autoincrement())
+  contenido_tipo String  @db.VarChar(30)
+  contenido_id  Int
+  paralelo_id   Int
+  autor_id      Int
+  texto         String   @db.Text
+  resuelto      Boolean  @default(false)
+  created_at    DateTime @default(now()) @db.Timestamp(6)
+  updated_at    DateTime @updatedAt @db.Timestamp(6)
+
+  paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
+
+  @@map("comentarios_revision")
+  @@index([paralelo_id])
+  @@index([contenido_tipo, contenido_id])
+}
+
+// ---------------------------------------------------------------------------
+// Analítica descriptiva + predictiva (Negocio.md §26-27)
+// ---------------------------------------------------------------------------
+
+/// Agregados recalculables. Las claves usan 0 como centinela (no NULL) para que
+/// los upsert por clave compuesta parcial dedupliquen correctamente.
+model StatisticsAggregated {
+  id                   Int         @id @default(autoincrement())
+  stat_type            StatType
+  alumno_id            Int         @default(0)
+  exercise_id          Int         @default(0)
+  lesson_id            Int         @default(0)
+  paralelo_id          Int         @default(0)
+  gestion_id           Int         @default(0)
+  total_attempts       Int         @default(0)
+  successful_attempts  Int         @default(0)
+  failed_attempts      Int         @default(0)
+  average_score        Decimal     @default(0) @db.Decimal(5, 2)
+  average_time_ms      Decimal     @default(0) @db.Decimal(12, 2)
+  most_common_error    String?     @db.VarChar(100)
+  error_pattern        String?     @db.Text
+  difficulty_score     Decimal     @default(0) @db.Decimal(5, 2)
+  predicted_difficulty Dificultad?
+  last_calculated      DateTime    @default(now()) @db.Timestamp(6)
+  created_at           DateTime    @default(now()) @db.Timestamp(6)
+  updated_at           DateTime    @updatedAt @db.Timestamp(6)
+
+  @@map("statistics_aggregated")
+  @@unique([stat_type, alumno_id, exercise_id, lesson_id, paralelo_id, gestion_id])
+  @@index([stat_type])
+  @@index([paralelo_id])
+  @@index([alumno_id])
+}
+
+model ErrorPattern {
+  id                Int      @id @default(autoincrement())
+  alumno_id         Int?
+  exercise_id       Int?
+  lesson_id         Int?
+  error_type        String   @db.VarChar(100)
+  error_description String?  @db.Text
+  frequency         Int      @default(1)
+  pattern_data      String?  @db.Text
+  detected_at       DateTime @default(now()) @db.Timestamp(6)
+  last_occurrence   DateTime @default(now()) @db.Timestamp(6)
+
+  @@map("error_patterns")
+  @@index([alumno_id, exercise_id])
+  @@index([error_type])
+}
+
+/// Predicción por alumno producida por el modelo ML entrenable (Negocio.md §27).
+model PrediccionAlumno {
+  id             Int            @id @default(autoincrement())
+  alumno_id      Int
+  paralelo_id    Int            @default(0)
+  tipo           PrediccionTipo
+  valor          Decimal        @db.Decimal(6, 3)
+  etiqueta       String?        @db.VarChar(60)
+  confianza      Decimal        @default(0) @db.Decimal(5, 4)
+  features       Json?
+  modelo_version String         @default("v1") @db.VarChar(20)
+  calculado_at   DateTime       @default(now()) @db.Timestamp(6)
+
+  alumno Usuario @relation(fields: [alumno_id], references: [id])
+
+  @@map("predicciones_alumno")
+  @@unique([alumno_id, tipo, modelo_version])
+  @@index([alumno_id])
+  @@index([paralelo_id])
+  @@index([tipo])
+}
+
+/// Coeficientes/params de un modelo ML entrenado, para reproducibilidad.
+model MlModelo {
+  id           Int      @id @default(autoincrement())
+  version      String   @unique @db.VarChar(20)
+  tipo         String   @db.VarChar(40)
+  params       Json
+  metricas     Json?
+  n_muestras   Int      @default(0)
+  entrenado_at DateTime @default(now()) @db.Timestamp(6)
+  activo       Boolean  @default(false)
+
+  @@map("ml_modelos")
+}
+
+// ---------------------------------------------------------------------------
+// Auditoría de acceso
+// ---------------------------------------------------------------------------
 
 model AccessLog {
   id         BigInt               @id @default(autoincrement())
@@ -118,451 +992,4 @@ model AccessLog {
   @@index([created_at])
   @@index([user_id, action])
   @@index([action])
-}
-
-model Archivo {
-  id          Int      @id @default(autoincrement())
-  nombre      String   @db.VarChar(255)
-  ruta        String   @db.VarChar(255)
-  uploaded_by Int?
-  fecha_subida DateTime @default(now()) @db.Timestamp(6)
-  activo      Boolean
-  curso       Int
-
-  @@map("archivos")
-  @@index([uploaded_by])
-  @@index([curso])
-}
-
-model ArCard {
-  id             Int                    @id @default(autoincrement())
-  user_id        Int?
-  created_by     Int?
-  exercise_id    Int?
-  lesson_id      Int?
-  exam_id        Int?
-  card_code      String                 @unique @db.VarChar(50)
-  title          String?                @db.VarChar(255)
-  description    String?                @db.Text
-  marker_file    String                 @db.VarChar(255)
-  card_data      String?                @db.Text
-  created_at     DateTime?              @default(now()) @db.Timestamp(6)
-  unlocked_at    DateTime?              @default(now()) @db.Timestamp(6)
-  is_unlocked    Boolean                @default(false)
-  activo         Boolean                @default(true)
-  unlock_type    ArCardsUnlockTypeEnum? @default(lesson)
-  unlock_exam_id Int?
-
-  @@map("ar_cards")
-  @@unique([user_id, exercise_id])
-  @@index([user_id])
-  @@index([exercise_id])
-  @@index([lesson_id])
-  @@index([exam_id])
-  @@index([is_unlocked])
-}
-
-model ContentOrder {
-  id           Int                          @id @default(autoincrement())
-  curso_id     Int
-  content_type ContentOrderContentTypeEnum
-  content_id   Int
-  orden        Int
-  created_at   DateTime?                    @default(now()) @db.Timestamp(6)
-  updated_at   DateTime?                    @default(now()) @db.Timestamp(6)
-
-  @@map("content_order")
-  @@unique([curso_id, content_type, content_id])
-  @@index([curso_id, orden])
-  @@index([content_type, content_id])
-}
-
-model Curso {
-  id_cur Int    @id @default(autoincrement())
-  nombre String @db.VarChar(11)
-  id_doc Int
-
-  @@map("curso")
-  @@index([id_doc])
-}
-
-model Diccionario {
-  id       Int     @id @default(autoincrement())
-  aymara   String? @db.VarChar(50)
-  espanol  String? @db.VarChar(50)
-  activo   Boolean @default(true)
-  categoria String  @db.VarChar(50)
-  curso    Int?
-
-  @@map("diccionario")
-}
-
-model DifficultyLevel {
-  id                Int      @id @default(autoincrement())
-  level_code        String   @unique @db.VarChar(20)
-  level_name        String   @db.VarChar(50)
-  points_multiplier Decimal? @default(1.00) @db.Decimal(3, 2)
-  time_multiplier   Decimal? @default(1.00) @db.Decimal(3, 2)
-  created_at        DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("difficulty_levels")
-}
-
-model ErrorPattern {
-  id                Int       @id @default(autoincrement())
-  user_id           Int?
-  exercise_id       Int?
-  lesson_id         Int?
-  error_type        String    @db.VarChar(100)
-  error_description String?   @db.Text
-  frequency         Int?      @default(1)
-  pattern_data      String?   @db.Text
-  detected_at       DateTime? @default(now()) @db.Timestamp(6)
-  last_occurrence   DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("error_patterns")
-  @@index([user_id, exercise_id])
-  @@index([error_type])
-  @@index([lesson_id])
-}
-
-model Exam {
-  id             Int       @id @default(autoincrement())
-  lesson_id      Int?
-  position_order Int?
-  type           ExamsTypeEnum @default(conectar_palabras)
-  title          String    @db.VarChar(255)
-  description    String?   @db.Text
-  time_limit     Int?
-  start_date     DateTime? @db.Timestamp(6)
-  end_date       DateTime  @db.Timestamp(6)
-  min_score      Int?      @default(70)
-  ar_card_id     Int?
-  active         Boolean   @default(true)
-  created_by     Int
-  created_at     DateTime? @default(now()) @db.Timestamp(6)
-  updated_at     DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("exams")
-  @@index([lesson_id])
-  @@index([created_by])
-  @@index([position_order])
-  @@index([ar_card_id])
-}
-
-model ExamAttempt {
-  id           Int       @id @default(autoincrement())
-  exam_id      Int
-  user_id      Int
-  started_at   DateTime? @default(now()) @db.Timestamp(6)
-  completed_at DateTime? @db.Timestamp(6)
-  time_spent   Int?
-  score        Decimal?  @db.Decimal(5, 2)
-  passed       Boolean?  @default(false)
-  result_id    Int?
-
-  @@map("exam_attempts")
-  @@index([exam_id])
-  @@index([user_id])
-  @@index([result_id])
-}
-
-model ExamDetail {
-  id           Int                       @id @default(autoincrement())
-  exam_id      Int
-  config_type  ExamDetailsConfigTypeEnum
-  config_value String                    @db.Text
-  created_at   DateTime?                 @default(now()) @db.Timestamp(6)
-  updated_at   DateTime?                 @default(now()) @db.Timestamp(6)
-
-  @@map("exam_details")
-  @@unique([exam_id, config_type])
-  @@index([exam_id])
-}
-
-model ExamResult {
-  id              Int       @id @default(autoincrement())
-  exam_id         Int?
-  user_id         Int
-  lesson_id       Int?
-  score           Int?      @default(0)
-  total_words     Int?      @default(0)
-  correct_matches Int?      @default(0)
-  time_spent      Decimal?  @default(0.00) @db.Decimal(10, 2)
-  difficulty      String?   @default("normal") @db.VarChar(20)
-  passed          Boolean?  @default(false)
-  created_at      DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("exam_results")
-  @@index([user_id])
-  @@index([lesson_id])
-  @@index([exam_id])
-}
-
-model Exercise {
-  id         Int                     @id @default(autoincrement())
-  lesson_id  Int
-  type       ExercisesTypeEnum
-  question   String                  @db.Text
-  answer     String?                 @db.Text
-  dificultad ExercisesDificultadEnum @default(medio)
-  activo     Boolean                 @default(true)
-
-  @@map("exercises")
-  @@index([lesson_id])
-}
-
-model ExerciseAttempt {
-  id               Int                                   @id @default(autoincrement())
-  user_id          Int
-  exercise_id      Int
-  lesson_id        Int
-  attempt_number   Int?                                  @default(1)
-  user_answer      String?                               @db.Text
-  correct_answer   String?                               @db.Text
-  is_correct       Boolean?                              @default(false)
-  score            Int?                                  @default(0)
-  time_spent       Int?                                  @default(0)
-  error_type       String?                               @db.VarChar(100)
-  error_details    String?                               @db.Text
-  exercise_type    String?                               @db.VarChar(50)
-  difficulty_level ExerciseAttemptsDifficultyLevelEnum?  @default(medio)
-  created_at       DateTime?                             @default(now()) @db.Timestamp(6)
-
-  @@map("exercise_attempts")
-  @@index([user_id, exercise_id])
-  @@index([lesson_id])
-  @@index([attempt_number])
-  @@index([created_at])
-  @@index([exercise_id])
-  @@index([user_id, lesson_id])
-  @@index([is_correct])
-}
-
-model ExerciseType {
-  id               Int      @id @default(autoincrement())
-  type_code        String   @unique @db.VarChar(50)
-  type_name        String   @db.VarChar(100)
-  description      String?  @db.Text
-  requires_options Boolean? @default(false)
-  requires_pairs   Boolean? @default(false)
-  requires_answers Boolean? @default(false)
-  created_at       DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("exercise_types")
-}
-
-model FillInTheBlankAnswer {
-  id          Int    @id @default(autoincrement())
-  exercise_id Int
-  answer_text String @db.VarChar(255)
-
-  @@map("fill_in_the_blank_answers")
-  @@index([exercise_id])
-}
-
-model Lesson {
-  id               Int       @id @default(autoincrement())
-  exam_id          Int?
-  title            String    @db.VarChar(255)
-  description      String?   @db.Text
-  curso            Int
-  orden            Int       @default(1)
-  activo           Boolean   @default(true)
-  grants_ar_marker Boolean   @default(false)
-  ar_card_id       Int?
-  maestro_id       Int
-  default_topic_id Int?
-
-  @@map("lessons")
-  @@index([curso])
-  @@index([exam_id])
-  @@index([default_topic_id])
-  @@index([ar_card_id])
-}
-
-model LessonTopic {
-  id         Int       @id @default(autoincrement())
-  lesson_id  Int
-  title      String    @db.VarChar(255)
-  content    String?   @db.Text
-  order      Int?      @default(0)
-  activo     Boolean?  @default(true)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("lesson_topics")
-  @@index([lesson_id])
-  @@index([activo])
-}
-
-model MatchingPair {
-  id            Int    @id @default(autoincrement())
-  exercise_id   Int
-  aymara_word   String @db.VarChar(255)
-  spanish_word  String @db.VarChar(255)
-
-  @@map("matching_pairs")
-  @@index([exercise_id])
-}
-
-model MultipleChoiceOption {
-  id           Int     @id @default(autoincrement())
-  exercise_id  Int
-  option_text  String? @db.VarChar(255)
-  option_image String? @db.VarChar(255)
-  is_correct   Boolean
-
-  @@map("multiple_choice_options")
-  @@index([exercise_id])
-}
-
-model SearchHistory {
-  id          Int      @id @default(autoincrement())
-  headword    String   @db.VarChar(100)
-  gloss       String   @db.VarChar(255)
-  search_date DateTime @default(now()) @db.Timestamp(6)
-
-  @@map("search_history")
-}
-
-model StatisticsAggregated {
-  id                     Int                                        @id @default(autoincrement())
-  user_id                Int?
-  exercise_id            Int?
-  lesson_id              Int?
-  curso_id               Int?
-  stat_type              StatisticsAggregatedStatTypeEnum
-  total_attempts         Int?                                       @default(0)
-  successful_attempts    Int?                                       @default(0)
-  failed_attempts        Int?                                       @default(0)
-  average_score          Decimal?                                   @default(0.00) @db.Decimal(5, 2)
-  average_time           Decimal?                                   @default(0.00) @db.Decimal(10, 2)
-  most_common_error      String?                                    @db.VarChar(100)
-  error_pattern          String?                                    @db.Text
-  difficulty_score       Decimal?                                   @default(0.00) @db.Decimal(5, 2)
-  neural_network_score   Decimal?                                   @default(0.00) @db.Decimal(5, 2)
-  predicted_difficulty   StatisticsAggregatedPredictedDifficultyEnum? @default(medio)
-  last_calculated        DateTime?                                  @default(now()) @db.Timestamp(6)
-  created_at             DateTime?                                  @default(now()) @db.Timestamp(6)
-  updated_at             DateTime?                                  @default(now()) @db.Timestamp(6)
-
-  @@map("statistics_aggregated")
-  @@unique([user_id, exercise_id, lesson_id, curso_id, stat_type])
-  @@index([stat_type])
-  @@index([user_id])
-  @@index([exercise_id])
-  @@index([lesson_id])
-  @@index([curso_id])
-  @@index([last_calculated])
-}
-
-model TopicReading {
-  id                  Int       @id @default(autoincrement())
-  user_id             Int
-  topic_id            Int
-  lesson_id           Int
-  exercise_id         Int?
-  reading_completed   Boolean?  @default(false)
-  reading_started_at  DateTime? @db.Timestamp(6)
-  reading_completed_at DateTime? @db.Timestamp(6)
-  time_spent          Int?      @default(0)
-  forced_by_failures  Boolean?  @default(false)
-  failure_count       Int?      @default(0)
-  created_at          DateTime? @default(now()) @db.Timestamp(6)
-  updated_at          DateTime? @default(now()) @db.Timestamp(6)
-
-  @@map("topic_readings")
-  @@unique([user_id, topic_id, exercise_id, forced_by_failures])
-  @@index([user_id, lesson_id])
-  @@index([reading_completed])
-  @@index([topic_id])
-  @@index([lesson_id])
-  @@index([exercise_id])
-}
-
-model UserArCard {
-  id          Int                       @id @default(autoincrement())
-  user_id     Int
-  ar_card_id  Int
-  unlocked_at DateTime?                 @default(now()) @db.Timestamp(6)
-  unlocked_by UserArCardsUnlockedByEnum? @default(lesson)
-  source_id   Int?
-
-  @@map("user_ar_cards")
-  @@unique([user_id, ar_card_id])
-  @@index([user_id])
-  @@index([ar_card_id])
-}
-
-model UserAttempt {
-  id         Int      @id @default(autoincrement())
-  user_id    Int
-  lesson_id  Int
-  attempt_no Int
-  score      Int
-  errors     Int
-  streak     Int
-  created_at DateTime @default(now()) @db.Timestamp(6)
-
-  @@map("user_attempts")
-  @@index([user_id, lesson_id])
-}
-
-model UserAttemptDetail {
-  id               Int                                  @id @default(autoincrement())
-  attempt_id       Int
-  exercise_id      Int
-  question_text    String?                              @db.Text
-  user_answer      String?                              @db.Text
-  correct_answer   String?                              @db.Text
-  is_correct       Boolean?
-  time_spent       Int?                                 @default(0)
-  difficulty_level UserAttemptDetailsDifficultyLevelEnum? @default(medio)
-  error_type       String?                              @db.VarChar(100)
-  created_at       DateTime?                            @default(now()) @db.Timestamp(6)
-  exercise_type    String?                              @db.VarChar(50)
-  user_answer_time DateTime?                            @default(now()) @db.Timestamp(6)
-
-  @@map("user_attempt_details")
-  @@index([attempt_id])
-}
-
-model UserProgress {
-  id            Int       @id @default(autoincrement())
-  user_id       Int
-  lesson_id     Int
-  exercise_id   Int?
-  date          DateTime  @default(now()) @db.Date
-  errors        Int?      @default(0)
-  score         Int?      @default(0)
-  streak        Int?      @default(0)
-  current_index Int       @default(0)
-  total_exercises Int     @default(0)
-  in_progress   Boolean   @default(false)
-  last_seen_at  DateTime  @default(now()) @db.Timestamp(6)
-  attempt_no    Int       @default(1) @db.SmallInt
-  completed     Boolean   @default(false)
-  attempts      Int?      @default(1)
-  created_at    DateTime? @default(now()) @db.Timestamp(6)
-  updated_at    DateTime? @default(now()) @db.Timestamp(6)
-  last_exit_at  DateTime? @db.Timestamp(6)
-
-  @@map("user_progress")
-  @@unique([user_id, lesson_id, date])
-  @@index([exercise_id])
-  @@index([user_id, exercise_id])
-}
-
-model Usuario {
-  id       Int              @id @default(autoincrement())
-  username String           @db.VarChar(50)
-  password String           @db.VarChar(255)
-  role     UsuariosRoleEnum
-  activo   Boolean          @default(true)
-  email    String?          @unique @db.VarChar(100)
-  curso    Int
-
-  @@map("usuarios")
-  @@index([curso])
 }

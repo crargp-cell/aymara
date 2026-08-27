@@ -44,3 +44,18 @@ next-env.d.ts
 
 # referencia del sistema PHP original — no forma parte de la reescritura, no se sube
 /sistema viejo/
+
+# herramientas de sesión (launch config del preview local)
+/.claude/
+
+# Material subido en tiempo de ejecución (PDF de temas, etc.)
+/public/uploads/
+
+# Artefactos que regenera `npm run db:seed` a partir de los marcadores fuente
+# de public/ar — no se versionan para no duplicar binarios.
+/public/ar/models/
+/public/ar/marker_ARCHHAJNA.*
+/public/ar/marker_ARANU.*
+/public/ar/marker_ARANATA.*
+/public/ar/marker_ARPANDA.*
+/public/ar/marker_ARWALLPA.*

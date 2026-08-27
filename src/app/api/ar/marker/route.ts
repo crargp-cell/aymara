@@ -35,13 +35,8 @@ export async function POST(req: NextRequest) {
   const pattBuffer = pattFile && pattFile.size > 0 ? Buffer.from(await pattFile.arrayBuffer()) : null;
   const { code, markerFile } = await saveUploadedMarker(buffer, pattBuffer);
 
-  if (title) {
-    const { prisma } = await import("@/lib/prisma");
-    const created_by = Number((session?.user as any)?.id ?? 1);
-    await prisma.arCard.create({
-      data: { title, card_code: code, marker_file: markerFile, created_by, activo: true, is_unlocked: true },
-    });
-  }
-
+  // La creación de la tarjeta (con su paralelo) se hace desde /admin/ar-cards;
+  // este endpoint sólo persiste el archivo del marcador.
+  void title;
   return NextResponse.json({ code, marker: markerFile, preview: `marker_${code}.png` });
 }

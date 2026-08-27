@@ -1,158 +1,102 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
 import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExercisePlayer } from "@/components/exercise/ExercisePlayer";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { checkText, checkMatching, checkFillInTheBlank } from "@/lib/exercise-validation";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice } from "@/lib/exercise-validation";
+import { requireUser } from "@/lib/session";
+import { alumnoPuedeVerLeccion } from "@/lib/rbac";
+import { getOrStartAttempt, recordExerciseAttempt } from "@/lib/lesson-flow";
+import { CheckCircle2, XCircle, Trophy, Sparkles } from "lucide-react";
 
 export default async function PlayPage({
   params,
   searchParams,
 }: {
   params: Promise<{ lessonId: string; exerciseId: string }>;
-  searchParams: Promise<{ result?: string }>;
+  searchParams: Promise<{ result?: string; reward?: string; logros?: string; done?: string }>;
 }) {
   const { lessonId, exerciseId } = await params;
-  const { result } = await searchParams;
+  const sp = await searchParams;
   const lid = Number(lessonId);
   const eid = Number(exerciseId);
   if (Number.isNaN(lid) || Number.isNaN(eid)) notFound();
+
+  const user = await requireUser();
+  const isStaff = user.role !== "estudiante";
+  if (!isStaff && !(await alumnoPuedeVerLeccion(user.id, lid))) {
+    return <p className="text-sm text-muted-foreground">No tienes acceso a esta lección.</p>;
+  }
+
   const exercise = await prisma.exercise.findUnique({ where: { id: eid } });
-  if (!exercise || exercise.lesson_id !== lid) notFound();
+  if (!exercise) notFound();
+  const link = await prisma.lessonExercise.findFirst({ where: { lesson_id: lid, exercise_id: eid } });
+  if (!link) notFound();
 
-  const session = await auth();
-  const userId = Number((session?.user as any)?.id ?? 0);
+  const attempt = isStaff ? null : await getOrStartAttempt(user.id, lid);
+  const presented = attempt?.presented_exercise_ids.length
+    ? attempt.presented_exercise_ids
+    : (await prisma.lessonExercise.findMany({ where: { lesson_id: lid, estado: "activo" }, orderBy: { orden: "asc" }, select: { exercise_id: true } })).map((l) => l.exercise_id);
+  const idx = presented.indexOf(eid);
+  const nextId = idx >= 0 ? presented[idx + 1] : undefined;
 
-  const failed = await prisma.exerciseAttempt.count({ where: { user_id: userId, exercise_id: eid, is_correct: false } });
+  const failed = isStaff ? 0 : await prisma.exerciseAttempt.count({ where: { alumno_id: user.id, exercise_id: eid, is_correct: false } });
   const forced = failed >= 3;
-
-  const lessonExercises = await prisma.exercise.findMany({ where: { lesson_id: lid, activo: true }, orderBy: { id: "asc" } });
-  const currentIndex = lessonExercises.findIndex((e) => e.id === eid);
-  const nextExercise = currentIndex >= 0 ? lessonExercises[currentIndex + 1] : undefined;
+  const forcedTopic = forced ? await prisma.lessonTopic.findFirst({ where: { lesson_id: lid, estado: "activo" }, orderBy: { order: "asc" } }) : null;
 
   let options, pairs, answers;
   if (exercise.type === "multiple_choice") options = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid } });
-  if (exercise.type === "matching") pairs = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: { id: "asc" } });
+  if (exercise.type === "matching") pairs = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
   if (exercise.type === "fill_in_the_blank") answers = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
-
-  const topic = forced ? await prisma.lessonTopic.findFirst({ where: { lesson_id: lid, activo: true }, orderBy: { order: "asc" } }) : null;
 
   async function submitAction(formData: FormData) {
     "use server";
-    const session = await auth();
-    const userId = Number((session?.user as any)?.id);
-    if (!userId) return;
+    const u = await requireUser();
+    if (u.role !== "estudiante") return;
+    if (!(await alumnoPuedeVerLeccion(u.id, lid))) return;
+
     const type = String(formData.get("type") ?? exercise!.type);
-    const raw = String(formData.get("user_answer") ?? formData.get("fill_0") ?? "");
-    let is_correct = false;
-    let correct_answer = exercise!.answer ?? "";
-    let error_type: string | null = null;
+    const raw = String(formData.get("user_answer") ?? "");
+    const timeMs = Number(formData.get("time_ms") ?? 0);
+    let isCorrect = false;
+    let errorType: string | null = null;
 
     if (type === "text") {
-      is_correct = checkText(raw, exercise!.answer);
-      correct_answer = exercise!.answer ?? "";
-      if (!is_correct) error_type = "concepto_equivocado";
+      isCorrect = checkText(raw, exercise!.answer);
+      if (!isCorrect) errorType = "concepto_equivocado";
     } else if (type === "multiple_choice") {
-      const optId = Number(raw);
-      const opt = await prisma.multipleChoiceOption.findUnique({ where: { id: optId } });
-      is_correct = !!opt?.is_correct;
-      correct_answer = (await prisma.multipleChoiceOption.findFirst({ where: { exercise_id: eid, is_correct: true } }))?.option_text ?? "";
-      if (!is_correct) error_type = "seleccion_incorrecta";
+      const opts = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid }, select: { id: true, is_correct: true } });
+      isCorrect = checkMultipleChoice(raw, opts);
+      if (!isCorrect) errorType = "seleccion_incorrecta";
     } else if (type === "matching") {
-      const pairs = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: { id: "asc" } });
-      is_correct = checkMatching(raw, pairs);
-      if (!is_correct) error_type = "emparejamiento_incorrecto";
-      correct_answer = "Emparejamiento";
+      const ps = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
+      isCorrect = checkMatching(raw, ps);
+      if (!isCorrect) errorType = "emparejamiento_incorrecto";
     } else if (type === "fill_in_the_blank") {
-      const answers = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
-      is_correct = checkFillInTheBlank(raw, answers.map((a) => a.answer_text));
-      correct_answer = answers.map((a) => a.answer_text).join(", ");
-      if (!is_correct) error_type = "concepto_equivocado";
+      const ans = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
+      isCorrect = checkFillInTheBlank(raw, ans.map((a) => a.answer_text));
+      if (!isCorrect) errorType = "concepto_equivocado";
     }
 
-    const attemptNo = (await prisma.exerciseAttempt.count({ where: { user_id: userId, exercise_id: eid } })) + 1;
-    await prisma.exerciseAttempt.create({
-      data: {
-        user_id: userId,
-        exercise_id: eid,
-        lesson_id: lid,
-        attempt_number: attemptNo,
-        user_answer: raw.slice(0, 500),
-        correct_answer: correct_answer.slice(0, 500),
-        is_correct,
-        score: is_correct ? 10 : 0,
-        time_spent: 0,
-        error_type,
-        exercise_type: type,
-      },
+    const res = await recordExerciseAttempt({
+      alumnoId: u.id,
+      lessonId: lid,
+      exerciseId: eid,
+      userAnswer: raw,
+      isCorrect,
+      errorType,
+      timeSpentMs: timeMs,
+      exerciseType: type,
+      dificultad: exercise!.dificultad,
     });
 
-    // progressive stats simplified
-    const total = await prisma.exerciseAttempt.count({ where: { exercise_id: eid } });
-    const success = await prisma.exerciseAttempt.count({ where: { exercise_id: eid, is_correct: true } });
-    await prisma.statisticsAggregated.upsert({
-      where: { user_id_exercise_id_lesson_id_curso_id_stat_type: { user_id: userId, exercise_id: eid, lesson_id: lid, curso_id: 0, stat_type: "exercise" } } as any,
-      create: {
-        user_id: userId,
-        exercise_id: eid,
-        lesson_id: lid,
-        curso_id: 0,
-        stat_type: "exercise",
-        total_attempts: total,
-        successful_attempts: success,
-        failed_attempts: total - success,
-        average_score: is_correct ? 10 : 0,
-      },
-      update: { total_attempts: total, successful_attempts: success, failed_attempts: total - success },
-    });
-
-    // Progreso real de la lección: se marca completada cuando el alumno acertó
-    // (al menos una vez) todos los ejercicios activos de la lección.
-    const activeExercises = await prisma.exercise.findMany({ where: { lesson_id: lid, activo: true }, select: { id: true } });
-    const totalExercises = activeExercises.length;
-    const distinctCorrect = await prisma.exerciseAttempt.findMany({
-      where: { user_id: userId, lesson_id: lid, is_correct: true, exercise_id: { in: activeExercises.map((e) => e.id) } },
-      select: { exercise_id: true },
-      distinct: ["exercise_id"],
-    });
-    const lessonCompleted = totalExercises > 0 && distinctCorrect.length >= totalExercises;
-    const todayDate = new Date();
-    todayDate.setUTCHours(0, 0, 0, 0);
-    await prisma.userProgress.upsert({
-      where: { user_id_lesson_id_date: { user_id: userId, lesson_id: lid, date: todayDate } },
-      create: {
-        user_id: userId,
-        lesson_id: lid,
-        date: todayDate,
-        current_index: distinctCorrect.length,
-        total_exercises: totalExercises,
-        in_progress: !lessonCompleted,
-        completed: lessonCompleted,
-        score: is_correct ? 10 : 0,
-      },
-      update: {
-        current_index: distinctCorrect.length,
-        total_exercises: totalExercises,
-        in_progress: !lessonCompleted,
-        completed: lessonCompleted,
-        last_seen_at: new Date(),
-      },
-    });
-
-    // check 3 fails → force reading
-    const fails = await prisma.exerciseAttempt.count({ where: { user_id: userId, exercise_id: eid, is_correct: false } });
-    if (fails >= 3) {
-      const t = await prisma.lessonTopic.findFirst({ where: { lesson_id: lid } });
-      if (t) {
-        const exists = await prisma.topicReading.findFirst({ where: { user_id: userId, topic_id: t.id } });
-        if (!exists) await prisma.topicReading.create({ data: { user_id: userId, topic_id: t.id, lesson_id: lid, forced_by_failures: true, failure_count: fails } });
-      }
-    }
-    redirect(`/play/${lid}/${eid}?result=${is_correct ? "ok" : "fail"}`);
+    const q = new URLSearchParams({ result: isCorrect ? "ok" : "fail" });
+    if (res.completed) q.set("done", "1");
+    if (res.rewardCardId) q.set("reward", String(res.rewardCardId));
+    if (res.nuevosLogros.length) q.set("logros", res.nuevosLogros.join("|"));
+    redirect(`/play/${lid}/${eid}?${q.toString()}`);
   }
 
   return (
@@ -163,52 +107,46 @@ export default async function PlayPage({
             <span>{exercise.question}</span>
             <Badge variant="outline">{exercise.type}</Badge>
           </CardTitle>
-          <p className="text-xs text-muted-foreground">Lección {lid} · Ejercicio {eid} · Dificultad {exercise.dificultad}</p>
+          <p className="text-xs text-muted-foreground">
+            Lección {lid} · Ejercicio {idx >= 0 ? idx + 1 : "?"}/{presented.length} · Dificultad {exercise.dificultad}
+          </p>
         </CardHeader>
         <CardContent>
-          {result === "ok" && (
+          {sp.done && (
+            <div className="mb-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-4 space-y-2">
+              <p className="flex items-center gap-2 text-emerald-400 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>
+              {sp.reward && <p className="flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-amber-300" /> Desbloqueaste una tarjeta AR.</p>}
+              {sp.logros && <p className="text-sm">Nuevos logros: {sp.logros.split("|").join(", ")}</p>}
+              <Link href={`/lessons/${lid}`}><Button size="sm" variant="gradient">Volver a la lección</Button></Link>
+            </div>
+          )}
+          {sp.result === "ok" && !sp.done && (
             <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <CheckCircle2 className="h-5 w-5 shrink-0" />
-                <span className="text-sm font-medium">¡Correcto!</span>
-              </div>
-              {nextExercise ? (
-                <Link href={`/play/${lid}/${nextExercise.id}`}>
-                  <Button size="sm" variant="gradient">
-                    Siguiente ejercicio
-                  </Button>
-                </Link>
+              <span className="flex items-center gap-2 text-emerald-400 text-sm font-medium"><CheckCircle2 className="h-5 w-5" /> ¡Correcto!</span>
+              {nextId ? (
+                <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="gradient">Siguiente</Button></Link>
               ) : (
-                <Link href={`/lessons/${lid}`}>
-                  <Button size="sm" variant="gradient">
-                    ¡Lección completada! Volver
-                  </Button>
-                </Link>
+                <Link href={`/lessons/${lid}`}><Button size="sm" variant="gradient">Volver a la lección</Button></Link>
               )}
             </div>
           )}
-          {result === "fail" && (
-            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 flex items-center gap-2 text-red-400">
-              <XCircle className="h-5 w-5 shrink-0" />
-              <span className="text-sm font-medium">Incorrecto — intenta de nuevo.</span>
+          {sp.result === "fail" && (
+            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-red-400 text-sm font-medium"><XCircle className="h-5 w-5" /> Incorrecto — inténtalo de nuevo.</span>
+              {nextId && <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="outline">Saltar</Button></Link>}
             </div>
           )}
-          {forced && topic && (
+          {forced && forcedTopic && (
             <div className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
-              <p className="text-sm font-medium">Has fallado 3 veces — lectura obligatoria</p>
-              <p className="text-xs text-muted-foreground">Debes revisar: {topic.title}</p>
-              <Link href={`/topics/${topic.id}`}>
-                <Button size="sm" className="mt-2">
-                  Ir a lectura
-                </Button>
-              </Link>
+              <p className="text-sm font-medium">Has fallado 3 veces — repasa la teoría</p>
+              <Link href={`/topics/${forcedTopic.id}`}><Button size="sm" className="mt-2">Ir a lectura: {forcedTopic.title}</Button></Link>
             </div>
           )}
-          <ExercisePlayer exercise={exercise as any} options={options as any} pairs={pairs as any} answers={answers as any} action={submitAction} />
+
+          <ExercisePlayer exercise={exercise} options={options as never} pairs={pairs as never} answers={answers as never} action={submitAction} />
+
           <div className="flex gap-2 mt-6">
-            <Link href={`/lessons/${lid}`}>
-              <Button variant="outline">Volver</Button>
-            </Link>
+            <Link href={`/lessons/${lid}`}><Button variant="outline">Volver</Button></Link>
           </div>
         </CardContent>
       </Card>

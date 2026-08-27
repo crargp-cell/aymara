@@ -20,7 +20,9 @@ export function NavLinks({ role, onNavigate }: { role?: string; onNavigate?: () 
           <p className="px-3 mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">{section}</p>
           <nav className="space-y-1">
             {sectionItems.map(({ href, label, icon: Icon }) => {
-              const isActive = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
+              // Coincidencia por segmento: evita que /admin/paralelo se marque
+              // activo estando en /admin/paralelos (y viceversa).
+              const isActive = pathname === href || pathname.startsWith(`${href}/`);
               return (
                 <Link
                   key={href + label}

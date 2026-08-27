@@ -1,20 +1,9 @@
-import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { getCurrentCurso } from "@/lib/curso";
-import { ensureContentOrder } from "@/lib/content-order";
+import { requireUser } from "@/lib/session";
+import { getStudentBoard } from "@/lib/student-board";
 import { Topbar } from "@/components/layout/Topbar";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle2, Lock, FileQuestion, BookOpen } from "lucide-react";
-
-type Node = {
-  id: string;
-  type: "lesson" | "exam";
-  dbId: number;
-  title: string;
-  orden: number;
-  examLessonId: number | null;
-};
+import { CheckCircle2, Lock, FileQuestion, BookOpen, Sparkles } from "lucide-react";
 
 function position(i: number) {
   const x = 50 + Math.sin(i * 1.1) * 28;
@@ -23,54 +12,28 @@ function position(i: number) {
 }
 
 export default async function MapPage() {
-  const session = await auth();
-  const userId = Number((session?.user as any)?.id ?? 0);
-  const curso = await getCurrentCurso();
+  const user = await requireUser();
+  const board = await getStudentBoard(user.id);
 
-  await ensureContentOrder(curso);
-  const ordered = await prisma.contentOrder.findMany({ where: { curso_id: curso }, orderBy: { orden: "asc" } });
-  const nodes: Node[] = [];
-  const now = new Date();
-
-  for (const o of ordered) {
-    if (o.content_type === "lesson") {
-      const l = await prisma.lesson.findUnique({ where: { id: o.content_id } });
-      if (l) nodes.push({ id: `lesson-${l.id}`, type: "lesson", dbId: l.id, title: l.title, orden: o.orden, examLessonId: null });
-    } else {
-      const e = await prisma.exam.findUnique({ where: { id: o.content_id } });
-      if (!e) continue;
-      // Ventana de disponibilidad: el examen desaparece del mapa fuera de start_date/end_date.
-      if (e.start_date && now < e.start_date) continue;
-      if (now > e.end_date) continue;
-      nodes.push({ id: `exam-${e.id}`, type: "exam", dbId: e.id, title: e.title, orden: o.orden, examLessonId: e.lesson_id ?? null });
-    }
+  if (!board.paralelo) {
+    return (
+      <div className="space-y-6">
+        <Topbar title="Mapa de niveles" />
+        <p className="text-sm text-muted-foreground">Aún no estás inscrito en un paralelo.</p>
+      </div>
+    );
   }
 
-  const progress = await prisma.userProgress.findMany({ where: { user_id: userId, completed: true } });
-  const completedLessonIds = new Set(progress.map((p) => p.lesson_id));
-  const attempts = await prisma.examAttempt.findMany({ where: { user_id: userId, passed: true } });
-  const passedExamIds = new Set(attempts.map((a) => a.exam_id));
-
-  const isNodeDone = (n: Node) => (n.type === "lesson" ? completedLessonIds.has(n.dbId) : passedExamIds.has(n.dbId));
-
-  // Los exámenes no bloquean el progreso: solo las lecciones anteriores cuentan para desbloquear
-  // el siguiente nodo. Un examen con "lesson_id" (requisito) se desbloquea cuando esa lección
-  // puntual está completada, sin importar su posición en la secuencia.
-  const isNodeUnlocked = (n: Node, i: number) => {
-    if (isNodeDone(n)) return true;
-    if (n.type === "exam" && n.examLessonId) return completedLessonIds.has(n.examLessonId);
-    const previousLessons = nodes.slice(0, i).filter((p) => p.type === "lesson");
-    return previousLessons.every((p) => completedLessonIds.has(p.dbId));
-  };
-
+  const nodes = board.nodes;
   const total = nodes.length;
-  const done = nodes.filter(isNodeDone).length;
+  const done = board.totalDone;
   const pct = total ? Math.round((done / total) * 100) : 0;
   const height = Math.max(600, nodes.length * 140 + 120);
 
   return (
     <div className="space-y-6">
-      <Topbar title="Mapa de Juego" subtitle={`${done}/${total} completados`} />
+      <Topbar title="Mapa de niveles" subtitle={`${board.paralelo.nombre} · ${done}/${total} completados`} />
+
       <div className="glass rounded-2xl p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm">Progreso</span>
@@ -91,10 +54,10 @@ export default async function MapPage() {
             if (i === 0) return null;
             const a = position(i - 1);
             const b = position(i);
-            const segmentDone = isNodeDone(nodes[i - 1]);
+            const segmentDone = nodes[i - 1].done;
             return (
               <line
-                key={n.id}
+                key={n.key}
                 x1={`${a.x}%`}
                 y1={a.y + 44}
                 x2={`${b.x}%`}
@@ -107,16 +70,14 @@ export default async function MapPage() {
             );
           })}
         </svg>
+
         {nodes.map((n, i) => {
           const pos = position(i);
-          const isDone = isNodeDone(n);
-          const locked = !isNodeUnlocked(n, i);
           const isExam = n.type === "exam";
-          const href = n.type === "lesson" ? `/lessons/${n.dbId}` : `/exams/${n.dbId}`;
-
-          const nodeClasses = isDone
+          const href = isExam ? `/exams/${n.id}` : `/lessons/${n.id}`;
+          const cls = n.done
             ? "bg-emerald-500 text-white border-emerald-300 shadow-lg"
-            : locked
+            : !n.unlocked
               ? "bg-slate-700/80 text-slate-400 border-white/10"
               : isExam
                 ? "border-amber-300 text-amber-300 shadow-glow"
@@ -124,38 +85,29 @@ export default async function MapPage() {
 
           const content = (
             <>
-              <div className={`relative h-20 w-20 rounded-full flex items-center justify-center text-lg font-bold border-4 transition-all glass ${nodeClasses} ${!locked && !isDone ? "animate-float" : ""}`}>
-                {isDone ? <CheckCircle2 className="h-8 w-8" /> : locked ? <Lock className="h-6 w-6" /> : isExam ? <FileQuestion className="h-7 w-7" /> : <span>{i + 1}</span>}
-                {!locked && !isDone && <span className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping" />}
+              <div className={`relative h-20 w-20 rounded-full flex items-center justify-center text-lg font-bold border-4 transition-all glass ${cls} ${n.unlocked && !n.done ? "animate-float" : ""}`}>
+                {n.done ? <CheckCircle2 className="h-8 w-8" /> : !n.unlocked ? <Lock className="h-6 w-6" /> : isExam ? <FileQuestion className="h-7 w-7" /> : <span>{i + 1}</span>}
+                {n.unlocked && !n.done && <span className="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping" />}
               </div>
-              <div className={`glass rounded-lg px-2 py-1 text-xs text-center max-w-[130px] leading-tight ${locked ? "opacity-60" : ""}`}>
+              <div className={`glass rounded-lg px-2 py-1 text-xs text-center max-w-[130px] leading-tight ${!n.unlocked ? "opacity-60" : ""}`}>
                 <p className="font-medium line-clamp-1 flex items-center justify-center gap-1">
-                  {isExam ? <FileQuestion className="h-3 w-3 shrink-0" /> : <BookOpen className="h-3 w-3 shrink-0" />}
+                  {isExam ? (n.examType === "ar_exam" ? <Sparkles className="h-3 w-3 shrink-0" /> : <FileQuestion className="h-3 w-3 shrink-0" />) : <BookOpen className="h-3 w-3 shrink-0" />}
                   {n.title}
                 </p>
               </div>
-              {locked && <span className="sr-only">Bloqueado — completa el contenido anterior primero</span>}
+              {!n.unlocked && <span className="sr-only">Bloqueado — {n.lockReason}</span>}
             </>
           );
-          if (locked) {
+
+          if (!n.unlocked) {
             return (
-              <span
-                key={n.id}
-                className="absolute flex flex-col items-center gap-1 cursor-not-allowed"
-                style={{ left: `${pos.x}%`, top: pos.y, transform: "translateX(-50%)" }}
-                aria-disabled="true"
-              >
+              <span key={n.key} className="absolute flex flex-col items-center gap-1 cursor-not-allowed" style={{ left: `${pos.x}%`, top: pos.y, transform: "translateX(-50%)" }} aria-disabled="true">
                 {content}
               </span>
             );
           }
           return (
-            <Link
-              key={n.id}
-              href={href}
-              className="absolute flex flex-col items-center gap-1 transition-all hover:-translate-y-1 hover:scale-105"
-              style={{ left: `${pos.x}%`, top: pos.y, transform: "translateX(-50%)" }}
-            >
+            <Link key={n.key} href={href} className="absolute flex flex-col items-center gap-1 transition-all hover:-translate-y-1 hover:scale-105" style={{ left: `${pos.x}%`, top: pos.y, transform: "translateX(-50%)" }}>
               {content}
             </Link>
           );

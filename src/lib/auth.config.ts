@@ -8,7 +8,6 @@ export const authConfig = {
     jwt({ token, user }: any) {
       if (user) {
         token.role = user.role;
-        token.curso = user.curso;
         token.uid = user.id;
       }
       return token;
@@ -16,7 +15,6 @@ export const authConfig = {
     session({ session, token }: any) {
       if (token) {
         (session.user as any).role = token.role;
-        (session.user as any).curso = token.curso;
         (session.user as any).id = token.uid;
       }
       return session;
@@ -24,9 +22,16 @@ export const authConfig = {
     authorized({ auth, request }: any) {
       const path = request.nextUrl.pathname;
       const isAuth = !!auth?.user;
-      if (path.startsWith("/admin") || ["/dashboard", "/map", "/lessons", "/topics", "/play", "/dictionary", "/ar-cards", "/exams"].some((p) => path.startsWith(p))) {
+      const role = (auth?.user as any)?.role;
+      const guarded =
+        path.startsWith("/admin") ||
+        path.startsWith("/maestro") ||
+        ["/dashboard", "/map", "/lessons", "/topics", "/play", "/dictionary", "/ar-cards", "/exams", "/logros"].some((p) => path.startsWith(p));
+      if (guarded) {
         if (!isAuth) return false;
-        if (path.startsWith("/admin") && !["maestro", "admin"].includes((auth?.user as any)?.role)) return Response.redirect(new URL("/dashboard", request.nextUrl));
+        if ((path.startsWith("/admin") || path.startsWith("/maestro")) && !["maestro", "admin"].includes(role)) {
+          return Response.redirect(new URL("/dashboard", request.nextUrl));
+        }
       }
       return true;
     },

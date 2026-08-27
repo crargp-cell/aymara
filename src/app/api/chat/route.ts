@@ -22,11 +22,11 @@ export async function POST(req: Request) {
   const [words, lessons] = await Promise.all([
     q
       ? prisma.diccionario.findMany({
-          where: { OR: [{ aymara: { contains: q, mode: "insensitive" } }, { espanol: { contains: q, mode: "insensitive" } }], activo: true },
+          where: { OR: [{ aymara: { contains: q, mode: "insensitive" } }, { espanol: { contains: q, mode: "insensitive" } }], estado: "activo" },
           take: 3,
         })
       : Promise.resolve([]),
-    q ? prisma.lesson.findMany({ where: { title: { contains: q, mode: "insensitive" }, activo: true }, take: 2 }) : Promise.resolve([]),
+    q ? prisma.lesson.findMany({ where: { title: { contains: q, mode: "insensitive" }, estado: "activo" }, take: 2 }) : Promise.resolve([]),
   ]);
 
   const buildFallbackText = () => {

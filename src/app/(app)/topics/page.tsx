@@ -1,34 +1,47 @@
 import { prisma } from "@/lib/prisma";
-import { getCurrentCurso } from "@/lib/curso";
+import { requireUser } from "@/lib/session";
+import { getParaleloActivoAlumno, getParaleloSeleccionado } from "@/lib/paralelo";
 import { lessonCoverUrl } from "@/lib/lesson-cover";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Topbar } from "@/components/layout/Topbar";
+import { SinParalelo } from "@/components/layout/SinParalelo";
 import Link from "next/link";
 import Image from "next/image";
 
 export default async function TopicsPage() {
-  const curso = await getCurrentCurso();
-  const lessons = await prisma.lesson.findMany({ where: { activo: true, curso }, orderBy: { orden: "asc" } });
+  const user = await requireUser();
+  const paralelo = user.role === "estudiante" ? await getParaleloActivoAlumno(user.id) : (await getParaleloSeleccionado(user.role, user.id)).actual;
+
+  if (!paralelo) {
+    return (
+      <div className="space-y-6">
+        <Topbar title="Temas" />
+        <SinParalelo esDocente={user.role !== "estudiante"} volverA="/topics" />
+      </div>
+    );
+  }
+
+  const lessons = await prisma.lesson.findMany({ where: { paralelo_id: paralelo.id, estado: "activo" }, orderBy: { orden: "asc" } });
   const topics = await prisma.lessonTopic.findMany({
-    where: { lesson_id: { in: lessons.map((l) => l.id) }, activo: true },
+    where: { lesson_id: { in: lessons.map((l) => l.id) }, estado: "activo" },
     orderBy: [{ lesson_id: "asc" }, { order: "asc" }],
+    include: { archivo: true },
   });
-  const topicsByLesson = new Map<number, typeof topics>();
+  const byLesson = new Map<number, typeof topics>();
   for (const t of topics) {
-    const list = topicsByLesson.get(t.lesson_id) ?? [];
+    const list = byLesson.get(t.lesson_id) ?? [];
     list.push(t);
-    topicsByLesson.set(t.lesson_id, list);
+    byLesson.set(t.lesson_id, list);
   }
 
   return (
     <div className="space-y-6">
-      <Topbar title="Temas" subtitle={`Curso ${curso} — ${topics.length} temas de lectura`} />
-      {lessons.length === 0 && <p className="text-sm text-muted-foreground">No hay lecciones activas para este curso todavía.</p>}
+      <Topbar title="Temas" subtitle={`${paralelo.nombre} — ${topics.length} temas de lectura`} />
       <div className="space-y-6">
         {lessons.map((lesson) => {
-          const lessonTopics = topicsByLesson.get(lesson.id) ?? [];
-          if (lessonTopics.length === 0) return null;
+          const list = byLesson.get(lesson.id) ?? [];
+          if (list.length === 0) return null;
           return (
             <Card key={lesson.id} className="overflow-hidden">
               <div className="relative h-28 w-full">
@@ -38,15 +51,16 @@ export default async function TopicsPage() {
                 </div>
               </div>
               <CardContent className="space-y-2 pt-4">
-                {lessonTopics.map((t) => (
+                {list.map((t) => (
                   <Link key={t.id} href={`/topics/${t.id}`} className="flex items-center justify-between glass rounded-xl px-4 py-3 hover:shadow-glow transition">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{t.title}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-1">{t.content ? t.content.slice(0, 90) : "Sin contenido"}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-1">{t.content ? t.content.slice(0, 90) : "Material PDF"}</p>
                     </div>
-                    <Badge variant="outline" className="ml-3 shrink-0">
-                      Leer
-                    </Badge>
+                    <div className="flex gap-2 shrink-0 ml-3">
+                      {t.archivo && <Badge variant="outline">PDF</Badge>}
+                      <Badge variant="outline">Leer</Badge>
+                    </div>
                   </Link>
                 ))}
               </CardContent>

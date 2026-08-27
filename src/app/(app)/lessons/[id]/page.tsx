@@ -6,15 +6,47 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { lessonCoverUrl } from "@/lib/lesson-cover";
+import { PdfViewer } from "@/components/topic/PdfViewer";
+import { requireUser } from "@/lib/session";
+import { alumnoPuedeVerLeccion } from "@/lib/rbac";
+import { getOrStartAttempt, lessonExerciseIds } from "@/lib/lesson-flow";
 
 export default async function LessonDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const lessonId = Number(id);
   if (Number.isNaN(lessonId)) notFound();
+
+  const user = await requireUser();
+  const isStaff = user.role !== "estudiante";
+  if (!isStaff && !(await alumnoPuedeVerLeccion(user.id, lessonId))) {
+    return <p className="text-sm text-muted-foreground">No tienes acceso a esta lección.</p>;
+  }
+
   const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
   if (!lesson) notFound();
-  const topics = await prisma.lessonTopic.findMany({ where: { lesson_id: lessonId, activo: true }, orderBy: { order: "asc" } });
-  const exercises = await prisma.exercise.findMany({ where: { lesson_id: lessonId, activo: true }, orderBy: { id: "asc" } });
+
+  const topics = await prisma.lessonTopic.findMany({
+    where: { lesson_id: lessonId, estado: "activo" },
+    orderBy: { order: "asc" },
+    include: { archivo: true },
+  });
+
+  const linkedIds = await lessonExerciseIds(lessonId);
+  const exercises = await prisma.exercise.findMany({ where: { id: { in: linkedIds } } });
+  const exOrder = new Map(linkedIds.map((id, i) => [id, i]));
+  exercises.sort((a, b) => (exOrder.get(a.id) ?? 0) - (exOrder.get(b.id) ?? 0));
+
+  let presentedIds = linkedIds;
+  let progress: { completed: boolean; current_index: number; total_exercises: number } | null = null;
+  if (!isStaff) {
+    const attempt = await getOrStartAttempt(user.id, lessonId);
+    presentedIds = attempt.presented_exercise_ids.length ? attempt.presented_exercise_ids : linkedIds;
+    progress = await prisma.userProgress.findUnique({
+      where: { alumno_id_lesson_id: { alumno_id: user.id, lesson_id: lessonId } },
+      select: { completed: true, current_index: true, total_exercises: true },
+    });
+  }
+  const firstExerciseId = presentedIds[0];
 
   return (
     <div className="space-y-6">
@@ -27,67 +59,62 @@ export default async function LessonDetailPage({ params }: { params: Promise<{ i
             <p className="text-sm text-white/80 mt-1">{lesson.description}</p>
           </div>
         </div>
-        <div className="flex gap-2 p-4">
-          <Badge variant="outline">Curso {lesson.curso}</Badge>
-          <Badge variant="secondary">Orden {lesson.orden}</Badge>
-          {lesson.grants_ar_marker && <Badge variant="success">Recompensa AR</Badge>}
+        <div className="flex flex-wrap gap-2 p-4">
+          <Badge variant="secondary">Nivel {lesson.orden}</Badge>
+          <Badge variant="outline">Mínimo {lesson.min_correct} correctos</Badge>
+          {lesson.present_count ? <Badge variant="outline">Presenta {lesson.present_count}{lesson.random_selection ? " al azar" : ""}</Badge> : null}
+          {progress?.completed && <Badge variant="success">Completada</Badge>}
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Temas ({topics.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {topics.length === 0 && <p className="text-sm text-muted-foreground">Sin temas</p>}
+          <CardHeader><CardTitle className="text-base">Teoría</CardTitle></CardHeader>
+          <CardContent className="space-y-6">
+            {topics.length === 0 && <p className="text-sm text-muted-foreground">Sin material teórico.</p>}
             {topics.map((t) => (
-              <Link key={t.id} href={`/topics/${t.id}`} className="flex items-center justify-between glass rounded-xl px-4 py-3 hover:shadow-glow transition">
-                <div>
-                  <p className="text-sm font-medium">{t.title}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-1">{t.content ? t.content.slice(0, 80) : "Sin contenido"}</p>
+              <div key={t.id} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">{t.title}</h3>
+                  <Link href={`/topics/${t.id}`}><Button size="sm" variant="outline">Abrir tema</Button></Link>
                 </div>
-                <Button size="sm" variant="outline">
-                  Ver
-                </Button>
-              </Link>
+                {t.content && <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">{t.content}</p>}
+                {t.archivo && <PdfViewer url={t.archivo.ruta} title={t.archivo.nombre} />}
+              </div>
             ))}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Ejercicios ({exercises.length})</CardTitle>
+            <CardTitle className="text-base">Ejercicios</CardTitle>
+            {progress && <p className="text-xs text-muted-foreground">Progreso: {progress.current_index}/{Math.max(progress.total_exercises, presentedIds.length)} correctos</p>}
           </CardHeader>
-          <CardContent className="space-y-2">
-            {exercises.map((e) => (
-              <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between glass rounded-xl px-4 py-3 hover:shadow-glow transition">
-                <div className="flex-1">
-                  <p className="text-sm font-medium line-clamp-1">{e.question}</p>
-                  <div className="flex gap-2 mt-1">
-                    <Badge variant="outline" className="text-xs">
-                      {e.type}
-                    </Badge>
-                    <Badge variant={e.dificultad === "dificil" ? "destructive" : e.dificultad === "medio" ? "warning" : "secondary"}>{e.dificultad}</Badge>
-                  </div>
-                </div>
-                <Button size="sm" variant="gradient">
-                  Jugar
-                </Button>
+          <CardContent className="space-y-3">
+            {firstExerciseId ? (
+              <Link href={`/play/${lesson.id}/${firstExerciseId}`}>
+                <Button variant="gradient">{progress?.completed ? "Repasar ejercicios" : progress?.current_index ? "Continuar" : "Comenzar ejercicios"}</Button>
               </Link>
-            ))}
-            {exercises.length === 0 && <p className="text-sm text-muted-foreground">Sin ejercicios</p>}
+            ) : (
+              <p className="text-sm text-muted-foreground">Esta lección todavía no tiene ejercicios.</p>
+            )}
+            {isStaff && (
+              <div className="space-y-1 pt-2">
+                {exercises.map((e, i) => (
+                  <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between glass rounded-xl px-4 py-2 text-sm hover:shadow-glow">
+                    <span className="line-clamp-1">{i + 1}. {e.question}</span>
+                    <Badge variant="outline">{e.type}</Badge>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
       <div className="flex gap-2">
-        <Link href="/lessons">
-          <Button variant="outline">Volver</Button>
-        </Link>
-        <Link href="/map">
-          <Button variant="secondary">Ver en mapa</Button>
-        </Link>
+        <Link href="/lessons"><Button variant="outline">Volver</Button></Link>
+        <Link href="/map"><Button variant="secondary">Ver en mapa</Button></Link>
       </div>
     </div>
   );
