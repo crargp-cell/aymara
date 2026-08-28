@@ -47,6 +47,11 @@ async function upsertStat(key: StatKey, data: {
 }
 
 export async function recomputeAnalytics(): Promise<{ exercises: number; lessons: number; paralelos: number; students: number }> {
+  // Se recalcula desde cero: si cambian las claves (p. ej. al empezar a guardar
+  // paralelo_id en las filas de ejercicio) quedarían filas huérfanas con la
+  // clave vieja y los paneles mostrarían datos duplicados.
+  await prisma.statisticsAggregated.deleteMany();
+
   const attempts = await prisma.exerciseAttempt.findMany({
     select: { exercise_id: true, lesson_id: true, paralelo_id: true, alumno_id: true, is_correct: true, score: true, time_spent_ms: true, error_type: true, dificultad: true },
   });
@@ -76,7 +81,14 @@ export async function recomputeAnalytics(): Promise<{ exercises: number; lessons
   };
 
   const byExercise = group((a) => `${a.exercise_id}` as const);
-  for (const [k, rows] of byExercise) await upsertStat({ stat_type: "exercise", exercise_id: Number(k), lesson_id: rows[0].lesson_id }, summarize(rows));
+  for (const [k, rows] of byExercise) {
+    // paralelo_id también en las filas de ejercicio: sin él el panel del maestro
+    // no puede acotar la estadística a sus propios paralelos.
+    await upsertStat(
+      { stat_type: "exercise", exercise_id: Number(k), lesson_id: rows[0].lesson_id, paralelo_id: rows[0].paralelo_id ?? 0 },
+      summarize(rows),
+    );
+  }
 
   const byLesson = group((a) => `${a.lesson_id}` as const);
   for (const [k, rows] of byLesson) await upsertStat({ stat_type: "lesson", lesson_id: Number(k), paralelo_id: rows[0].paralelo_id ?? 0 }, summarize(rows));

@@ -8,16 +8,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Topbar } from "@/components/layout/Topbar";
+import type { Prisma } from "@/generated/prisma/client";
 
 export default async function AnaliticaPage() {
   const user = await requireRole(["maestro", "admin"]);
   const isAdmin = user.role === "admin";
   const paraleloIds = isAdmin ? [] : await maestroParaleloIds(user.id);
 
-  const statWhere = paraleloIds.length ? { paralelo_id: { in: paraleloIds } } : {};
+  // `StatisticsAggregated` es una tabla plana sin relaciones: se acota por su
+  // propia columna paralelo_id (que ahora también llevan las filas de ejercicio).
+  const statWhere: Prisma.StatisticsAggregatedWhereInput = paraleloIds.length ? { paralelo_id: { in: paraleloIds } } : {};
 
   const [porEjercicio, porLeccion, porParalelo, porAlumno, predicciones, modelo] = await Promise.all([
-    prisma.statisticsAggregated.findMany({ where: { stat_type: "exercise", ...(paraleloIds.length ? { lesson: { paralelo_id: { in: paraleloIds } } } : {}) }, orderBy: { difficulty_score: "desc" }, take: 12 }),
+    prisma.statisticsAggregated.findMany({ where: { stat_type: "exercise", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "lesson", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "paralelo", ...statWhere }, orderBy: { average_score: "asc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "student", ...statWhere }, orderBy: { average_score: "asc" }, take: 20 }),
