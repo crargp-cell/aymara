@@ -54,7 +54,7 @@ export default function Home() {
       </section>
 
       <section className="max-w-3xl mx-auto w-full px-6 pb-24 text-center space-y-4">
-        <div className="glass-strong rounded-2xl p-8 space-y-4">
+        <div className="panel-strong rounded-2xl p-8 space-y-4">
           <h2 className="text-2xl font-bold">¿Listo para empezar?</h2>
           <p className="text-muted-foreground">Únete y desbloquea tu primera tarjeta de realidad aumentada.</p>
           <Link href="/register">

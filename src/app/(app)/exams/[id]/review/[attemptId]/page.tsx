@@ -45,7 +45,7 @@ export default async function ExamReviewPage({ params }: { params: Promise<{ id:
         </CardHeader>
         <CardContent className="space-y-2">
           {attempt.details.map((d) => (
-            <div key={d.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+            <div key={d.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
               <span>{d.item_ref}</span>
               <span className="flex items-center gap-2 text-xs">
                 {d.respuesta && <span className="text-muted-foreground">respondió: {d.respuesta}</span>}

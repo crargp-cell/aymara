@@ -59,3 +59,8 @@ next-env.d.ts
 /public/ar/marker_ARANATA.*
 /public/ar/marker_ARPANDA.*
 /public/ar/marker_ARWALLPA.*
+
+# Marcadores subidos desde el panel en tiempo de ejecución (`AR` + timestamp).
+# Los que ya están versionados no se ven afectados: .gitignore sólo aplica a
+# archivos sin trackear.
+/public/ar/marker_AR1[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9].*

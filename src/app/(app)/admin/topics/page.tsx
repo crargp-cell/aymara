@@ -79,7 +79,7 @@ export default async function AdminTopicsPage() {
             ) : (
               <form action={createTopic} className="grid md:grid-cols-2 gap-3">
                 <Input name="title" placeholder="Título" required />
-                <select name="lesson_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue={lessons[0]?.id ?? ""} required>
+                <select name="lesson_id" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue={lessons[0]?.id ?? ""} required>
                   {lessons.map((l) => <option key={l.id} value={l.id}>{l.title.slice(0, 40)}</option>)}
                 </select>
                 <Input name="order" type="number" placeholder="Orden" defaultValue={0} />
@@ -87,7 +87,7 @@ export default async function AdminTopicsPage() {
                   <span className="text-muted-foreground">Material PDF (opcional)</span>
                   <input type="file" name="pdf" accept="application/pdf" className="block w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/20 file:px-3 file:py-1.5" />
                 </label>
-                <textarea name="content" placeholder="Contenido del tema (texto)" rows={5} className="md:col-span-2 rounded-xl border border-input glass bg-transparent px-4 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                <textarea name="content" placeholder="Contenido del tema (texto)" rows={5} className="md:col-span-2 rounded-md border border-input bg-card px-4 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
                 <Button type="submit" variant="gradient" className="md:col-span-2">Crear</Button>
               </form>
             )}
@@ -100,7 +100,7 @@ export default async function AdminTopicsPage() {
         <CardContent className="space-y-2">
           {topics.length === 0 && <p className="text-sm text-muted-foreground">Sin temas todavía.</p>}
           {topics.map((t) => (
-            <div key={t.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+            <div key={t.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <span>{t.title}</span>

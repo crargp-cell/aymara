@@ -30,5 +30,5 @@ export async function limpiarParaleloSeleccionado() {
   await requireRole(["maestro", "admin"]);
   const jar = await cookies();
   jar.delete(PARALELO_COOKIE);
-  redirect("/admin/paralelo");
+  redirect("/dashboard");
 }

@@ -64,7 +64,7 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
         </CardHeader>
         <CardContent className="space-y-4">
           {topic.content ? (
-            <div className="prose prose-invert max-w-none text-sm leading-relaxed whitespace-pre-wrap">{topic.content}</div>
+            <div className="prose max-w-none text-sm leading-relaxed whitespace-pre-wrap">{topic.content}</div>
           ) : (
             !topic.archivo && <p className="text-sm text-muted-foreground">Sin contenido textual</p>
           )}
@@ -73,7 +73,7 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
 
           {isAlphabetTopic && (
             <div className="space-y-3">
-              <div className="glass rounded-xl p-4">
+              <div className="panel rounded-xl p-4">
                 <p className="text-xs text-muted-foreground mb-2">El aparato fonador — dónde se pronuncia cada consonante</p>
                 <div className="relative w-full aspect-[4/5] max-w-xs mx-auto">
                   <Image src="/alphabet/aparato_fonador.png" alt="Diagrama del aparato fonador del aymara" fill sizes="320px" className="object-contain" />
@@ -83,7 +83,7 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
                 <p className="text-xs text-muted-foreground mb-2">Abecedario ilustrado</p>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                   {alphabetCards.map((c) => (
-                    <div key={c.url} className="glass rounded-lg overflow-hidden relative aspect-[1/2]">
+                    <div key={c.url} className="panel rounded-lg overflow-hidden relative aspect-[1/2]">
                       <Image src={c.url} alt={c.label} fill sizes="150px" className="object-cover" />
                     </div>
                   ))}

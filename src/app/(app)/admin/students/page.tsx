@@ -134,15 +134,15 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
           <CardContent className="space-y-3">
             <form action={inscribir} className="flex flex-wrap gap-2">
               <input type="hidden" name="paralelo_id" value={selected.id} />
-              <select name="alumno_id" className="h-9 flex-1 min-w-[220px] rounded-lg border border-input glass bg-transparent px-3 text-sm">
+              <select name="alumno_id" className="h-9 flex-1 min-w-[220px] rounded-md border border-input bg-card px-3 text-sm">
                 {candidatos.map((c) => <option key={c.id} value={c.id}>{[c.nombre, c.apellido].filter(Boolean).join(" ") || c.username}</option>)}
               </select>
               <Button size="sm" variant="gradient" type="submit" disabled={candidatos.length === 0}>Inscribir</Button>
             </form>
-            <form action={promoverLote} className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+            <form action={promoverLote} className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
               <span className="text-xs text-muted-foreground">Promoción por lote — pasar todos los activos a:</span>
               <input type="hidden" name="desde_id" value={selected.id} />
-              <select name="hacia_id" className="h-9 rounded-lg border border-input glass bg-transparent px-3 text-sm">
+              <select name="hacia_id" className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                 {destinos.map((p) => <option key={p.id} value={p.id}>{paraleloLabel(p)}</option>)}
               </select>
               <Button size="sm" variant="secondary" type="submit">Promover lote</Button>
@@ -156,7 +156,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
         <CardContent className="space-y-2">
           {inscripciones.length === 0 && <p className="text-sm text-muted-foreground">Sin inscripciones en este paralelo.</p>}
           {inscripciones.map((i) => (
-            <div key={i.id} className="glass rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div key={i.id} className="panel rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <div className="flex-1 min-w-[200px]">
                 <div className="text-sm font-medium flex items-center gap-2">
                   {[i.alumno.nombre, i.alumno.apellido].filter(Boolean).join(" ") || i.alumno.username}
@@ -171,7 +171,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
                     <form action={cambiarParalelo} className="flex gap-1 items-center">
                       <input type="hidden" name="alumno_id" value={i.alumno_id} />
                       <input type="hidden" name="desde_id" value={selected!.id} />
-                      <select name="hacia_id" className="h-8 rounded-lg border border-input glass bg-transparent px-2 text-xs">
+                      <select name="hacia_id" className="h-8 rounded-md border border-input bg-card px-2 text-xs">
                         {destinos.map((p) => <option key={p.id} value={p.id}>{p.grado.nombre} "{p.nombre}"</option>)}
                       </select>
                       <Button size="sm" variant="ghost" type="submit">Mover</Button>

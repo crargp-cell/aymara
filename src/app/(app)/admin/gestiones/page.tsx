@@ -71,7 +71,7 @@ export default async function GestionesPage() {
         <CardHeader><CardTitle className="text-base">Gestiones ({gestiones.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {gestiones.map((g) => (
-            <div key={g.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between">
+            <div key={g.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
                 <div className="text-sm font-medium flex items-center gap-2">
                   {g.nombre}

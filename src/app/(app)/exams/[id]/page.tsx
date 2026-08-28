@@ -76,13 +76,13 @@ export default async function ExamPlayPage({ params }: { params: Promise<{ id: s
 
     const requestCount = Math.max(5, Math.min(10, cards.length * 3));
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">{exam.title} <Badge variant="secondary">mínimo {exam.min_score}%</Badge></CardTitle>
+      <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-0">
+        <Card className="overflow-hidden">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xl sm:text-2xl">{exam.title} <Badge variant="secondary" className="w-fit">mínimo {exam.min_score}%</Badge></CardTitle>
             <p className="text-sm text-muted-foreground">{exam.description}</p>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-6">
             <ArExamRunner examId={exam.id} cards={cards} requestCount={requestCount} timeLimitSeconds={(exam.time_limit ?? 15) * 60} minScore={exam.min_score} />
           </CardContent>
         </Card>

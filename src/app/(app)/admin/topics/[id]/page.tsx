@@ -81,7 +81,7 @@ export default async function AdminTopicDetailPage({ params }: { params: Promise
               placeholder="Contenido del tema"
               rows={12}
               defaultValue={topic.content ?? ""}
-              className="rounded-xl border border-input glass bg-transparent px-4 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="rounded-md border border-input bg-card px-4 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
             <Button type="submit" variant="gradient">Guardar</Button>
           </form>
@@ -97,7 +97,7 @@ export default async function AdminTopicDetailPage({ params }: { params: Promise
               <form action={removePdf}><Button size="sm" variant="destructive" type="submit">Quitar PDF</Button></form>
             </>
           )}
-          <form action={replacePdf} className="flex flex-wrap items-center gap-2 pt-2 border-t border-white/10">
+          <form action={replacePdf} className="flex flex-wrap items-center gap-2 pt-2 border-t border-border">
             <input type="file" name="pdf" accept="application/pdf" required className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/20 file:px-3 file:py-1.5" />
             <Button type="submit" variant="secondary">{topic.archivo ? "Reemplazar" : "Subir"} PDF</Button>
           </form>

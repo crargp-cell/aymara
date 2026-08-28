@@ -26,7 +26,7 @@ export function CreateExerciseForm({
   return (
     <form action={action} className="grid md:grid-cols-2 gap-3">
       {paraleloId != null && <input type="hidden" name="paralelo_id" value={paraleloId} />}
-      <select name="attach_lesson_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue={defaultLessonId || ""}>
+      <select name="attach_lesson_id" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue={defaultLessonId || ""}>
         <option value="">No enlazar a ninguna lección (solo al pool)</option>
         {lessons.map((l) => (
           <option key={l.id} value={l.id}>
@@ -34,7 +34,7 @@ export function CreateExerciseForm({
           </option>
         ))}
       </select>
-      <select name="type" value={type} onChange={(e) => setType(e.target.value)} className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+      <select name="type" value={type} onChange={(e) => setType(e.target.value)} className="h-10 rounded-md border border-input bg-card px-3 text-sm">
         <option value="text">text</option>
         <option value="multiple_choice">multiple_choice</option>
         <option value="matching">matching</option>
@@ -45,7 +45,7 @@ export function CreateExerciseForm({
       {type === "text" && <Input name="answer" placeholder="Respuesta correcta" required className="md:col-span-2" />}
 
       {type === "multiple_choice" && (
-        <div className="md:col-span-2 space-y-2 glass rounded-xl p-3">
+        <div className="md:col-span-2 space-y-2 panel rounded-xl p-3">
           <p className="text-xs text-muted-foreground">Opciones — marca cuál es la correcta</p>
           {options.map((opt, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -71,7 +71,7 @@ export function CreateExerciseForm({
       )}
 
       {type === "matching" && (
-        <div className="md:col-span-2 space-y-2 glass rounded-xl p-3">
+        <div className="md:col-span-2 space-y-2 panel rounded-xl p-3">
           <p className="text-xs text-muted-foreground">Pares aymara ↔ español</p>
           {pairs.map((p, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function CreateExerciseForm({
       )}
 
       {type === "fill_in_the_blank" && (
-        <div className="md:col-span-2 space-y-2 glass rounded-xl p-3">
+        <div className="md:col-span-2 space-y-2 panel rounded-xl p-3">
           <p className="text-xs text-muted-foreground">Respuestas válidas para el espacio en blanco</p>
           {blanks.map((b, i) => (
             <div key={i} className="flex items-center gap-2">
@@ -109,7 +109,7 @@ export function CreateExerciseForm({
         </div>
       )}
 
-      <select name="dificultad" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue="medio">
+      <select name="dificultad" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue="medio">
         <option value="facil">facil</option>
         <option value="medio">medio</option>
         <option value="dificil">dificil</option>

@@ -91,11 +91,11 @@ export default async function AdminArCardsPage() {
                 <span className="text-muted-foreground text-xs">Marcador .patt (opcional, para descarga AR.js)</span>
                 <input type="file" name="patt" accept=".patt" className="block w-full text-sm" />
               </label>
-              <select name="unlock_type" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue="lesson">
+              <select name="unlock_type" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue="lesson">
                 <option value="lesson">Se obtiene al completar una lección</option>
                 <option value="exam">Se obtiene al aprobar un examen</option>
               </select>
-              <select name="unlock_lesson_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue="">
+              <select name="unlock_lesson_id" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue="">
                 <option value="">Lección (si aplica)…</option>
                 {lessons.map((l) => <option key={l.id} value={l.id}>{l.title.slice(0, 40)}</option>)}
               </select>
@@ -110,7 +110,7 @@ export default async function AdminArCardsPage() {
         <CardContent className="space-y-2">
           {cards.length === 0 && <p className="text-sm text-muted-foreground">Sin tarjetas en este paralelo.</p>}
           {cards.map((c) => (
-            <div key={c.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div key={c.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1">
                 {c.image_file && (
                   <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0">
