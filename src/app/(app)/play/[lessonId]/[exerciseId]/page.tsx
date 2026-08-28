@@ -9,7 +9,7 @@ import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice } fr
 import { requireUser } from "@/lib/session";
 import { alumnoPuedeVerLeccion } from "@/lib/rbac";
 import { getOrStartAttempt, recordExerciseAttempt } from "@/lib/lesson-flow";
-import { CheckCircle2, XCircle, Trophy, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, Trophy, Sparkles, Eye, Info } from "lucide-react";
 
 export default async function PlayPage({
   params,
@@ -54,8 +54,8 @@ export default async function PlayPage({
   async function submitAction(formData: FormData) {
     "use server";
     const u = await requireUser();
-    if (u.role !== "estudiante") return;
-    if (!(await alumnoPuedeVerLeccion(u.id, lid))) return;
+    const esDocente = u.role !== "estudiante";
+    if (!esDocente && !(await alumnoPuedeVerLeccion(u.id, lid))) return;
 
     const type = String(formData.get("type") ?? exercise!.type);
     const raw = String(formData.get("user_answer") ?? "");
@@ -78,6 +78,12 @@ export default async function PlayPage({
       const ans = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
       isCorrect = checkFillInTheBlank(raw, ans.map((a) => a.answer_text));
       if (!isCorrect) errorType = "concepto_equivocado";
+    }
+
+    // El docente puede probar el ejercicio y ver si su respuesta es la correcta,
+    // pero no se registra nada: el historial pertenece al alumno (Negocio.md §32).
+    if (esDocente) {
+      redirect(`/play/${lid}/${eid}?result=${isCorrect ? "ok" : "fail"}`);
     }
 
     const res = await recordExerciseAttempt({
@@ -108,10 +114,26 @@ export default async function PlayPage({
             <Badge variant="outline">{exercise.type}</Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Lección {lid} · Ejercicio {idx >= 0 ? idx + 1 : "?"}/{presented.length} · Dificultad {exercise.dificultad}
+            {idx >= 0 ? `Ejercicio ${idx + 1} de ${presented.length}` : "Ejercicio de práctica"} · Dificultad {exercise.dificultad}
           </p>
         </CardHeader>
         <CardContent>
+          {isStaff && (
+            <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/5 p-3 flex items-center gap-2 text-sm">
+              <Eye className="h-4 w-4 text-amber-300 shrink-0" />
+              <span className="text-muted-foreground">
+                Vista de revisión: podés responder para comprobar el ejercicio, pero tu respuesta no se guarda.
+              </span>
+            </div>
+          )}
+          {!isStaff && idx < 0 && (
+            <div className="mb-4 rounded-xl border border-sky-400/25 bg-sky-400/5 p-3 flex items-center gap-2 text-sm">
+              <Info className="h-4 w-4 text-sky-300 shrink-0" />
+              <span className="text-muted-foreground">
+                Este ejercicio no entró en el sorteo de tu intento: podés practicarlo, pero no cuenta para completar la lección.
+              </span>
+            </div>
+          )}
           {sp.done && (
             <div className="mb-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-4 space-y-2">
               <p className="flex items-center gap-2 text-emerald-400 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>

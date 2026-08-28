@@ -11,7 +11,12 @@ function mode(values: (string | null)[]): string | null {
   for (const v of values) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
   let best: string | null = null;
   let bestC = 0;
-  for (const [k, c] of counts) if (c > bestC) ((best = k), (bestC = c));
+  for (const [k, c] of counts) {
+    if (c > bestC) {
+      best = k;
+      bestC = c;
+    }
+  }
   return best;
 }
 

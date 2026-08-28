@@ -22,7 +22,7 @@ export function ParaleloSwitcher({
     return (
       <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-sm">
         <span className="text-muted-foreground">No hay ningún paralelo seleccionado.</span>
-        <Link href={`/admin/paralelo?next=${encodeURIComponent(back)}`}>
+        <Link href={`/dashboard?next=${encodeURIComponent(back)}`}>
           <Button size="sm" variant="gradient">Elegir paralelo</Button>
         </Link>
       </div>

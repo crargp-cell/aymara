@@ -18,7 +18,6 @@ import {
   School,
   ClipboardList,
   MessageSquareWarning,
-  Boxes,
   History,
 } from "lucide-react";
 
@@ -82,11 +81,10 @@ const NAV_BY_ROLE: Record<Role, NavSection[]> = {
 
   maestro: [
     {
+      // El paralelo de trabajo se elige desde Inicio, que es donde el profesor
+      // ve el resumen del que tiene activo.
       section: "General",
-      items: [
-        { href: "/dashboard", label: "Inicio", icon: LayoutDashboard },
-        { href: "/admin/paralelo", label: "Paralelo de trabajo", icon: Boxes },
-      ],
+      items: [{ href: "/dashboard", label: "Inicio", icon: LayoutDashboard }],
     },
     {
       section: "Contenido del paralelo",
@@ -97,6 +95,18 @@ const NAV_BY_ROLE: Record<Role, NavSection[]> = {
         { href: "/admin/exams", label: "Exámenes", icon: FileQuestion },
         { href: "/admin/ar-cards", label: "Tarjetas AR", icon: Sparkles },
         { href: "/admin/map-order", label: "Orden del mapa", icon: ListOrdered },
+      ],
+    },
+    {
+      // Las mismas pantallas que ve el alumno, para revisar lo publicado.
+      // Nada de lo que haga aquí el profesor se registra como progreso.
+      section: "Revisar como alumno",
+      items: [
+        { href: "/map", label: "Mapa de niveles", icon: Map },
+        { href: "/lessons", label: "Lecciones", icon: BookOpen },
+        { href: "/topics", label: "Temas", icon: Layers },
+        { href: "/exams", label: "Exámenes", icon: FileQuestion },
+        { href: "/ar-cards", label: "Tarjetas AR", icon: Sparkles },
       ],
     },
     {

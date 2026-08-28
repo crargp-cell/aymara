@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { getParaleloActivoAlumno, getParalelosDeMaestro, getParaleloSeleccionado } from "@/lib/paralelo";
+import { setParaleloSeleccionado } from "@/lib/paralelo-actions";
 import { getStudentBoard } from "@/lib/student-board";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,8 +19,9 @@ const STUDENT_LINKS = [
   { href: "/dictionary", label: "Diccionario", icon: Search },
 ];
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const user = await requireUser();
+  const sp = await searchParams;
 
   // El administrador gestiona, supervisa y analiza; no crea contenido
   // (Negocio.md §4, §29) — su inicio es institucional, no de autoría.
@@ -107,6 +109,8 @@ export default async function DashboardPage() {
   if (user.role === "maestro") {
     const paralelos = await getParalelosDeMaestro(user.id);
     const { actual } = await getParaleloSeleccionado(user.role, user.id);
+    // Si llegó redirigido desde una pestaña de contenido, al elegir vuelve allí.
+    const volverA = sp.next && sp.next.startsWith("/") ? sp.next : "/dashboard";
     const resumen = actual
       ? await Promise.all([
           prisma.lesson.count({ where: { paralelo_id: actual.id, estado: "activo" } }),
@@ -126,7 +130,45 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {actual && resumen ? (
+        {/* Elegir el paralelo se hace acá mismo: el botón cambia y se queda en Inicio. */}
+        <Card className={actual ? undefined : "border-primary/40"}>
+          <CardHeader>
+            <CardTitle className="text-sm">Tus paralelos</CardTitle>
+            {!actual && (
+              <p className="text-xs text-muted-foreground">
+                Elige con cuál vas a trabajar: el contenido pertenece a un paralelo concreto.
+              </p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {paralelos.length === 0 && (
+              <p className="text-sm text-muted-foreground">Sin paralelos asignados. Pide al administrador que te asigne uno.</p>
+            )}
+            {paralelos.map((p) => {
+              const enUso = actual?.id === p.id;
+              return (
+                <div key={p.id} className="glass rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <span className="truncate">{p.gestion} · {p.nombre}</span>
+                    {enUso && <Badge variant="success">en uso</Badge>}
+                    {!p.es_actual && <Badge variant="warning">gestión no vigente</Badge>}
+                  </span>
+                  {enUso ? (
+                    <Link href="/admin/lessons"><Button size="sm" variant="secondary">Gestionar contenido</Button></Link>
+                  ) : (
+                    <form action={setParaleloSeleccionado}>
+                      <input type="hidden" name="paralelo_id" value={p.id} />
+                      <input type="hidden" name="back" value={volverA} />
+                      <Button size="sm" variant="outline" type="submit">Cambiar a este</Button>
+                    </form>
+                  )}
+                </div>
+              );
+            })}
+          </CardContent>
+        </Card>
+
+        {actual && resumen && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
@@ -154,32 +196,7 @@ export default async function DashboardPage() {
               </Card>
             )}
           </>
-        ) : (
-          <Card>
-            <CardContent className="pt-6 flex items-center justify-between gap-3">
-              <p className="text-sm text-muted-foreground">Elige con qué paralelo vas a trabajar para ver su contenido.</p>
-              <Link href="/admin/paralelo"><Button variant="gradient" size="sm">Elegir paralelo</Button></Link>
-            </CardContent>
-          </Card>
         )}
-
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Tus paralelos</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {paralelos.length === 0 && <p className="text-sm text-muted-foreground">Sin paralelos asignados. Pide al administrador que te asigne uno.</p>}
-            {paralelos.map((p) => (
-              <div key={p.id} className="glass rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-2">
-                <span>
-                  {p.gestion} · {p.nombre}
-                  {actual?.id === p.id && <Badge variant="success" className="ml-2">en uso</Badge>}
-                </span>
-                <Link href={`/admin/paralelo?next=${encodeURIComponent("/admin/lessons")}`}>
-                  <Button size="sm" variant="outline">{actual?.id === p.id ? "Gestionar" : "Cambiar a este"}</Button>
-                </Link>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     );
   }

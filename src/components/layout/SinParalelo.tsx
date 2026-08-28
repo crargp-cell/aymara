@@ -16,7 +16,7 @@ export function SinParalelo({ esDocente, volverA }: { esDocente: boolean; volver
             <p className="text-sm text-muted-foreground">
               Todavía no elegiste con qué paralelo trabajar. El contenido pertenece a un paralelo concreto.
             </p>
-            <Link href={`/admin/paralelo?next=${encodeURIComponent(volverA)}`}>
+            <Link href={`/dashboard?next=${encodeURIComponent(volverA)}`}>
               <Button variant="gradient">Elegir paralelo</Button>
             </Link>
           </>

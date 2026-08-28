@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -13,7 +13,6 @@ type Props = {
 
 export function ExercisePlayer({ exercise, options, pairs, answers, action }: Props) {
   const startedAt = useRef(Date.now());
-  const [matching, setMatching] = useState<string[]>(() => (pairs ? pairs.map(() => "") : []));
   const [fillAnswers, setFillAnswers] = useState<string[]>(() => (answers && answers.length > 1 ? answers.map(() => "") : [""]));
 
   const withTiming = (extra?: (fd: FormData) => void) => async (fd: FormData) => {
@@ -115,7 +114,7 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
           <span className="px-2 py-1 rounded-full text-xs bg-white/10">Cargando cartas…</span>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-          {pairs.flatMap((p) => [0, 1]).map((_, i) => (
+          {pairs.flatMap(() => [0, 1]).map((_, i) => (
             <div key={i} className="h-24 sm:h-28 rounded-xl glass border border-white/10 animate-pulse" />
           ))}
         </div>

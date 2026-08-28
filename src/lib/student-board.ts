@@ -12,6 +12,8 @@ export type BoardNode = {
   unlocked: boolean;
   lockReason: string | null;
   examType?: "conectar_palabras" | "ar_exam";
+  /** Sólo en vista previa: por qué el alumno no vería este nodo ahora mismo. */
+  nota?: string;
 };
 
 export type StudentBoard = {
@@ -102,4 +104,69 @@ export async function getStudentBoard(alumnoId: number): Promise<StudentBoard> {
     completedLessonIds,
     totalDone: nodes.filter((n) => n.done).length,
   };
+}
+
+/**
+ * Mismo mapa pero para el docente que revisa un paralelo: todo desbloqueado y
+ * sin progreso, porque no está cursando. A diferencia de la vista del alumno
+ * incluye los exámenes fuera de su ventana, anotando por qué el alumno no los
+ * vería — es justo lo que el autor necesita revisar.
+ */
+export async function getPreviewBoard(paraleloId: number): Promise<BoardNode[]> {
+  await ensureContentOrder(paraleloId);
+  const ordered = await prisma.contentOrder.findMany({ where: { paralelo_id: paraleloId }, orderBy: { orden: "asc" } });
+
+  const lessonIds = ordered.filter((o) => o.content_type === "lesson").map((o) => o.content_id);
+  const examIds = ordered.filter((o) => o.content_type === "exam").map((o) => o.content_id);
+  const [lessons, exams] = await Promise.all([
+    prisma.lesson.findMany({ where: { id: { in: lessonIds } } }),
+    prisma.exam.findMany({ where: { id: { in: examIds } }, include: { prerequisitos: true } }),
+  ]);
+  const lessonMap = new Map(lessons.map((l) => [l.id, l]));
+  const examMap = new Map(exams.map((e) => [e.id, e]));
+
+  const now = new Date();
+  const nodes: BoardNode[] = [];
+
+  for (const o of ordered) {
+    if (o.content_type === "lesson") {
+      const l = lessonMap.get(o.content_id);
+      if (!l) continue;
+      nodes.push({
+        key: `lesson-${l.id}`,
+        type: "lesson",
+        id: l.id,
+        title: l.title,
+        orden: o.orden,
+        done: false,
+        unlocked: true,
+        lockReason: null,
+        nota: l.estado !== "activo" ? `Lección ${l.estado}: el alumno no la ve` : undefined,
+      });
+    } else {
+      const e = examMap.get(o.content_id);
+      if (!e) continue;
+      const fuera =
+        e.start_date && now < e.start_date
+          ? `Abre el ${e.start_date.toLocaleDateString()}`
+          : e.end_date && now > e.end_date
+            ? `Cerró el ${e.end_date.toLocaleDateString()}`
+            : e.estado !== "activo"
+              ? `Examen ${e.estado}: el alumno no lo ve`
+              : undefined;
+      nodes.push({
+        key: `exam-${e.id}`,
+        type: "exam",
+        id: e.id,
+        title: e.title,
+        orden: o.orden,
+        done: false,
+        unlocked: true,
+        lockReason: null,
+        examType: e.type,
+        nota: fuera ?? (e.prerequisitos.length ? `Requiere ${e.prerequisitos.length} lección(es)` : undefined),
+      });
+    }
+  }
+  return nodes;
 }
