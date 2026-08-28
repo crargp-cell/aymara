@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
-import { getParaleloActivoAlumno, getParalelosDeMaestro } from "@/lib/paralelo";
+import { getParaleloActivoAlumno, getParalelosDeMaestro, getParaleloSeleccionado } from "@/lib/paralelo";
 import { getStudentBoard } from "@/lib/student-board";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,36 +21,165 @@ const STUDENT_LINKS = [
 export default async function DashboardPage() {
   const user = await requireUser();
 
-  if (user.role !== "estudiante") {
-    const paralelos = await getParalelosDeMaestro(user.id);
+  // El administrador gestiona, supervisa y analiza; no crea contenido
+  // (Negocio.md §4, §29) — su inicio es institucional, no de autoría.
+  if (user.role === "admin") {
+    const gestionActual = await prisma.gestion.findFirst({ where: { es_actual: true } });
+    const [paralelos, alumnos, maestros, sinInscripcion, observaciones] = await Promise.all([
+      prisma.paralelo.count({ where: { gestion: { es_actual: true } } }),
+      prisma.inscripcion.count({ where: { estado: { in: ["activo", "reincorporado"] }, paralelo: { gestion: { es_actual: true } } } }),
+      prisma.usuario.count({ where: { role: "maestro", activo: true } }),
+      prisma.usuario.count({ where: { role: "estudiante", activo: true, inscripciones: { none: { paralelo: { gestion: { es_actual: true } } } } } }),
+      prisma.comentarioRevision.count({ where: { resuelto: false } }),
+    ]);
+    const sinProfesor = await prisma.paralelo.count({ where: { gestion: { es_actual: true }, profesor_id: null } });
+
     return (
       <div className="space-y-6">
         <div className="glass rounded-2xl p-6">
           <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
-          <p className="text-sm text-muted-foreground">Rol: {user.role}</p>
+          <p className="text-sm text-muted-foreground">
+            Administración · {gestionActual ? `${gestionActual.nombre} en curso` : "sin gestión actual definida"}
+          </p>
         </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { n: paralelos, l: "Paralelos", href: "/admin/paralelos" },
+            { n: alumnos, l: "Alumnos inscritos", href: "/admin/students" },
+            { n: maestros, l: "Profesores", href: "/admin/users" },
+            { n: observaciones, l: "Observaciones abiertas", href: "/admin/supervision" },
+          ].map((s) => (
+            <Link key={s.l} href={s.href}>
+              <Card className="hover:shadow-glow h-full">
+                <CardContent className="pt-6 text-center">
+                  <p className="text-3xl font-bold text-gradient">{s.n}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{s.l}</p>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
+
+        {(sinProfesor > 0 || sinInscripcion > 0 || !gestionActual) && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Requiere tu atención</CardTitle></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              {!gestionActual && (
+                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                  <span>No hay ninguna gestión marcada como actual.</span>
+                  <Link href="/admin/gestiones"><Button size="sm" variant="outline">Definir</Button></Link>
+                </div>
+              )}
+              {sinProfesor > 0 && (
+                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                  <span>{sinProfesor} paralelo(s) sin profesor asignado.</span>
+                  <Link href="/admin/paralelos"><Button size="sm" variant="outline">Asignar</Button></Link>
+                </div>
+              )}
+              {sinInscripcion > 0 && (
+                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                  <span>{sinInscripcion} alumno(s) sin inscripción en la gestión actual.</span>
+                  <Link href="/admin/students"><Button size="sm" variant="outline">Inscribir</Button></Link>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
-          <CardHeader><CardTitle className="text-sm">Tus paralelos ({paralelos.length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-sm">Accesos rápidos</CardTitle></CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { href: "/admin/gestiones", label: "Gestiones" },
+              { href: "/admin/supervision", label: "Supervisión" },
+              { href: "/admin/analitica", label: "Analítica" },
+              { href: "/admin/reports", label: "Reportes" },
+            ].map((l) => (
+              <Link key={l.href} href={l.href}><Button variant="outline" className="w-full h-14">{l.label}</Button></Link>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user.role === "maestro") {
+    const paralelos = await getParalelosDeMaestro(user.id);
+    const { actual } = await getParaleloSeleccionado(user.role, user.id);
+    const resumen = actual
+      ? await Promise.all([
+          prisma.lesson.count({ where: { paralelo_id: actual.id, estado: "activo" } }),
+          prisma.exercise.count({ where: { paralelo_id: actual.id, estado: "activo" } }),
+          prisma.exam.count({ where: { paralelo_id: actual.id, estado: "activo" } }),
+          prisma.inscripcion.count({ where: { paralelo_id: actual.id, estado: { in: ["activo", "reincorporado"] } } }),
+        ])
+      : null;
+
+    return (
+      <div className="space-y-6">
+        <div className="glass rounded-2xl p-6">
+          <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
+          <p className="text-sm text-muted-foreground">
+            Profesor · {paralelos.length} paralelo(s) asignado(s)
+            {actual ? ` · trabajando en ${actual.nombre}` : " · sin paralelo seleccionado"}
+          </p>
+        </div>
+
+        {actual && resumen ? (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { n: resumen[3], l: "Alumnos", href: "/admin/students" },
+                { n: resumen[0], l: "Lecciones", href: "/admin/lessons" },
+                { n: resumen[1], l: "Ejercicios", href: "/admin/exercises" },
+                { n: resumen[2], l: "Exámenes", href: "/admin/exams" },
+              ].map((s) => (
+                <Link key={s.l} href={s.href}>
+                  <Card className="hover:shadow-glow h-full">
+                    <CardContent className="pt-6 text-center">
+                      <p className="text-3xl font-bold text-gradient">{s.n}</p>
+                      <p className="text-xs text-muted-foreground mt-1">{s.l}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            {resumen[0] === 0 && (
+              <Card>
+                <CardContent className="pt-6 flex items-center justify-between gap-3">
+                  <p className="text-sm text-muted-foreground">Este paralelo todavía no tiene lecciones.</p>
+                  <Link href="/admin/lessons"><Button variant="gradient" size="sm">Crear la primera</Button></Link>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        ) : (
+          <Card>
+            <CardContent className="pt-6 flex items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">Elige con qué paralelo vas a trabajar para ver su contenido.</p>
+              <Link href="/admin/paralelo"><Button variant="gradient" size="sm">Elegir paralelo</Button></Link>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Tus paralelos</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {paralelos.length === 0 && <p className="text-sm text-muted-foreground">Sin paralelos asignados.</p>}
+            {paralelos.length === 0 && <p className="text-sm text-muted-foreground">Sin paralelos asignados. Pide al administrador que te asigne uno.</p>}
             {paralelos.map((p) => (
-              <div key={p.id} className="glass rounded-xl px-4 py-3 text-sm flex items-center justify-between">
-                <span>{p.gestion} · {p.nombre}</span>
-                <Link href="/admin/lessons"><Button size="sm" variant="outline">Gestionar contenido</Button></Link>
+              <div key={p.id} className="glass rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-2">
+                <span>
+                  {p.gestion} · {p.nombre}
+                  {actual?.id === p.id && <Badge variant="success" className="ml-2">en uso</Badge>}
+                </span>
+                <Link href={`/admin/paralelo?next=${encodeURIComponent("/admin/lessons")}`}>
+                  <Button size="sm" variant="outline">{actual?.id === p.id ? "Gestionar" : "Cambiar a este"}</Button>
+                </Link>
               </div>
             ))}
           </CardContent>
         </Card>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { href: "/admin/lessons", label: "Lecciones" },
-            { href: "/admin/exercises", label: "Ejercicios" },
-            { href: "/admin/exams", label: "Exámenes" },
-            { href: "/admin/analitica", label: "Analítica" },
-          ].map((l) => (
-            <Link key={l.href} href={l.href}><Button variant="outline" className="w-full h-16">{l.label}</Button></Link>
-          ))}
-        </div>
       </div>
     );
   }
