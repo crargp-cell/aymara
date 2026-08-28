@@ -40,7 +40,7 @@ export default async function ExamsPage() {
       <Link href="/exams/history" className="text-sm text-primary hover:underline">Ver historial de intentos →</Link>
       <div className="grid md:grid-cols-2 gap-4">
         {rows.map(({ exam: e, gate, eff }) => (
-          <Card key={e.id} className="hover:shadow-glow">
+          <Card key={e.id} activa>
             <CardHeader>
               <CardTitle className="text-base flex items-center justify-between">
                 {e.title}

@@ -36,7 +36,7 @@ export function ExercisePlayer({ exercise, options, pairs, answers, action }: Pr
     return (
       <form action={withTiming()} className="space-y-3">
         {options.map((o) => (
-          <label key={o.id} className="flex items-center gap-2 panel rounded-xl px-4 py-2 cursor-pointer hover:shadow-glow">
+          <label key={o.id} className="flex items-center gap-2 panel rounded-xl px-4 py-2 cursor-pointer transition-colors hover:bg-muted">
             <input type="radio" name="user_answer" value={String(o.id)} required className="accent-primary" />
             <span className="text-sm">{o.option_text}</span>
           </label>

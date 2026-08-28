@@ -9,7 +9,7 @@
  */
 export function AndeanBackground() {
   return (
-    <div className="fixed inset-0 -z-10 w-full h-full pointer-events-none overflow-hidden" aria-hidden="true">
+    <div className="fondo-andino fixed inset-0 -z-10 w-full h-full pointer-events-none overflow-hidden" aria-hidden="true">
       {/* Nubes de color */}
       <div className="absolute -top-32 -left-32 w-96 h-96 bg-andino-morado/20 rounded-full blur-[100px]" />
       <div className="absolute top-[35%] -right-20 w-[35rem] h-[35rem] bg-andino-coral/15 rounded-full blur-[120px]" />

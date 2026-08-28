@@ -13,7 +13,11 @@
   --background: #fdf8eb;
   --foreground: #2c3244;
 
-  --card: #ffffff;
+  /* Blanco cálido, no puro: sobre el marfil del fondo, el #FFF se recorta como
+     un parche ajeno; con esta punta de crema la tarjeta parece papel del mismo
+     material que la página. --panel-anidado hunde los bloques interiores. */
+  --card: #fffdf6;
+  --panel-anidado: #f9f5ea;
   --card-foreground: #2c3244;
   --popover: #ffffff;
   --popover-foreground: #2c3244;
@@ -117,6 +121,9 @@
   --color-andino-terracota: #e64a19;
   --color-andino-coral: #ff5722;
   --color-andino-verde: #43a047;
+  /* El oro andino (#ffb800) vive en el fondo, donde va difuminado; sobre una
+     tarjeta clara queda a 1.6:1 y se pierde. Esta es su versión para tinta. */
+  --color-andino-oro-tinta: #9a6b00;
 
   /* Animaciones del fondo */
   --animate-float: flotar 8s ease-in-out infinite;
@@ -153,9 +160,14 @@ body {
 }
 
 /*
-  Panel: la superficie base de todas las tarjetas y bloques. Sustituye al
-  antiguo `.glass` del tema oscuro — aquí el papel lo hace el marfil del fondo,
-  así que los paneles son sólidos y se separan por borde y sombra suave.
+  Panel: la superficie base de todas las tarjetas y bloques.
+
+  Es opaco, pero de un blanco cálido y no puro: sobre marfil, el #FFF se recorta
+  como un parche clínico ajeno al fondo; con la punta de crema se lee como papel
+  de la misma familia. (Se probó dejarlo translúcido para que asomara el fondo,
+  pero al 90% el resultado componía a rgb(254,254,253) — invisible — y el
+  procesador descartaba el `backdrop-filter` sin prefijo, así que era coste sin
+  efecto.)
 */
 .panel {
   background: var(--card);
@@ -163,10 +175,87 @@ body {
   box-shadow: var(--shadow-panel);
 }
 
+/*
+  Panel protagonista: azul profundo sobre el marfil general. Cada pantalla
+  debería tener uno y sólo uno — es lo que evita que la página sea un campo
+  uniforme de tarjetas claras y le da un punto donde caer la vista. Comparte
+  color con la barra lateral y el panel de recompensas, así que el sistema se
+  lee como una pieza y no como pantallas sueltas.
+*/
+.panel-hero {
+  background-image: linear-gradient(135deg, #4b587c 0%, #3d4866 100%);
+  background-color: #4b587c;
+  color: #fdf8eb;
+  border: 1px solid #364059;
+  box-shadow: var(--shadow-raised);
+}
+
+/* Dentro del héroe la tinta secundaria tiene que aclararse, no oscurecerse. */
+.panel-hero .text-muted-foreground {
+  color: rgba(253, 248, 235, 0.82);
+}
+
 .panel-strong {
   background: var(--card);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-raised);
+}
+
+/* Un bloque dentro de una tarjeta se hunde en lugar de repetir la misma
+   superficie: así se distingue el continente del contenido. */
+.panel .panel {
+  background: var(--panel-anidado);
+  box-shadow: none;
+}
+
+/*
+  El fondo se atenúa hacia el centro, que es por donde corre el contenido, y
+  conserva la fuerza en los márgenes. Así las piezas siguen dando vida sin
+  pelearse con lo que hay que leer.
+*/
+/*
+  El fondo se atenúa hacia el centro y va a plena fuerza en los márgenes: donde
+  la vista lee, calma; donde sobra sitio, color. La atenuación central no llega
+  a cero porque los paneles son opacos y ya tapan el centro — vaciarlo del todo
+  sólo apagaría los huecos entre tarjetas, que es justo donde el fondo aporta.
+*/
+.fondo-andino {
+  -webkit-mask-image: radial-gradient(ellipse 68% 62% at 55% 45%, rgba(0, 0, 0, 0.38) 18%, rgba(0, 0, 0, 0.72) 58%, #000 100%);
+  mask-image: radial-gradient(ellipse 68% 62% at 55% 45%, rgba(0, 0, 0, 0.38) 18%, rgba(0, 0, 0, 0.72) 58%, #000 100%);
+}
+
+/*
+  Tarjeta con la que se puede interactuar: se levanta al pasar por encima. La
+  diferencia con una tarjeta informativa tiene que notarse.
+*/
+.tarjeta-activa {
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.tarjeta-activa:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-raised);
+  border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-activa:hover {
+    transform: none;
+  }
+}
+
+/* Filete superior de color: da carácter a un bloque sin recargarlo. */
+.acento-superior {
+  position: relative;
+  overflow: hidden;
+}
+
+.acento-superior::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--tono-acento, var(--primary));
 }
 
 /* Panel apoyado sobre el marfil, sin blanco: para zonas secundarias. */

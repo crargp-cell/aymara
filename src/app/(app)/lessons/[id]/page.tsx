@@ -101,7 +101,7 @@ export default async function LessonDetailPage({ params }: { params: Promise<{ i
             {isStaff && (
               <div className="space-y-1 pt-2">
                 {exercises.map((e, i) => (
-                  <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between panel rounded-xl px-4 py-2 text-sm hover:shadow-glow">
+                  <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between panel rounded-xl px-4 py-2 text-sm tarjeta-activa">
                     <span className="line-clamp-1">{i + 1}. {e.question}</span>
                     <Badge variant="outline">{e.type}</Badge>
                   </Link>

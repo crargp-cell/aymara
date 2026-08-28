@@ -38,7 +38,7 @@ export default async function LessonsPage() {
             const l = lessonMap.get(n.id);
             if (!l) return null;
             const inner = (
-              <Card className={`h-full overflow-hidden ${n.unlocked ? "hover:shadow-glow cursor-pointer" : "opacity-60"}`}>
+              <Card className={`h-full overflow-hidden ${n.unlocked ? "tarjeta-activa cursor-pointer" : "opacity-60"}`}>
                 <div className="relative h-32 w-full">
                   <Image src={lessonCoverUrl(l.orden)} alt={l.title} fill sizes="(max-width:768px) 100vw, 33vw" className="object-cover" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -87,7 +87,7 @@ export default async function LessonsPage() {
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
         {lessons.map((l) => (
           <Link key={l.id} href={`/lessons/${l.id}`}>
-            <Card className="h-full overflow-hidden hover:shadow-glow">
+            <Card activa className="h-full overflow-hidden">
               <CardHeader>
                 <CardTitle className="text-base line-clamp-2">#{l.orden} · {l.title}</CardTitle>
                 <CardDescription className="line-clamp-2">{l.description ?? ""}</CardDescription>

@@ -8,15 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import { Chaska, Guarda } from "@/components/brand/Andino";
 import { Map, BookOpen, Search, Sparkles, Trophy, FileQuestion } from "lucide-react";
 
+// Cada acceso lleva su propio tono del fondo andino: el icono en color hace que
+// la fila se reconozca de un vistazo en vez de ser seis botones grises iguales.
 const STUDENT_LINKS = [
-  { href: "/map", label: "Mapa", icon: Map },
-  { href: "/lessons", label: "Lecciones", icon: BookOpen },
-  { href: "/exams", label: "Exámenes", icon: FileQuestion },
-  { href: "/ar-cards", label: "Tarjetas", icon: Sparkles },
-  { href: "/logros", label: "Logros", icon: Trophy },
-  { href: "/dictionary", label: "Diccionario", icon: Search },
+  { href: "/map", label: "Mapa", icon: Map, tono: "var(--color-andino-verde)" },
+  { href: "/lessons", label: "Lecciones", icon: BookOpen, tono: "var(--color-andino-azul)" },
+  { href: "/exams", label: "Exámenes", icon: FileQuestion, tono: "var(--color-andino-morado)" },
+  { href: "/ar-cards", label: "Tarjetas", icon: Sparkles, tono: "var(--color-andino-coral)" },
+  { href: "/logros", label: "Logros", icon: Trophy, tono: "var(--color-andino-oro-tinta)" },
+  { href: "/dictionary", label: "Diccionario", icon: Search, tono: "var(--color-andino-terracota)" },
 ];
 
 export default async function DashboardPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
@@ -38,24 +41,28 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     return (
       <div className="space-y-6">
-        <div className="panel rounded-2xl p-6">
-          <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            Administración · {gestionActual ? `${gestionActual.nombre} en curso` : "sin gestión actual definida"}
-          </p>
+        {/* El saludo es el ancla saturada de la pantalla del administrador. */}
+        <div className="panel panel-hero rounded-2xl overflow-hidden">
+          <Guarda motivo="escalones" alto={10} opacidad={0.35} color="var(--wiphala-amarillo)" />
+          <div className="p-6">
+            <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
+            <p className="text-sm text-muted-foreground">
+              Administración · {gestionActual ? `${gestionActual.nombre} en curso` : "sin gestión actual definida"}
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { n: paralelos, l: "Paralelos", href: "/admin/paralelos" },
-            { n: alumnos, l: "Alumnos inscritos", href: "/admin/students" },
-            { n: maestros, l: "Profesores", href: "/admin/users" },
-            { n: observaciones, l: "Observaciones abiertas", href: "/admin/supervision" },
-          ].map((s) => (
+          {([
+            { n: paralelos, l: "Paralelos", a: "azul", href: "/admin/paralelos" },
+            { n: alumnos, l: "Alumnos inscritos", a: "verde", href: "/admin/students" },
+            { n: maestros, l: "Profesores", a: "morado", href: "/admin/users" },
+            { n: observaciones, l: "Observaciones abiertas", a: "coral", href: "/admin/supervision" },
+          ] as const).map((s) => (
             <Link key={s.l} href={s.href}>
-              <Card className="hover:shadow-glow h-full">
-                <CardContent className="pt-6 text-center">
-                  <p className="text-3xl font-bold text-gradient">{s.n}</p>
+              <Card acento={s.a} activa className="h-full">
+                <CardContent className="pt-7 pb-5 text-center">
+                  <p className="text-3xl font-bold tabular-nums" style={{ color: "var(--primary)" }}>{s.n}</p>
                   <p className="text-xs text-muted-foreground mt-1">{s.l}</p>
                 </CardContent>
               </Card>
@@ -122,12 +129,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     return (
       <div className="space-y-6">
-        <div className="panel rounded-2xl p-6">
-          <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            Profesor · {paralelos.length} paralelo(s) asignado(s)
-            {actual ? ` · trabajando en ${actual.nombre}` : " · sin paralelo seleccionado"}
-          </p>
+        {/* El saludo es el ancla saturada de la pantalla del profesor. */}
+        <div className="panel panel-hero rounded-2xl overflow-hidden">
+          <Guarda motivo="escalones" alto={10} opacidad={0.35} color="var(--wiphala-amarillo)" />
+          <div className="p-6">
+            <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
+            <p className="text-sm text-muted-foreground">
+              Profesor · {paralelos.length} paralelo(s) asignado(s)
+              {actual ? ` · trabajando en ${actual.nombre}` : " · sin paralelo seleccionado"}
+            </p>
+          </div>
         </div>
 
         {/* Elegir el paralelo se hace acá mismo: el botón cambia y se queda en Inicio. */}
@@ -171,16 +182,16 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         {actual && resumen && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                { n: resumen[3], l: "Alumnos", href: "/admin/students" },
-                { n: resumen[0], l: "Lecciones", href: "/admin/lessons" },
-                { n: resumen[1], l: "Ejercicios", href: "/admin/exercises" },
-                { n: resumen[2], l: "Exámenes", href: "/admin/exams" },
-              ].map((s) => (
+              {([
+                { n: resumen[3], l: "Alumnos", a: "verde", href: "/admin/students" },
+                { n: resumen[0], l: "Lecciones", a: "azul", href: "/admin/lessons" },
+                { n: resumen[1], l: "Ejercicios", a: "morado", href: "/admin/exercises" },
+                { n: resumen[2], l: "Exámenes", a: "coral", href: "/admin/exams" },
+              ] as const).map((s) => (
                 <Link key={s.l} href={s.href}>
-                  <Card className="hover:shadow-glow h-full">
-                    <CardContent className="pt-6 text-center">
-                      <p className="text-3xl font-bold text-gradient">{s.n}</p>
+                  <Card acento={s.a} activa className="h-full">
+                    <CardContent className="pt-7 pb-5 text-center">
+                      <p className="text-3xl font-bold tabular-nums" style={{ color: "var(--primary)" }}>{s.n}</p>
                       <p className="text-xs text-muted-foreground mt-1">{s.l}</p>
                     </CardContent>
                   </Card>
@@ -225,25 +236,43 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
+      {/* Cada cifra lleva su propio acento: el color del fondo entra en la
+          interfaz y las tarjetas dejan de ser cinco cajas iguales. */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
-        {[
-          { n: lessonsCompleted, l: "Lecciones" },
-          { n: exercisesCorrect, l: "Aciertos" },
-          { n: examsPassed, l: "Exámenes" },
-          { n: tarjetas, l: "Tarjetas AR" },
-          { n: logros, l: "Logros" },
-        ].map((s) => (
-          <Card key={s.l}><CardContent className="pt-6 text-center"><p className="text-3xl font-bold text-gradient">{s.n}</p><p className="text-xs text-muted-foreground mt-1">{s.l}</p></CardContent></Card>
+        {([
+          { n: lessonsCompleted, l: "Lecciones", a: "azul", href: "/lessons" },
+          { n: exercisesCorrect, l: "Aciertos", a: "verde", href: "/map" },
+          { n: examsPassed, l: "Exámenes", a: "coral", href: "/exams" },
+          { n: tarjetas, l: "Tarjetas AR", a: "morado", href: "/ar-cards" },
+          { n: logros, l: "Logros", a: "oro", href: "/logros" },
+        ] as const).map((s) => (
+          <Link key={s.l} href={s.href}>
+            <Card acento={s.a} activa className="h-full">
+              <CardContent className="pt-7 pb-5 text-center">
+                <p className="text-3xl font-bold tabular-nums" style={{ color: "var(--primary)" }}>{s.n}</p>
+                <p className="text-xs text-muted-foreground mt-1">{s.l}</p>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
 
+      {/* Único bloque saturado de la pantalla: marca dónde seguir. */}
       {nextNode && (
-        <Card>
-          <CardHeader><CardTitle className="text-sm">Siguiente objetivo</CardTitle></CardHeader>
-          <CardContent className="flex items-center justify-between">
-            <span className="text-sm">{nextNode.type === "exam" ? "Examen: " : "Nivel: "}{nextNode.title}</span>
+        <Card className="panel-hero overflow-hidden">
+          <Guarda motivo="chaska" alto={10} opacidad={0.35} color="var(--wiphala-amarillo)" />
+          <CardContent className="pt-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <Chaska size={34} color="var(--ruta-activo)" className="shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Siguiente objetivo</p>
+                <p className="text-sm font-semibold truncate">
+                  {nextNode.type === "exam" ? "Examen: " : "Nivel: "}{nextNode.title}
+                </p>
+              </div>
+            </div>
             <Link href={nextNode.type === "exam" ? `/exams/${nextNode.id}` : `/lessons/${nextNode.id}`}>
-              <Button size="sm" variant="gradient">Continuar</Button>
+              <Button size="sm" variant="secondary">Continuar</Button>
             </Link>
           </CardContent>
         </Card>
@@ -252,9 +281,12 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       <Card>
         <CardHeader><CardTitle className="text-sm">Accesos rápidos</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-3 md:grid-cols-6 gap-3">
-          {STUDENT_LINKS.map(({ href, label, icon: Icon }) => (
+          {STUDENT_LINKS.map(({ href, label, icon: Icon, tono }) => (
             <Link key={href} href={href}>
-              <Button variant="outline" className="w-full h-16 flex-col gap-1.5"><Icon className="h-5 w-5" /><span className="text-xs">{label}</span></Button>
+              <Button variant="outline" className="w-full h-16 flex-col gap-1.5">
+                <Icon className="h-5 w-5" style={{ color: tono }} />
+                <span className="text-xs">{label}</span>
+              </Button>
             </Link>
           ))}
         </CardContent>

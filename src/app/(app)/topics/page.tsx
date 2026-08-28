@@ -52,7 +52,7 @@ export default async function TopicsPage() {
               </div>
               <CardContent className="space-y-2 pt-4">
                 {list.map((t) => (
-                  <Link key={t.id} href={`/topics/${t.id}`} className="flex items-center justify-between panel rounded-xl px-4 py-3 hover:shadow-glow transition">
+                  <Link key={t.id} href={`/topics/${t.id}`} className="flex items-center justify-between panel rounded-xl px-4 py-3 tarjeta-activa">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium">{t.title}</p>
                       <p className="text-xs text-muted-foreground line-clamp-1">{t.content ? t.content.slice(0, 90) : "Material PDF"}</p>
