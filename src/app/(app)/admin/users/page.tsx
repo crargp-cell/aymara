@@ -80,7 +80,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
             <Input name="email" type="email" placeholder="Email (opcional)" />
             <Input name="password" type="password" placeholder="Contraseña (mín. 8)" required />
             <Input name="codigo" placeholder="Código estudiante (si aplica)" />
-            <select name="role" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm md:col-span-2" defaultValue="estudiante">
+            <select name="role" className="h-10 rounded-md border border-input bg-card px-3 text-sm md:col-span-2" defaultValue="estudiante">
               <option value="estudiante">estudiante</option>
               <option value="maestro">maestro</option>
             </select>
@@ -93,7 +93,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
         <CardHeader><CardTitle className="text-base">Usuarios</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {users.map((u) => (
-            <div key={u.id} className="glass rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div key={u.id} className="panel rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <div className="flex-1 min-w-[200px]">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <span>{[u.nombre, u.apellido].filter(Boolean).join(" ") || u.username}</span>

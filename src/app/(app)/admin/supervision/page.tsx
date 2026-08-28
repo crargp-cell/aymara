@@ -88,7 +88,7 @@ export default async function SupervisionPage({ searchParams }: { searchParams: 
             <CardContent className="space-y-2">
               <p className="text-xs font-semibold uppercase text-muted-foreground">Lecciones</p>
               {lessons.map((l) => (
-                <div key={l.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+                <div key={l.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2">
                     #{l.orden} {l.title}
                     <Badge variant={badgeVariantContenido(l.estado)}>{l.estado}</Badge>
@@ -106,7 +106,7 @@ export default async function SupervisionPage({ searchParams }: { searchParams: 
               ))}
               <p className="text-xs font-semibold uppercase text-muted-foreground pt-2">Exámenes</p>
               {exams.map((e) => (
-                <div key={e.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+                <div key={e.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
                   <span className="flex items-center gap-2">{e.title} <Badge variant={badgeVariantContenido(e.estado)}>{e.estado}</Badge></span>
                   <span className="flex gap-1">
                     {e.estado === "deshabilitado" ? (
@@ -129,7 +129,7 @@ export default async function SupervisionPage({ searchParams }: { searchParams: 
                 <Button size="sm" variant="gradient" type="submit">Enviar</Button>
               </form>
               {comentarios.map((c) => (
-                <div key={c.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+                <div key={c.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
                   <span className={c.resuelto ? "line-through text-muted-foreground" : ""}>{c.texto}</span>
                   {!c.resuelto && <form action={resolver}><input type="hidden" name="id" value={c.id} /><Button size="sm" variant="ghost" type="submit">Resolver</Button></form>}
                 </div>

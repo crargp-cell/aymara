@@ -92,7 +92,7 @@ export default async function AnaliticaPage() {
           <CardContent className="space-y-2">
             {riesgo.length === 0 && <p className="text-sm text-muted-foreground">Sin predicciones. Reentrena el modelo.</p>}
             {riesgo.slice(0, 12).map((p) => (
-              <div key={p.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+              <div key={p.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
                 <span>{[p.alumno.nombre, p.alumno.apellido].filter(Boolean).join(" ") || p.alumno.username}</span>
                 <Badge variant={p.etiqueta === "alto" ? "destructive" : p.etiqueta === "medio" ? "warning" : "secondary"}>{Math.round(Number(p.valor) * 100)}% · {p.etiqueta}</Badge>
               </div>
@@ -105,7 +105,7 @@ export default async function AnaliticaPage() {
           <CardContent className="space-y-2">
             {tendencias.length === 0 && <p className="text-sm text-muted-foreground">Ningún alumno con tendencia negativa marcada.</p>}
             {tendencias.map((p) => (
-              <div key={p.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+              <div key={p.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
                 <span>{[p.alumno.nombre, p.alumno.apellido].filter(Boolean).join(" ") || p.alumno.username}</span>
                 <Badge variant="warning">{Math.round(Number(p.valor) * 100)}%</Badge>
               </div>
@@ -118,7 +118,7 @@ export default async function AnaliticaPage() {
         <CardHeader><CardTitle className="text-base">Ejercicios más difíciles</CardTitle></CardHeader>
         <CardContent className="space-y-1 text-sm">
           {porEjercicio.map((s) => (
-            <div key={s.id} className="glass rounded-lg px-3 py-1.5 flex items-center justify-between">
+            <div key={s.id} className="panel rounded-lg px-3 py-1.5 flex items-center justify-between">
               <span>Ejercicio {s.exercise_id} · {lessonTitles.get(s.lesson_id) ?? `lección ${s.lesson_id}`}</span>
               <span className="flex items-center gap-2 text-xs">
                 <span className="text-muted-foreground">{pct(s.successful_attempts, s.total_attempts)}% acierto · {s.total_attempts} intentos</span>
@@ -135,7 +135,7 @@ export default async function AnaliticaPage() {
           <CardHeader><CardTitle className="text-base">Rendimiento por lección</CardTitle></CardHeader>
           <CardContent className="space-y-1 text-sm">
             {porLeccion.map((s) => (
-              <div key={s.id} className="glass rounded-lg px-3 py-1.5 flex items-center justify-between">
+              <div key={s.id} className="panel rounded-lg px-3 py-1.5 flex items-center justify-between">
                 <span>{lessonTitles.get(s.lesson_id) ?? `Lección ${s.lesson_id}`}</span>
                 <span className="text-xs text-muted-foreground">{pct(s.successful_attempts, s.total_attempts)}% · {Math.round(Number(s.average_time_ms) / 1000)}s</span>
               </div>
@@ -146,7 +146,7 @@ export default async function AnaliticaPage() {
           <CardHeader><CardTitle className="text-base">{isAdmin ? "Comparativa entre paralelos" : "Tus paralelos"}</CardTitle></CardHeader>
           <CardContent className="space-y-1 text-sm">
             {porParalelo.map((s) => (
-              <div key={s.id} className="glass rounded-lg px-3 py-1.5 flex items-center justify-between">
+              <div key={s.id} className="panel rounded-lg px-3 py-1.5 flex items-center justify-between">
                 <span>{paraleloNames.get(s.paralelo_id) ?? `Paralelo ${s.paralelo_id}`}</span>
                 <span className="text-xs text-muted-foreground">{pct(s.successful_attempts, s.total_attempts)}% acierto · {s.total_attempts} intentos</span>
               </div>
@@ -159,7 +159,7 @@ export default async function AnaliticaPage() {
         <CardHeader><CardTitle className="text-base">Alumnos con menor rendimiento (descriptivo)</CardTitle></CardHeader>
         <CardContent className="space-y-1 text-sm">
           {porAlumno.map((s) => (
-            <div key={s.id} className="glass rounded-lg px-3 py-1.5 flex items-center justify-between">
+            <div key={s.id} className="panel rounded-lg px-3 py-1.5 flex items-center justify-between">
               <span>{alumnoNames.get(s.alumno_id) ?? `Alumno ${s.alumno_id}`}</span>
               <span className="text-xs text-muted-foreground">{pct(s.successful_attempts, s.total_attempts)}% acierto · {s.failed_attempts} fallos</span>
             </div>

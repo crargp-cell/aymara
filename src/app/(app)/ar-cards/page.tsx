@@ -59,7 +59,7 @@ export default async function ArCardsPage() {
                     <Image src={preview} alt={c.card_code} fill sizes="(max-width:768px) 100vw, 33vw" className={`object-cover ${hasIt ? "" : "grayscale opacity-50"}`} />
                   </div>
                 ) : (
-                  <div className="h-32 glass rounded-xl flex items-center justify-center text-xs text-muted-foreground">Sin imagen</div>
+                  <div className="h-32 panel rounded-xl flex items-center justify-center text-xs text-muted-foreground">Sin imagen</div>
                 )}
                 <p className="text-xs line-clamp-2">{c.description ?? "Sin descripción"}</p>
                 {hasIt ? (
@@ -74,7 +74,7 @@ export default async function ArCardsPage() {
           );
 
           return hasIt ? (
-            <Link key={c.id} href={`/ar-cards/${c.card_code}`}><Card className="border-emerald-400/30">{body}</Card></Link>
+            <Link key={c.id} href={`/ar-cards/${c.card_code}`}><Card style={{ borderColor: "var(--ruta-completado)" }}>{body}</Card></Link>
           ) : (
             <Card key={c.id} className="opacity-60 cursor-not-allowed">{body}</Card>
           );

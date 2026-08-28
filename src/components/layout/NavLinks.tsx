@@ -26,10 +26,10 @@ export function NavLinks({ role, onNavigate }: { role?: string; onNavigate?: () 
                   onClick={onNavigate}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2 text-sm transition-all hover:translate-x-1",
+                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors border-l-2",
                     isActive
-                      ? "bg-primary/15 border border-primary/30 text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground hover:bg-white/5",
+                      ? "border-l-primary bg-[var(--primary-soft)] text-[var(--primary)] font-medium"
+                      : "border-l-transparent text-muted-foreground hover:text-foreground hover:bg-muted",
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />

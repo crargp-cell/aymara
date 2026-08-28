@@ -58,14 +58,14 @@ export default async function ParalelosPage() {
         <CardHeader><CardTitle className="text-base">Nuevo paralelo</CardTitle></CardHeader>
         <CardContent>
           <form action={createParalelo} className="grid md:grid-cols-4 gap-3">
-            <select name="gestion_id" required className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+            <select name="gestion_id" required className="h-10 rounded-md border border-input bg-card px-3 text-sm">
               {gestiones.map((g) => <option key={g.id} value={g.id}>{g.nombre}</option>)}
             </select>
-            <select name="grado_id" required className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+            <select name="grado_id" required className="h-10 rounded-md border border-input bg-card px-3 text-sm">
               {grados.map((g) => <option key={g.id} value={g.id}>{g.nombre}</option>)}
             </select>
             <Input name="nombre" placeholder='Paralelo ("A")' required />
-            <select name="profesor_id" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+            <select name="profesor_id" className="h-10 rounded-md border border-input bg-card px-3 text-sm">
               <option value="">Sin profesor</option>
               {maestros.map((m) => <option key={m.id} value={m.id}>{nombreMaestro(m)}</option>)}
             </select>
@@ -78,7 +78,7 @@ export default async function ParalelosPage() {
         <CardHeader><CardTitle className="text-base">Paralelos ({paralelos.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {paralelos.map((p) => (
-            <div key={p.id} className="glass rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <div key={p.id} className="panel rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-medium flex items-center gap-2">
                   {p.gestion.nombre} · {p.grado.nombre} "{p.nombre}"
@@ -88,7 +88,7 @@ export default async function ParalelosPage() {
               </div>
               <form action={assignProfesor} className="flex items-center gap-2">
                 <input type="hidden" name="id" value={p.id} />
-                <select name="profesor_id" defaultValue={p.profesor_id ?? ""} className="h-9 rounded-lg border border-input glass bg-transparent px-3 text-sm">
+                <select name="profesor_id" defaultValue={p.profesor_id ?? ""} className="h-9 rounded-md border border-input bg-card px-3 text-sm">
                   <option value="">Sin profesor</option>
                   {maestros.map((m) => <option key={m.id} value={m.id}>{nombreMaestro(m)}</option>)}
                 </select>

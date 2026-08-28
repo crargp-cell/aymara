@@ -228,7 +228,7 @@ export function ArExamRunner({
 
   if (finished && finalResult) {
     return (
-      <div className="glass-strong rounded-2xl p-8 max-w-sm mx-auto text-center space-y-3">
+      <div className="panel-strong rounded-2xl p-8 max-w-sm mx-auto text-center space-y-3">
         <h2 className="text-xl font-bold">{finalResult.passed ? "¡Examen AR aprobado! 🎉" : "Examen AR completado"}</h2>
         <p className="text-sm">Aciertos: {results.filter((r) => r.correct).length}/{requests.length}</p>
         <p className="text-sm">Porcentaje: {finalResult.percentage}% (mínimo {minScore}%)</p>
@@ -248,11 +248,11 @@ export function ArExamRunner({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-base sm:text-lg font-semibold">
-            Solicitud <span className="text-primary">{step + 1}/{requests.length}</span>: <span className="glass px-2 py-1 rounded-lg text-sm sm:text-base">«{reqCard?.title}»</span>
+            Solicitud <span className="text-primary">{step + 1}/{requests.length}</span>: <span className="panel px-2 py-1 rounded-lg text-sm sm:text-base">«{reqCard?.title}»</span>
           </p>
           <div className="flex items-center gap-2 text-xs">
-            <span className="w-32 h-2 rounded-full bg-white/10 overflow-hidden">
-              <span className="block h-full transition-all" style={{ width: `${progressPct}%`, background: "linear-gradient(90deg,#8b5cf6,#06b6d4)" }} />
+            <span className="w-32 h-2 rounded-full bg-muted overflow-hidden">
+              <span className="block h-full transition-all" style={{ width: `${progressPct}%`, background: "var(--ruta-completado)" }} />
             </span>
             <span className="text-muted-foreground">{results.filter((r) => r.correct).length} aciertos</span>
           </div>
@@ -260,7 +260,7 @@ export function ArExamRunner({
         <Badge variant={secondsLeft <= 30 ? "destructive" : "outline"} className="font-mono text-sm px-3 py-1 self-start sm:self-auto">{mm}:{String(ss).padStart(2, "0")}</Badge>
       </div>
 
-      <div className="relative w-full h-[62vh] min-h-[420px] max-h-[740px] rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10">
+      <div className="relative w-full h-[62vh] min-h-[420px] max-h-[740px] rounded-2xl overflow-hidden bg-black shadow-2xl border border-border">
         <div ref={containerRef} className="absolute inset-0" />
 
         <div className="absolute top-3 left-3 z-20 flex flex-col gap-2">
@@ -295,7 +295,7 @@ export function ArExamRunner({
           </div>
         )}
         {status === "ready" && detectedIndex == null && (
-          <div className="absolute bottom-3 inset-x-3 text-center text-xs bg-black/60 text-white/80 rounded-xl py-1.5 backdrop-blur border border-white/10 px-2">
+          <div className="absolute bottom-3 inset-x-3 text-center text-xs bg-black/60 text-white/80 rounded-xl py-1.5 backdrop-blur border border-border px-2">
             Mostrá «{reqCard?.title}» bien iluminada, a 20-30cm, mantené firme 1s. Si parpadea, limpiá la cámara.
           </div>
         )}
@@ -311,7 +311,7 @@ export function ArExamRunner({
       )}
 
       {status === "manual" && (
-        <div className="glass rounded-2xl p-5 space-y-3 border border-amber-500/20">
+        <div className="panel rounded-2xl p-5 space-y-3 border border-amber-500/20">
           <p className="text-sm text-amber-300">{errorMsg} — Modo sin cámara: elegí qué tarjeta estás mostrando.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {cards.map((c, i) => (

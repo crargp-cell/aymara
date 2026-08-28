@@ -123,7 +123,7 @@ export default async function AdminExamDetailPage({ params }: { params: Promise<
             <label className="text-sm space-y-1"><span className="text-muted-foreground">Intentos (0 = ∞)</span><Input name="max_attempts" type="number" defaultValue={exam.max_attempts ?? 0} /></label>
             <label className="text-sm space-y-1">
               <span className="text-muted-foreground">Nota que cuenta</span>
-              <select name="attempt_policy" defaultValue={exam.attempt_policy} className="h-10 w-full rounded-xl border border-input glass bg-transparent px-3 text-sm">
+              <select name="attempt_policy" defaultValue={exam.attempt_policy} className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm">
                 <option value="best">mejor intento</option>
                 <option value="last">último intento</option>
                 <option value="first">primer intento</option>
@@ -134,7 +134,7 @@ export default async function AdminExamDetailPage({ params }: { params: Promise<
             <label className="text-sm space-y-1"><span className="text-muted-foreground">Disponible hasta</span><Input name="end_date" type="datetime-local" defaultValue={toLocalInputValue(exam.end_date)} /></label>
             <label className="text-sm space-y-1 md:col-span-2">
               <span className="text-muted-foreground">Tarjeta AR de recompensa al aprobar</span>
-              <select name="ar_card_id" defaultValue={exam.ar_card_id ?? ""} className="h-10 w-full rounded-xl border border-input glass bg-transparent px-3 text-sm">
+              <select name="ar_card_id" defaultValue={exam.ar_card_id ?? ""} className="h-10 w-full rounded-md border border-input bg-card px-3 text-sm">
                 <option value="">Sin recompensa</option>
                 {arCards.map((a) => <option key={a.id} value={a.id}>{a.card_code} — {a.title ?? ""}</option>)}
               </select>
@@ -151,7 +151,7 @@ export default async function AdminExamDetailPage({ params }: { params: Promise<
         <CardHeader><CardTitle className="text-base">Prerequisitos — lecciones que el alumno debe completar antes</CardTitle></CardHeader>
         <CardContent className="space-y-1">
           {lessons.map((l) => (
-            <form key={l.id} action={togglePrereq} className="flex items-center justify-between glass rounded-lg px-3 py-1.5 text-sm">
+            <form key={l.id} action={togglePrereq} className="flex items-center justify-between panel rounded-lg px-3 py-1.5 text-sm">
               <span>{l.title}</span>
               <input type="hidden" name="lesson_id" value={l.id} />
               <Button size="sm" variant={prereqIds.has(l.id) ? "secondary" : "outline"} type="submit">
@@ -168,7 +168,7 @@ export default async function AdminExamDetailPage({ params }: { params: Promise<
           <CardContent className="space-y-1">
             {arCards.length === 0 && <p className="text-sm text-muted-foreground">Crea tarjetas AR en este paralelo primero.</p>}
             {arCards.map((c) => (
-              <form key={c.id} action={toggleArCard} className="flex items-center justify-between glass rounded-lg px-3 py-1.5 text-sm">
+              <form key={c.id} action={toggleArCard} className="flex items-center justify-between panel rounded-lg px-3 py-1.5 text-sm">
                 <span className="flex items-center gap-2">{c.card_code} — {c.title ?? ""} {linkedCardIds.has(c.id) && <Badge variant="success">en el examen</Badge>}</span>
                 <input type="hidden" name="card_id" value={c.id} />
                 <Button size="sm" variant={linkedCardIds.has(c.id) ? "secondary" : "outline"} type="submit">{linkedCardIds.has(c.id) ? "Quitar" : "Agregar"}</Button>

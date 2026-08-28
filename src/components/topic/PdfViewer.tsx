@@ -28,7 +28,7 @@ export function PdfViewer({ url, title }: { url: string; title?: string }) {
       <iframe
         src={`${url}#view=FitH`}
         title={title ?? "PDF"}
-        className={`w-full rounded-xl border border-white/10 bg-white ${full ? "flex-1" : "h-[70vh]"}`}
+        className={`w-full rounded-xl border border-border bg-white ${full ? "flex-1" : "h-[70vh]"}`}
       />
     </div>
   );

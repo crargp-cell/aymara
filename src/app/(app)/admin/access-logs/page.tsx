@@ -32,7 +32,7 @@ export default async function AccessLogsPage({ searchParams }: { searchParams: P
         </CardHeader>
         <CardContent className="space-y-2">
           {logs.map((l) => (
-            <div key={l.id.toString()} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2 text-sm">
+            <div key={l.id.toString()} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2 text-sm">
               <div className="flex-1">
                 <p className="font-medium">{l.username ?? l.email ?? "—"}</p>
                 <p className="text-xs text-muted-foreground">

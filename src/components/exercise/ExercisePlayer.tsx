@@ -36,7 +36,7 @@ export function ExercisePlayer({ exercise, options, pairs, answers, action }: Pr
     return (
       <form action={withTiming()} className="space-y-3">
         {options.map((o) => (
-          <label key={o.id} className="flex items-center gap-2 glass rounded-xl px-4 py-2 cursor-pointer hover:shadow-glow">
+          <label key={o.id} className="flex items-center gap-2 panel rounded-xl px-4 py-2 cursor-pointer hover:shadow-glow">
             <input type="radio" name="user_answer" value={String(o.id)} required className="accent-primary" />
             <span className="text-sm">{o.option_text}</span>
           </label>
@@ -111,11 +111,11 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
       <div className="space-y-4">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">{totalPairs} pares</span>
-          <span className="px-2 py-1 rounded-full text-xs bg-white/10">Cargando cartas…</span>
+          <span className="px-2 py-1 rounded-full text-xs bg-muted">Cargando cartas…</span>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
           {pairs.flatMap(() => [0, 1]).map((_, i) => (
-            <div key={i} className="h-24 sm:h-28 rounded-xl glass border border-white/10 animate-pulse" />
+            <div key={i} className="h-24 sm:h-28 rounded-xl panel border border-border animate-pulse" />
           ))}
         </div>
       </div>
@@ -163,7 +163,7 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
     <div className="space-y-4">
       <div className="flex items-center justify-between text-xs">
         <span className="text-muted-foreground">{matchedPairs.size}/{totalPairs} pares · {moves} movimientos</span>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${won ? "bg-emerald-500 text-white" : "bg-white/10"}`}>{won ? "¡Completado!" : message}</span>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${won ? "bg-emerald-500 text-white" : "bg-muted"}`}>{won ? "¡Completado!" : message}</span>
       </div>
 
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
@@ -180,8 +180,8 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
               className={`relative h-24 sm:h-28 rounded-xl select-none [perspective:800px] ${isShaking ? "animate-[shake_0.4s_ease]" : ""} ${isMatched ? "opacity-70" : "hover:scale-[1.02]"}`}
             >
               <div className={`absolute inset-0 rounded-xl transition-all duration-500 [transform-style:preserve-3d] ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}>
-                <div className="absolute inset-0 rounded-xl glass border border-white/10 flex flex-col items-center justify-center gap-1 [backface-visibility:hidden]">
-                  <span className="text-[10px] tracking-widest text-white/30">{card.lang === "ay" ? "AYM" : "ESP"}</span>
+                <div className="absolute inset-0 rounded-xl panel border border-border flex flex-col items-center justify-center gap-1 [backface-visibility:hidden]">
+                  <span className="text-[10px] tracking-widest text-muted-foreground">{card.lang === "ay" ? "AYM" : "ESP"}</span>
                   <span className="text-xl">?</span>
                   <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${card.lang === "ay" ? "bg-sky-500/20 text-sky-300" : "bg-amber-500/20 text-amber-300"}`}>{card.lang === "ay" ? "Aymara" : "Español"}</span>
                 </div>

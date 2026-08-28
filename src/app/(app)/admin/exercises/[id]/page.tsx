@@ -133,7 +133,7 @@ export default async function AdminExerciseDetailPage({ params }: { params: Prom
           <form action={updateExercise} className="grid md:grid-cols-2 gap-3">
             <Input name="question" placeholder="Pregunta" defaultValue={exercise.question} required className="md:col-span-2" />
             <Input name="answer" placeholder="Respuesta (text/fill)" defaultValue={exercise.answer ?? ""} />
-            <select name="dificultad" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm" defaultValue={exercise.dificultad}>
+            <select name="dificultad" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue={exercise.dificultad}>
               <option value="facil">facil</option>
               <option value="medio">medio</option>
               <option value="dificil">dificil</option>
@@ -152,7 +152,7 @@ export default async function AdminExerciseDetailPage({ params }: { params: Prom
           </CardHeader>
           <CardContent className="space-y-2">
             {options.map((o) => (
-              <div key={o.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+              <div key={o.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                 <div className="flex-1 flex items-center gap-2">
                   <span className="text-sm">{o.option_text}</span>
                   {o.is_correct && <Badge variant="success">correcta</Badge>}
@@ -195,7 +195,7 @@ export default async function AdminExerciseDetailPage({ params }: { params: Prom
           </CardHeader>
           <CardContent className="space-y-2">
             {pairs.map((p) => (
-              <div key={p.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+              <div key={p.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                 <span className="text-sm">
                   {p.aymara_word} ↔ {p.spanish_word}
                 </span>
@@ -225,7 +225,7 @@ export default async function AdminExerciseDetailPage({ params }: { params: Prom
           </CardHeader>
           <CardContent className="space-y-2">
             {answers.map((a) => (
-              <div key={a.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+              <div key={a.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                 <span className="text-sm">{a.answer_text}</span>
                 <form action={deleteAnswer}>
                   <input type="hidden" name="answer_id" value={a.id} />

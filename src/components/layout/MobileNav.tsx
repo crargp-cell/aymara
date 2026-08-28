@@ -34,8 +34,8 @@ export function MobileNav({ role }: { role?: string }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex" role="dialog" aria-modal="true" aria-label="Menú de navegación">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="relative glass-strong w-72 max-w-[80vw] h-full p-4 flex flex-col overflow-y-auto">
+          <div className="absolute inset-0 bg-foreground/40" onClick={() => setOpen(false)} />
+          <div className="relative panel-strong w-72 max-w-[80vw] h-full p-4 flex flex-col overflow-y-auto">
             <div className="mb-6 flex items-center justify-between gap-2">
               <BrandHeader role={role} />
               <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Cerrar menú">
@@ -43,7 +43,7 @@ export function MobileNav({ role }: { role?: string }) {
               </Button>
             </div>
             <NavLinks role={role} onNavigate={() => setOpen(false)} />
-            <div className="mt-auto pt-4 border-t border-white/10">
+            <div className="mt-auto pt-4 border-t border-border">
               <LogoutButton />
             </div>
           </div>

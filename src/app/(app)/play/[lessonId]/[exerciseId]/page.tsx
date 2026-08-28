@@ -119,32 +119,32 @@ export default async function PlayPage({
         </CardHeader>
         <CardContent>
           {isStaff && (
-            <div className="mb-4 rounded-xl border border-amber-400/25 bg-amber-400/5 p-3 flex items-center gap-2 text-sm">
-              <Eye className="h-4 w-4 text-amber-300 shrink-0" />
+            <div className="mb-4 rounded-xl aviso-atencion border p-3 flex items-center gap-2 text-sm">
+              <Eye className="h-4 w-4 shrink-0" />
               <span className="text-muted-foreground">
                 Vista de revisión: podés responder para comprobar el ejercicio, pero tu respuesta no se guarda.
               </span>
             </div>
           )}
           {!isStaff && idx < 0 && (
-            <div className="mb-4 rounded-xl border border-sky-400/25 bg-sky-400/5 p-3 flex items-center gap-2 text-sm">
-              <Info className="h-4 w-4 text-sky-300 shrink-0" />
+            <div className="mb-4 rounded-xl aviso-info border p-3 flex items-center gap-2 text-sm">
+              <Info className="h-4 w-4 shrink-0" />
               <span className="text-muted-foreground">
                 Este ejercicio no entró en el sorteo de tu intento: podés practicarlo, pero no cuenta para completar la lección.
               </span>
             </div>
           )}
           {sp.done && (
-            <div className="mb-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-4 space-y-2">
-              <p className="flex items-center gap-2 text-emerald-400 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>
-              {sp.reward && <p className="flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-amber-300" /> Desbloqueaste una tarjeta AR.</p>}
+            <div className="mb-4 rounded-xl aviso-ok border p-4 space-y-2">
+              <p className="flex items-center gap-2 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>
+              {sp.reward && <p className="flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4" /> Desbloqueaste una tarjeta AR.</p>}
               {sp.logros && <p className="text-sm">Nuevos logros: {sp.logros.split("|").join(", ")}</p>}
               <Link href={`/lessons/${lid}`}><Button size="sm" variant="gradient">Volver a la lección</Button></Link>
             </div>
           )}
           {sp.result === "ok" && !sp.done && (
-            <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-emerald-400 text-sm font-medium"><CheckCircle2 className="h-5 w-5" /> ¡Correcto!</span>
+            <div className="mb-4 rounded-xl aviso-ok border p-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-sm font-medium"><CheckCircle2 className="h-5 w-5" /> ¡Correcto!</span>
               {nextId ? (
                 <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="gradient">Siguiente</Button></Link>
               ) : (
@@ -153,13 +153,13 @@ export default async function PlayPage({
             </div>
           )}
           {sp.result === "fail" && (
-            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-red-400 text-sm font-medium"><XCircle className="h-5 w-5" /> Incorrecto — inténtalo de nuevo.</span>
+            <div className="mb-4 rounded-xl aviso-error border p-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-sm font-medium"><XCircle className="h-5 w-5" /> Incorrecto — inténtalo de nuevo.</span>
               {nextId && <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="outline">Saltar</Button></Link>}
             </div>
           )}
           {forced && forcedTopic && (
-            <div className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+            <div className="mb-4 rounded-xl aviso-atencion border p-4">
               <p className="text-sm font-medium">Has fallado 3 veces — repasa la teoría</p>
               <Link href={`/topics/${forcedTopic.id}`}><Button size="sm" className="mt-2">Ir a lectura: {forcedTopic.title}</Button></Link>
             </div>

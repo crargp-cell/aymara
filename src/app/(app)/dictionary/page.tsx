@@ -50,7 +50,7 @@ export default async function DictionaryPage({ searchParams }: { searchParams: P
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
             {words.map((w) => (
-              <div key={w.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+              <div key={w.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{w.aymara}</p>
                   <p className="text-xs text-muted-foreground truncate">{w.espanol}</p>
@@ -62,7 +62,7 @@ export default async function DictionaryPage({ searchParams }: { searchParams: P
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-white/10 pt-3">
+            <div className="flex items-center justify-between border-t border-border pt-3">
               <a href={`/dictionary?q=${encodeURIComponent(q)}&page=${page - 1}`} className={page <= 1 ? "pointer-events-none" : ""}>
                 <Button variant="outline" size="sm" disabled={page <= 1}>Anterior</Button>
               </a>

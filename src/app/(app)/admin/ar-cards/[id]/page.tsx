@@ -118,7 +118,7 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
             <input type="file" name="patt" accept=".patt" className="text-sm" />
             <Button type="submit" variant="secondary">Reemplazar marcador</Button>
           </form>
-          <form action={uploadModel} className="flex items-center gap-2 pt-2 border-t border-white/10">
+          <form action={uploadModel} className="flex items-center gap-2 pt-2 border-t border-border">
             <input type="file" name="model" accept=".glb" required className="text-sm" />
             <Button type="submit" variant="secondary">{card.card_data ? "Reemplazar" : "Subir"} .glb</Button>
           </form>
@@ -130,7 +130,7 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
         <CardContent className="space-y-2">
           {card.user_cards.length === 0 && <p className="text-sm text-muted-foreground">Ningún alumno la ha desbloqueado.</p>}
           {card.user_cards.map((uc) => (
-            <div key={uc.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+            <div key={uc.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
               <span className="flex items-center gap-2">
                 {uc.alumno.nombre ?? uc.alumno.username} {uc.alumno.apellido ?? ""}
                 {uc.revocado && <Badge variant="destructive">revocada</Badge>}

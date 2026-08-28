@@ -84,7 +84,7 @@ export default async function AdminExamsPage() {
               <input type="hidden" name="paralelo_id" value={paralelo.id} />
               <Input name="title" placeholder="Título" required className="md:col-span-2" />
               <Input name="description" placeholder="Descripción" className="md:col-span-2" />
-              <select name="type" className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+              <select name="type" className="h-10 rounded-md border border-input bg-card px-3 text-sm">
                 <option value="conectar_palabras">Conectar palabras (clasificar por categoría)</option>
                 <option value="ar_exam">Examen AR (mostrar tarjeta a la cámara)</option>
               </select>
@@ -105,7 +105,7 @@ export default async function AdminExamsPage() {
         <CardContent className="space-y-2">
           {exams.length === 0 && <p className="text-sm text-muted-foreground">Sin exámenes en este paralelo.</p>}
           {exams.map((e) => (
-            <div key={e.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between">
+            <div key={e.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <span>{e.title}</span>

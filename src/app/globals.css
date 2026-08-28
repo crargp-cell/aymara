@@ -4,46 +4,73 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+  Paleta: marfil de base, azul profundo para la estructura, y tres acentos
+  (coral, amarillo, verde) reservados a la ruta de aprendizaje. La idea es
+  "diversidad sin arcoíris literal": el color comunica estado, no decora.
+*/
 :root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: rgba(30, 41, 59, 0.7);
-  --card-foreground: #f1f5f9;
-  --popover: #1e293b;
-  --popover-foreground: #f1f5f9;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
-  --secondary-foreground: #f1f5f9;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --accent: #7c3aed;
+  --background: #f7f3e8;
+  --foreground: #2c3244;
+
+  --card: #ffffff;
+  --card-foreground: #2c3244;
+  --popover: #ffffff;
+  --popover-foreground: #2c3244;
+
+  /* Azul profundo: estructura, botones, barra lateral */
+  --primary: #4b587c;
+  --primary-foreground: #f7f3e8;
+  --primary-soft: #eaecf2;
+
+  --secondary: #e8e2d3;
+  --secondary-foreground: #3d4459;
+
+  --muted: #ece7da;
+  --muted-foreground: #6d6a61;
+
+  --accent: #d95f43;
   --accent-foreground: #ffffff;
-  --destructive: #ef4444;
+  --destructive: #c2452f;
   --destructive-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #3b82f6;
-  --radius: 1rem;
-  --chart-1: #3b82f6;
-  --chart-2: #06b6d4;
-  --chart-3: #10b981;
-  --chart-4: #f59e0b;
-  --chart-5: #ec4899;
-  --sidebar: #1e293b;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #2563eb;
+
+  --border: #e0d9c8;
+  --input: #d8d0bd;
+  --ring: #4b587c;
+  --radius: 0.5rem;
+
+  /* Estados de la ruta de aprendizaje */
+  --ruta-completado: #5c8a62;
+  --ruta-activo: #e2b84b;
+  --ruta-futuro: #d95f43;
+  --ruta-bloqueado: #b9b1a0;
+
+  /* Wiphala — sólo para insignias y remates decorativos */
+  --wiphala-rojo: #d95f43;
+  --wiphala-naranja: #e08b3e;
+  --wiphala-amarillo: #e2b84b;
+  --wiphala-blanco: #f7f3e8;
+  --wiphala-verde: #5c8a62;
+  --wiphala-azul: #4b587c;
+  --wiphala-violeta: #7a5c86;
+
+  --chart-1: #4b587c;
+  --chart-2: #5c8a62;
+  --chart-3: #e2b84b;
+  --chart-4: #d95f43;
+  --chart-5: #7a5c86;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #2c3244;
+  --sidebar-primary: #4b587c;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #334155;
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: #3b82f6;
-  --glass: rgba(255, 255, 255, 0.08);
-  --glass-strong: rgba(255, 255, 255, 0.15);
-  --glow-blue: 0 0 30px rgba(37, 99, 235, 0.5);
-  --glow-purple: 0 0 30px rgba(124, 58, 237, 0.4);
-  --gradient-primary: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-  --gradient-rainbow: linear-gradient(90deg, #2563eb, #06b6d4, #10b981, #f59e0b, #ec4899);
+  --sidebar-accent: #f0ebde;
+  --sidebar-accent-foreground: #2c3244;
+  --sidebar-border: #e0d9c8;
+  --sidebar-ring: #4b587c;
+
+  --shadow-panel: 0 1px 2px rgba(44, 50, 68, 0.05), 0 4px 16px rgba(44, 50, 68, 0.06);
+  --shadow-raised: 0 2px 4px rgba(44, 50, 68, 0.08), 0 12px 28px rgba(44, 50, 68, 0.1);
 }
 
 @theme inline {
@@ -66,6 +93,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-ruta-completado: var(--ruta-completado);
+  --color-ruta-activo: var(--ruta-activo);
+  --color-ruta-futuro: var(--ruta-futuro);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -79,9 +109,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -92,45 +122,102 @@
 }
 
 body {
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
-  background-attachment: fixed;
+  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   min-height: 100vh;
 }
 
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(37, 99, 235, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(124, 58, 237, 0.12) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: -1;
+/*
+  Panel: la superficie base de todas las tarjetas y bloques. Sustituye al
+  antiguo `.glass` del tema oscuro — aquí el papel lo hace el marfil del fondo,
+  así que los paneles son sólidos y se separan por borde y sombra suave.
+*/
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-panel);
 }
 
-.glass {
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+.panel-strong {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-raised);
+}
+
+/* Panel apoyado sobre el marfil, sin blanco: para zonas secundarias. */
+.panel-muted {
+  background: #f2eddf;
   border: 1px solid var(--border);
 }
 
-.glass-strong {
-  background: var(--glass-strong);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-
 .text-gradient {
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--primary);
 }
 
 .shadow-glow {
-  box-shadow: var(--glow-blue);
+  box-shadow: var(--shadow-raised);
+}
+
+/*
+  Textura textil aymara: rombos escalonados a muy baja opacidad. Se usa dentro
+  de los nodos grandes de la ruta y en remates, nunca como fondo general.
+*/
+.textil {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0 L24 12 L12 24 L0 12 Z' fill='none' stroke='%23ffffff' stroke-width='1.5' opacity='0.5'/%3E%3Cpath d='M12 6 L18 12 L12 18 L6 12 Z' fill='%23ffffff' opacity='0.35'/%3E%3C/svg%3E");
+  background-size: 18px 18px;
+}
+
+.textil-oscuro {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M12 0 L24 12 L12 24 L0 12 Z' fill='none' stroke='%232c3244' stroke-width='1.5' opacity='0.5'/%3E%3Cpath d='M12 6 L18 12 L12 18 L6 12 Z' fill='%232c3244' opacity='0.3'/%3E%3C/svg%3E");
+  background-size: 18px 18px;
+}
+
+/*
+  Avisos de estado. Sobre marfil hacen falta tintas oscuras: los tonos claros
+  del tema anterior (emerald-400, amber-300…) quedaban ilegibles.
+*/
+.aviso-ok {
+  background: #eaf2eb;
+  border-color: #bcd4bf;
+  color: #37623c;
+}
+
+.aviso-atencion {
+  background: #fbf3de;
+  border-color: #ebd8a2;
+  color: #74590f;
+}
+
+.aviso-error {
+  background: #fbeae6;
+  border-color: #f0c3b8;
+  color: #9e3823;
+}
+
+.aviso-info {
+  background: #eaecf2;
+  border-color: #c3cadb;
+  color: #3a4467;
+}
+
+/* Nodo de la ruta: cuadrado biselado, con volumen por borde inferior. */
+.nodo-ruta {
+  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 78%, 78% 100%, 22% 100%, 0 78%, 0 22%);
+}
+
+/* Rombo, para los nodos de examen. */
+.nodo-rombo {
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* Escalonado tipo chakana, para las insignias. */
+.escalonado {
+  clip-path: polygon(
+    35% 0, 65% 0, 65% 18%, 82% 18%, 82% 35%, 100% 35%, 100% 65%,
+    82% 65%, 82% 82%, 65% 82%, 65% 100%, 35% 100%, 35% 82%, 18% 82%,
+    18% 65%, 0 65%, 0 35%, 18% 35%, 18% 18%, 35% 18%
+  );
 }
 
 .animate-float {
@@ -139,12 +226,12 @@ body::before {
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  50% { transform: translateY(-8px); }
 }
 
-@keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+@keyframes latido {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 @keyframes shimmer {

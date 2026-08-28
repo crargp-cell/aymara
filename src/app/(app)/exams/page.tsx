@@ -56,7 +56,7 @@ export default async function ExamsPage() {
                 {eff && <Badge variant={eff.passed ? "success" : "warning"}>tu nota: {eff.score}%</Badge>}
               </div>
               {isStudent && !gate.ok ? (
-                <p className="text-xs text-amber-300">{gate.motivo}</p>
+                <p className="text-xs" style={{ color: "var(--ruta-futuro)" }}>{gate.motivo}</p>
               ) : (
                 <Link href={`/exams/${e.id}`}>
                   <Button variant="gradient" size="sm" className="w-full">{isStudent ? "Rendir" : "Ver"}</Button>

@@ -103,7 +103,7 @@ export default async function AdminExercisesPage({ searchParams }: { searchParam
         <CardContent className="space-y-2">
           {exercises.length === 0 && <p className="text-sm text-muted-foreground">Sin ejercicios en el pool de este paralelo.</p>}
           {exercises.map((e) => (
-            <div key={e.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+            <div key={e.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
               <div className="flex-1">
                 <p className="text-sm font-medium line-clamp-1">{e.question}</p>
                 <div className="flex gap-2 mt-1 flex-wrap items-center">

@@ -184,7 +184,7 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
   }, [markerImageUrl, modelUrl, mode]);
 
   return (
-    <div className="relative w-full h-[58vh] min-h-[420px] max-h-[760px] rounded-2xl overflow-hidden bg-black shadow-2xl border border-white/10">
+    <div className="relative w-full h-[58vh] min-h-[420px] max-h-[760px] rounded-2xl overflow-hidden bg-black shadow-2xl border border-border">
       <div className="absolute top-3 right-3 z-20 flex gap-1.5">
         <button onClick={() => setMode("ar")} className={`text-xs px-3 py-1.5 rounded-full font-medium backdrop-blur transition ${mode === "ar" ? "bg-white text-black shadow" : "bg-black/40 text-white border border-white/20 hover:bg-black/60"}`}>AR</button>
         <button onClick={() => setMode("preview")} className={`text-xs px-3 py-1.5 rounded-full font-medium backdrop-blur transition ${mode === "preview" ? "bg-white text-black shadow" : "bg-black/40 text-white border border-white/20 hover:bg-black/60"}`}>Vista previa 3D</button>
@@ -216,7 +216,7 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
       {mode === "ar" && (
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
           <div className="w-[58%] h-[58%] max-w-[320px] max-h-[320px] border border-white/15 rounded-xl relative hidden sm:block">
-            <div className="absolute inset-0 border border-dashed border-white/10 rounded-xl" />
+            <div className="absolute inset-0 border border-dashed border-border rounded-xl" />
           </div>
         </div>
       )}

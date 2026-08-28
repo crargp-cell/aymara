@@ -38,7 +38,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     return (
       <div className="space-y-6">
-        <div className="glass rounded-2xl p-6">
+        <div className="panel rounded-2xl p-6">
           <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
           <p className="text-sm text-muted-foreground">
             Administración · {gestionActual ? `${gestionActual.nombre} en curso` : "sin gestión actual definida"}
@@ -68,19 +68,19 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <CardHeader><CardTitle className="text-sm">Requiere tu atención</CardTitle></CardHeader>
             <CardContent className="space-y-2 text-sm">
               {!gestionActual && (
-                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                <div className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                   <span>No hay ninguna gestión marcada como actual.</span>
                   <Link href="/admin/gestiones"><Button size="sm" variant="outline">Definir</Button></Link>
                 </div>
               )}
               {sinProfesor > 0 && (
-                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                <div className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                   <span>{sinProfesor} paralelo(s) sin profesor asignado.</span>
                   <Link href="/admin/paralelos"><Button size="sm" variant="outline">Asignar</Button></Link>
                 </div>
               )}
               {sinInscripcion > 0 && (
-                <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+                <div className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
                   <span>{sinInscripcion} alumno(s) sin inscripción en la gestión actual.</span>
                   <Link href="/admin/students"><Button size="sm" variant="outline">Inscribir</Button></Link>
                 </div>
@@ -122,7 +122,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
     return (
       <div className="space-y-6">
-        <div className="glass rounded-2xl p-6">
+        <div className="panel rounded-2xl p-6">
           <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
           <p className="text-sm text-muted-foreground">
             Profesor · {paralelos.length} paralelo(s) asignado(s)
@@ -147,7 +147,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             {paralelos.map((p) => {
               const enUso = actual?.id === p.id;
               return (
-                <div key={p.id} className="glass rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-2">
+                <div key={p.id} className="panel rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0">
                     <span className="truncate">{p.gestion} · {p.nombre}</span>
                     {enUso && <Badge variant="success">en uso</Badge>}
@@ -215,7 +215,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-6">
-      <div className="glass rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+      <div className="panel rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
         <Image src="/mascota/mascota.png" alt="Mascota Aymara" width={90} height={90} className="animate-float shrink-0" />
         <div>
           <h1 className="text-xl font-semibold">Hola, {user.name}</h1>

@@ -52,7 +52,7 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
           {hasPreview ? (
             <ArScene markerImageUrl={`/ar/${previewFile}`} modelUrl={modelUrl} />
           ) : (
-            <div className="h-[52vh] min-h-[360px] bg-black rounded-2xl flex items-center justify-center text-white text-sm px-4 text-center border border-white/10">
+            <div className="h-[52vh] min-h-[360px] bg-black rounded-2xl flex items-center justify-center text-white text-sm px-4 text-center border border-border">
               Esta tarjeta no tiene un marcador de imagen todavía — pide a un docente que suba la imagen de referencia.
             </div>
           )}
