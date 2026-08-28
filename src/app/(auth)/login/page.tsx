@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { WiphalaCorner } from "@/components/brand/Chakana";
+import { TocapuBanda } from "@/components/brand/Andino";
 
 const phrases = [
   "Yatiña — Saber",
@@ -49,9 +50,12 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<{ er
               <p className="text-sm font-medium text-center">{phrase}</p>
             </div>
           </div>
-          <div className="relative mt-8 flex items-center justify-between">
-            <WiphalaCorner />
-            <p className="text-xs opacity-60">© 2026 Aymara</p>
+          <div className="relative mt-8 space-y-3">
+            <TocapuBanda n={5} size={26} className="opacity-70" />
+            <div className="flex items-center justify-between">
+              <WiphalaCorner />
+              <p className="text-xs opacity-60">© 2026 Aymara</p>
+            </div>
           </div>
         </div>
         <div className="p-8 flex flex-col justify-center">

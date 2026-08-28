@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Chakana } from "@/components/brand/Chakana";
+import { Guarda } from "@/components/brand/Andino";
 import { Trophy, Sparkles } from "lucide-react";
 
 export type Recompensa = { id: number; titulo: string; fecha: string };
@@ -26,6 +27,8 @@ export function PanelRecompensas({
       className="rounded-lg overflow-hidden self-start sticky top-4"
       style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
     >
+      {/* Cenefa de ch'aska sobre el azul, a modo de remate del panel */}
+      <Guarda motivo="chaska" alto={12} color="var(--wiphala-amarillo)" opacidad={0.7} />
       <div className="relative px-5 py-4 border-b border-white/15">
         <span className="absolute inset-0 textil opacity-[0.07]" aria-hidden="true" />
         <p className="relative text-sm font-semibold">Tus recompensas</p>
