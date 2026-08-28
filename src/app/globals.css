@@ -10,7 +10,7 @@
   "diversidad sin arcoíris literal": el color comunica estado, no decora.
 */
 :root {
-  --background: #f7f3e8;
+  --background: #fdf8eb;
   --foreground: #2c3244;
 
   --card: #ffffff;
@@ -20,7 +20,7 @@
 
   /* Azul profundo: estructura, botones, barra lateral */
   --primary: #4b587c;
-  --primary-foreground: #f7f3e8;
+  --primary-foreground: #fdf8eb;
   --primary-soft: #eaecf2;
 
   --secondary: #e8e2d3;
@@ -49,7 +49,7 @@
   --wiphala-rojo: #d95f43;
   --wiphala-naranja: #e08b3e;
   --wiphala-amarillo: #e2b84b;
-  --wiphala-blanco: #f7f3e8;
+  --wiphala-blanco: #fdf8eb;
   --wiphala-verde: #5c8a62;
   --wiphala-azul: #4b587c;
   --wiphala-violeta: #7a5c86;
@@ -109,6 +109,22 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  /* Paleta del fondo decorativo andino */
+  --color-andino-crema: #fdf8eb;
+  --color-andino-morado: #7c43bd;
+  --color-andino-azul: #1274a1;
+  --color-andino-oro: #ffb800;
+  --color-andino-terracota: #e64a19;
+  --color-andino-coral: #ff5722;
+  --color-andino-verde: #43a047;
+
+  /* Animaciones del fondo */
+  --animate-float: flotar 8s ease-in-out infinite;
+  --animate-float-reverse: flotar-inverso 10s ease-in-out infinite;
+  --animate-float-fast: flotar 5s ease-in-out infinite;
+  --animate-spin-slow: spin 25s linear infinite;
+  --animate-spin-slow-reverse: spin 25s linear infinite reverse;
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
@@ -228,13 +244,31 @@ body {
   );
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+/*
+  Flotación del fondo decorativo. Se anima la propiedad `translate` y no
+  `transform`: en Tailwind v4 las utilidades `rotate-*` escriben la propiedad
+  `rotate` por separado, así que animar `transform` con rotate() pisaría la
+  inclinación de cada pieza (y `--tw-rotate`, del v3, ya no existe).
+*/
+@keyframes flotar {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -25px; }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes flotar-inverso {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 25px; }
+}
+
+/* Quien pida menos movimiento no debería recibir un fondo en animación continua. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-float-reverse,
+  .animate-float-fast,
+  .animate-spin-slow,
+  .animate-spin-slow-reverse {
+    animation: none !important;
+  }
 }
 
 @keyframes latido {
