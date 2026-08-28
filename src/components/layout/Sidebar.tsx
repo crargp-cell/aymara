@@ -1,7 +1,6 @@
 import { NavLinks } from "./NavLinks";
 import { LogoutButton } from "./LogoutButton";
 import { BrandHeader } from "./BrandHeader";
-import { WiphalaCorner } from "@/components/brand/Chakana";
 
 export function Sidebar({ role }: { role?: string }) {
   return (
@@ -10,9 +9,8 @@ export function Sidebar({ role }: { role?: string }) {
         <BrandHeader role={role} />
       </div>
       <NavLinks role={role} />
-      <div className="mt-auto pt-4 border-t border-border space-y-3">
+      <div className="mt-auto pt-4 border-t border-border">
         <LogoutButton />
-        <WiphalaCorner className="px-1 opacity-70" />
       </div>
     </aside>
   );

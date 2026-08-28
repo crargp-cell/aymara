@@ -8,7 +8,6 @@ import { ParaleloSwitcher } from "@/components/layout/ParaleloSwitcher";
 import { RutaTablero } from "@/components/map/RutaTablero";
 import { PanelRecompensas, type Recompensa } from "@/components/map/PanelRecompensas";
 import { WiphalaCorner } from "@/components/brand/Chakana";
-import { Guarda, TocapuBanda } from "@/components/brand/Andino";
 import { Eye } from "lucide-react";
 
 const fecha = (d: Date) => d.toLocaleDateString("es", { day: "numeric", month: "short" });
@@ -109,13 +108,11 @@ export default async function MapPage() {
             )}
           </div>
 
-          {/* Pie del lienzo: serie de tocapus entre remates de wiphala */}
-          <div className="flex items-center justify-between gap-4 px-5 pb-4 pt-1">
+          {/* Remates de wiphala en las esquinas inferiores del lienzo */}
+          <div className="flex items-center justify-between px-5 pb-4 pt-1">
             <WiphalaCorner lado="izquierda" />
-            <TocapuBanda n={5} size={22} className="opacity-30 hidden sm:flex" />
             <WiphalaCorner lado="derecha" />
           </div>
-          <Guarda motivo="rombos" alto={10} color="var(--primary)" opacidad={0.35} />
         </div>
 
         {!esDocente && (
