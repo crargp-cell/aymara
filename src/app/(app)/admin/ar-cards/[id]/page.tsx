@@ -114,8 +114,14 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
         <CardHeader><CardTitle className="text-base">Marcador y modelo 3D</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <form action={replaceMarker} className="grid gap-2">
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" />
-            <input type="file" name="patt" accept=".patt" className="text-sm" />
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground text-xs">Imagen nueva. Con esto basta: se regeneran solos el .patt y la lámina para imprimir.</span>
+              <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="block w-full text-sm" />
+            </label>
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground text-xs">Marcador .patt propio (opcional), sólo si prefieres uno entrenado a mano.</span>
+              <input type="file" name="patt" accept=".patt" className="block w-full text-sm" />
+            </label>
             <Button type="submit" variant="secondary">Reemplazar marcador</Button>
           </form>
           <form action={uploadModel} className="flex items-center gap-2 pt-2 border-t border-border">

@@ -10,7 +10,8 @@ import { maestroContext } from "@/lib/maestro-page";
 import { requireRole } from "@/lib/session";
 import { assertMaestroOwnsContent, assertMaestroOwnsParalelo } from "@/lib/rbac";
 import { badgeVariantContenido } from "@/lib/estado";
-import { saveUploadedMarker } from "@/lib/ar/marker";
+import { saveUploadedMarker, regenerarMarcador, nombrePatt, nombreLamina, fileExists, AR_DIR } from "@/lib/ar/marker";
+import path from "path";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -27,6 +28,32 @@ export default async function AdminArCardsPage() {
         prisma.lesson.findMany({ where: { paralelo_id: paralelo.id }, orderBy: { orden: "asc" }, select: { id: true, title: true } }),
       ])
     : [[], []];
+
+  const material = new Map(
+    await Promise.all(
+      cards.map(async (c) => {
+        const [patt, lamina] = await Promise.all([
+          fileExists(path.join(AR_DIR, nombrePatt(c.card_code))),
+          fileExists(path.join(AR_DIR, nombreLamina(c.card_code))),
+        ]);
+        return [c.id, { patt, lamina }] as const;
+      }),
+    ),
+  );
+
+  /** Rehace .patt y lámina de una tarjeta antigua a partir de su dibujo. */
+  async function regenerar(formData: FormData) {
+    "use server";
+    const user = await requireRole(["maestro", "admin"]);
+    const id = Number(formData.get("id"));
+    const { ok } = await assertMaestroOwnsContent(user.role, user.id, "arcard", id);
+    if (!ok) return;
+    const card = await prisma.arCard.findUnique({ where: { id }, select: { card_code: true, image_file: true } });
+    if (!card?.image_file) return;
+    const { markerFile } = await regenerarMarcador(card.card_code, card.image_file);
+    await prisma.arCard.update({ where: { id }, data: { marker_file: markerFile, updated_by: user.id } });
+    revalidatePath("/admin/ar-cards");
+  }
 
   async function createCard(formData: FormData) {
     "use server";
@@ -84,11 +111,11 @@ export default async function AdminArCardsPage() {
               <Input name="title" placeholder="Título (p. ej. Llama)" required />
               <Input name="description" placeholder="Descripción" />
               <label className="md:col-span-2 text-sm space-y-1">
-                <span className="text-muted-foreground text-xs">Imagen de referencia (jpg/png/webp) — la cámara AR la usa para reconocer la tarjeta</span>
+                <span className="text-muted-foreground text-xs">Imagen de referencia (jpg/png/webp). Con esto basta: el sistema genera solo el marcador .patt y la lámina lista para imprimir.</span>
                 <input type="file" name="image" accept="image/jpeg,image/png,image/webp" required className="block w-full text-sm" />
               </label>
               <label className="md:col-span-2 text-sm space-y-1">
-                <span className="text-muted-foreground text-xs">Marcador .patt (opcional, para descarga AR.js)</span>
+                <span className="text-muted-foreground text-xs">Marcador .patt propio (opcional). Sólo si ya tienes uno entrenado a mano y prefieres usar ése.</span>
                 <input type="file" name="patt" accept=".patt" className="block w-full text-sm" />
               </label>
               <select name="unlock_type" className="h-10 rounded-md border border-input bg-card px-3 text-sm" defaultValue="lesson">
@@ -124,6 +151,40 @@ export default async function AdminArCardsPage() {
                     <span>obtención: {c.unlock_type}</span>
                     <span>{c._count.user_cards} alumno(s) · {c._count.exam_links} examen(es)</span>
                     <span>{c.card_data ? "modelo .glb ✓" : "sin modelo"}</span>
+                  </div>
+                  {/* Material imprimible: se genera solo al subir la imagen. Las
+                      tarjetas anteriores a eso pueden rehacerlo con el botón. */}
+                  <div className="flex items-center gap-3 text-xs mt-1 flex-wrap">
+                    {material.get(c.id)?.lamina ? (
+                      <a
+                        className="underline underline-offset-2"
+                        href={`/ar/${nombreLamina(c.card_code)}`}
+                        download={`lamina-${c.card_code}.png`}
+                      >
+                        Lámina para imprimir
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">sin lámina</span>
+                    )}
+                    {material.get(c.id)?.patt ? (
+                      <a
+                        className="underline underline-offset-2"
+                        href={`/ar/${nombrePatt(c.card_code)}`}
+                        download={`marcador-${c.card_code}.patt`}
+                      >
+                        Marcador .patt
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">sin .patt</span>
+                    )}
+                    {c.image_file && !(material.get(c.id)?.patt && material.get(c.id)?.lamina) && (
+                      <form action={regenerar}>
+                        <input type="hidden" name="id" value={c.id} />
+                        <button type="submit" className="underline underline-offset-2 text-primary">
+                          Generar material
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </div>
               </div>
