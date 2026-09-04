@@ -19,6 +19,7 @@ import {
   ClipboardList,
   MessageSquareWarning,
   History,
+  Bird,
 } from "lucide-react";
 
 export type Role = "estudiante" | "maestro" | "admin";
@@ -75,7 +76,10 @@ const NAV_BY_ROLE: Record<Role, NavSection[]> = {
     },
     {
       section: "Recursos",
-      items: [{ href: "/dictionary", label: "Diccionario", icon: Search }],
+      items: [
+        { href: "/dictionary", label: "Diccionario", icon: Search },
+        { href: "/condor", label: "Mallku, el cóndor", icon: Bird },
+      ],
     },
   ],
 
@@ -107,6 +111,7 @@ const NAV_BY_ROLE: Record<Role, NavSection[]> = {
         { href: "/topics", label: "Temas", icon: Layers },
         { href: "/exams", label: "Exámenes", icon: FileQuestion },
         { href: "/ar-cards", label: "Tarjetas AR", icon: Sparkles },
+        { href: "/condor", label: "Mallku, el cóndor", icon: Bird },
       ],
     },
     {
