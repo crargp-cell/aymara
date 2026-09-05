@@ -46,10 +46,15 @@ export function Condor({
 export function Burbuja({
   linea,
   onTerminado,
+  onHablando,
   className,
 }: {
   linea: Linea;
   onTerminado?: () => void;
+  /** Avisa a quien dibuja al cóndor de cuándo mover el pico: mientras se
+   *  escribe la frase y mientras suena en voz alta. Lleva el id porque en una
+   *  conversación hay varias burbujas y cualquiera puede ponerse a sonar. */
+  onHablando?: (id: string, hablando: boolean) => void;
   className?: string;
 }) {
   const [visible, setVisible] = useState("");
@@ -116,12 +121,19 @@ export function Burbuja({
     }
   }, [completo, onTerminado]);
 
+  // El pico se mueve mientras se escribe la frase y mientras suena.
+  const sonando = voz.hablando === linea.id;
+  useEffect(() => {
+    onHablando?.(linea.id, !completo || sonando);
+    // Al desmontarse hay que retirar el aviso: si no, una burbuja que
+    // desaparece a mitad de frase deja el pico moviéndose para siempre.
+    return () => onHablando?.(linea.id, false);
+  }, [linea.id, completo, sonando, onHablando]);
+
   const saltar = () => {
     setVisible(linea.texto);
     setCompleto(true);
   };
-
-  const sonando = voz.hablando === linea.id;
 
   return (
     <div className={cn("panel rounded-2xl rounded-bl-sm px-4 py-3 relative", className)}>

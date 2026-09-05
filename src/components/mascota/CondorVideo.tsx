@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /*
@@ -38,6 +39,9 @@ const VERDOR_TRANSPARENTE = 90;
 */
 const ANCHO_MAXIMO_PROCESO = 420;
 const DENSIDAD_MAXIMA = 2;
+
+/** Si alguien silenció el saludo, no se le vuelve a poner en cada visita. */
+const CLAVE_SONIDO = "condor-video-sonido";
 
 /** Recorta el croma de un fotograma ya dibujado, en el sitio. */
 function recortarCroma(ctx: CanvasRenderingContext2D, w: number, h: number) {
@@ -80,6 +84,17 @@ export function CondorVideo({
   const [listo, setListo] = useState(false);
   const [fallo, setFallo] = useState(false);
   const [reproduciendo, setReproduciendo] = useState(false);
+  const [sonando, setSonando] = useState(false);
+  const [bloqueadoPorNavegador, setBloqueadoPorNavegador] = useState(false);
+  const quiereSonido = useRef(true);
+
+  useEffect(() => {
+    try {
+      quiereSonido.current = localStorage.getItem(CLAVE_SONIDO) !== "0";
+    } catch {
+      /* sin localStorage se asume que sí, que es como está grabado */
+    }
+  }, []);
 
   /** Un fotograma: dibujar el vídeo escalado y quitarle el verde. */
   const pintarFotograma = useCallback(() => {
@@ -122,16 +137,30 @@ export function CondorVideo({
       video.addEventListener("seeked", () => setListo(pintarFotograma()), { once: true });
     };
 
-    const reproducir = () => {
-      video
-        .play()
-        .then(() => {
-          setReproduciendo(true);
-          arrancarBucle();
-        })
-        // Si el navegador no deja arrancar solo, queda el primer fotograma y el
-        // alumno puede darle para verlo.
-        .catch(mostrarUnFotograma);
+    /*
+      Se intenta con sonido, que es como está grabado el saludo. Los navegadores
+      sólo dejan arrancar con audio si el visitante ya ha interactuado con la
+      página, y al entrar en Inicio recién cargada normalmente no lo ha hecho:
+      entonces `play()` es rechazado. En ese caso se reproduce en silencio —el
+      cóndor se ve igual— y aparece un botón para oírlo, que además lo devuelve
+      al principio para no perderse el saludo a medias.
+    */
+    const reproducir = async (conSonido: boolean) => {
+      video.muted = !conSonido;
+      try {
+        await video.play();
+        setReproduciendo(true);
+        setSonando(conSonido);
+        setBloqueadoPorNavegador(false);
+        arrancarBucle();
+      } catch {
+        if (conSonido) {
+          setBloqueadoPorNavegador(true);
+          await reproducir(false);
+        } else {
+          mostrarUnFotograma();
+        }
+      }
     };
 
     const alCargar = () => {
@@ -161,14 +190,14 @@ export function CondorVideo({
         const alVolver = () => {
           if (document.hidden) return;
           document.removeEventListener("visibilitychange", alVolver);
-          reproducir();
+          void reproducir(quiereSonido.current);
         };
         document.addEventListener("visibilitychange", alVolver);
         limpiezaVisibilidad = () => document.removeEventListener("visibilitychange", alVolver);
         return;
       }
 
-      reproducir();
+      void reproducir(quiereSonido.current);
     };
 
     // Se detiene en el último fotograma en lugar de repetirse sin fin: un saludo
@@ -193,14 +222,49 @@ export function CondorVideo({
     };
   }, [src, ancho, arrancarBucle, pintarFotograma]);
 
-  const repetir = () => {
+  /** Vuelve a empezar. `conSonido` decide si además se oye. */
+  const desdeElPrincipio = useCallback(
+    (conSonido: boolean) => {
+      const video = videoRef.current;
+      if (!video) return;
+      video.muted = !conSonido;
+      video.currentTime = 0;
+      void video
+        .play()
+        .then(() => {
+          setReproduciendo(true);
+          setSonando(conSonido);
+          setBloqueadoPorNavegador(false);
+          arrancarBucle();
+        })
+        .catch(() => setSonando(false));
+    },
+    [arrancarBucle],
+  );
+
+  /*
+    El altavoz hace dos cosas según el caso. Si el navegador bloqueó el audio,
+    rebobina para que el saludo se oiga entero en vez de empezar por la mitad.
+    Si ya está sonando, silencia sin cortar. La elección se recuerda: a quien
+    apagó el sonido no se le vuelve a poner en cada visita.
+  */
+  const alternarSonido = () => {
     const video = videoRef.current;
     if (!video) return;
-    video.currentTime = 0;
-    void video.play().then(() => {
-      setReproduciendo(true);
-      arrancarBucle();
-    });
+    const encender = !sonando;
+    quiereSonido.current = encender;
+    try {
+      localStorage.setItem(CLAVE_SONIDO, encender ? "1" : "0");
+    } catch {
+      /* sin localStorage funciona igual, sólo que no lo recuerda */
+    }
+
+    if (encender && (bloqueadoPorNavegador || video.ended)) {
+      desdeElPrincipio(true);
+      return;
+    }
+    video.muted = !encender;
+    setSonando(encender);
   };
 
   // Si el vídeo no carga, queda la imagen de siempre: la pantalla no se rompe
@@ -224,7 +288,10 @@ export function CondorVideo({
       brinco en cuanto apareciera el primer fotograma.
     */
     <div className={cn("relative shrink-0", className)} style={{ width: ancho, aspectRatio: "9 / 16" }}>
-      <video ref={videoRef} src={src} muted playsInline preload="auto" className="hidden" aria-hidden />
+      {/* El silencio no se declara aquí: React trata `muted` como propiedad y no
+          la vuelve a aplicar de forma fiable en los re-renderizados, así que
+          pelearía con el botón de sonido. Se decide antes de cada `play()`. */}
+      <video ref={videoRef} src={src} playsInline preload="auto" className="hidden" aria-hidden />
       {!listo && (
         <Image
           src={poster}
@@ -237,10 +304,29 @@ export function CondorVideo({
       )}
       <canvas
         ref={canvasRef}
-        onClick={reproduciendo ? undefined : repetir}
+        onClick={reproduciendo ? undefined : () => desdeElPrincipio(quiereSonido.current)}
         title={reproduciendo ? undefined : "Verlo otra vez"}
         className={cn("w-full h-full", listo ? "block" : "hidden", !reproduciendo && "cursor-pointer")}
       />
+
+      {listo && (
+        <button
+          type="button"
+          onClick={alternarSonido}
+          aria-label={sonando ? "Silenciar el saludo" : "Oír el saludo"}
+          title={sonando ? "Silenciar" : "Oír el saludo"}
+          className={cn(
+            "absolute bottom-0 right-0 h-8 w-8 rounded-full flex items-center justify-center transition-colors",
+            // Cuando el navegador impidió el audio, el botón se destaca: es la
+            // única pista de que hay algo que oír.
+            bloqueadoPorNavegador
+              ? "bg-primary text-primary-foreground shadow-md animate-pulse"
+              : "panel text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {sonando ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+        </button>
+      )}
     </div>
   );
 }

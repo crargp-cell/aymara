@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Condor, Burbuja } from "./Condor";
+import { Burbuja } from "./Condor";
+import { CondorHablante } from "./CondorHablante";
 import type { Guion, Linea } from "@/lib/mascota/guion";
 
 /**
@@ -21,6 +22,22 @@ export function Conversacion({
   accion?: { texto: string; href: string } | null;
 }) {
   const [hasta, setHasta] = useState(0);
+  const [vocesActivas, setVocesActivas] = useState<string[]>([]);
+
+  /*
+    Cualquier frase puede ponerse a sonar, no sólo la que se está escribiendo:
+    el alumno puede pulsar "Escuchar" en una de más arriba. Por eso se lleva la
+    cuenta de cuáles hablan y el pico se mueve mientras quede alguna.
+  */
+  const reportarVoz = useCallback((id: string, activa: boolean) => {
+    setVocesActivas((previas) =>
+      activa
+        ? previas.includes(id)
+          ? previas
+          : [...previas, id]
+        : previas.filter((x) => x !== id),
+    );
+  }, []);
 
   // Al cambiar de guion se empieza de nuevo desde la primera frase.
   useEffect(() => setHasta(0), [guion.titulo]);
@@ -30,13 +47,13 @@ export function Conversacion({
   }, [guion.lineas.length]);
 
   const dichas: Linea[] = guion.lineas.slice(0, hasta + 1);
-  const ultima = dichas[dichas.length - 1];
   const quedan = hasta < guion.lineas.length - 1;
+  const hablando = vocesActivas.length > 0;
 
   return (
     <div className="space-y-4">
       <div className="flex items-start gap-3 sm:gap-4">
-        <Condor linea={ultima} size={112} hablando={quedan} className="mt-1" />
+        <CondorHablante hablando={hablando} size={112} alt="Mallku, el cóndor" className="mt-1" priority />
         <div className="flex-1 min-w-0 space-y-2">
           {dichas.map((l, i) => (
             <Burbuja
@@ -45,6 +62,7 @@ export function Conversacion({
               // Sólo la última encadena: si no, al volver a montar se dispararía
               // el avance de todas las anteriores a la vez.
               onTerminado={i === dichas.length - 1 && quedan ? avanzar : undefined}
+              onHablando={reportarVoz}
               className={i === dichas.length - 1 ? undefined : "opacity-70"}
             />
           ))}

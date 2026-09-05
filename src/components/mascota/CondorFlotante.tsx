@@ -6,7 +6,8 @@ import Link from "next/link";
 import { X, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PanelChat } from "@/components/chat/PanelChat";
-import { Condor, Burbuja } from "./Condor";
+import { Burbuja } from "./Condor";
+import { CondorHablante } from "./CondorHablante";
 import { comentarioDePantalla, semillaDelDia, type ContextoAlumno, type Linea } from "@/lib/mascota/guion";
 
 /*
@@ -34,6 +35,8 @@ export function CondorFlotante() {
   const [chat, setChat] = useState(false);
   const [oculto, setOculto] = useState(true);
   const retirada = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [hablando, setHablando] = useState(false);
+  const reportarVoz = useCallback((_id: string, activa: boolean) => setHablando(activa), []);
 
   // Arranca oculto y sólo se muestra si el alumno no lo echó: así no parpadea
   // en la pantalla de quien ya dijo que no lo quiere.
@@ -80,7 +83,10 @@ export function CondorFlotante() {
     if (!linea) return;
     const leer = Math.min(22000, Math.max(7000, linea.texto.length * 90));
     if (retirada.current) clearTimeout(retirada.current);
-    retirada.current = setTimeout(() => setBurbuja(false), leer);
+    retirada.current = setTimeout(() => {
+      setBurbuja(false);
+      setHablando(false);
+    }, leer);
   }, [linea]);
 
   useEffect(() => () => void (retirada.current && clearTimeout(retirada.current)), []);
@@ -115,7 +121,7 @@ export function CondorFlotante() {
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-end gap-2">
         {burbuja && !chat && (
           <div className="max-w-[min(20rem,calc(100vw-7rem))] relative">
-            <Burbuja linea={lineaActual} onTerminado={empezarRetirada} />
+            <Burbuja linea={lineaActual} onTerminado={empezarRetirada} onHablando={reportarVoz} />
             <button
               type="button"
               onClick={echar}
@@ -134,7 +140,7 @@ export function CondorFlotante() {
             aria-label={chat ? "Cerrar la conversación" : "Hablar con el cóndor"}
             className="relative rounded-full transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            <Condor linea={lineaActual} size={72} hablando={burbuja} />
+            <CondorHablante hablando={hablando} size={72} alt="Mallku, el cóndor" />
             {!chat && (
               <span className="absolute -bottom-0.5 -right-0.5 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-sm">
                 <MessageCircle className="h-3.5 w-3.5" />
