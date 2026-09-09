@@ -4,6 +4,7 @@ import { requireRole } from "@/lib/session";
 import { maestroParaleloIds } from "@/lib/rbac";
 import { recomputeAnalytics } from "@/lib/analytics/aggregate";
 import { trainRiskModel, getPredicciones } from "@/lib/ml/model";
+import { trainScoreModel, getScorePredicciones } from "@/lib/ml/linear";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,13 +20,15 @@ export default async function AnaliticaPage() {
   // propia columna paralelo_id (que ahora también llevan las filas de ejercicio).
   const statWhere: Prisma.StatisticsAggregatedWhereInput = paraleloIds.length ? { paralelo_id: { in: paraleloIds } } : {};
 
-  const [porEjercicio, porLeccion, porParalelo, porAlumno, predicciones, modelo] = await Promise.all([
+  const [porEjercicio, porLeccion, porParalelo, porAlumno, predicciones, modelo, prediccionesLineal, modeloLineal] = await Promise.all([
     prisma.statisticsAggregated.findMany({ where: { stat_type: "exercise", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "lesson", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "paralelo", ...statWhere }, orderBy: { average_score: "asc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "student", ...statWhere }, orderBy: { average_score: "asc" }, take: 20 }),
     getPredicciones(paraleloIds),
-    prisma.mlModelo.findFirst({ where: { activo: true }, orderBy: { entrenado_at: "desc" } }),
+    prisma.mlModelo.findFirst({ where: { activo: true, tipo: "logistic_regression_risk" }, orderBy: { entrenado_at: "desc" } }),
+    getScorePredicciones(paraleloIds),
+    prisma.mlModelo.findFirst({ where: { activo: true, tipo: "linear_regression_score" }, orderBy: { entrenado_at: "desc" } }),
   ]);
 
   const lessonTitles = new Map(
@@ -55,7 +58,7 @@ export default async function AnaliticaPage() {
     "use server";
     await requireRole(["maestro", "admin"]);
     await recomputeAnalytics();
-    await trainRiskModel();
+    await Promise.all([trainRiskModel(), trainScoreModel()]);
     revalidatePath("/admin/analitica");
   }
 
@@ -70,11 +73,31 @@ export default async function AnaliticaPage() {
         <CardContent className="flex flex-wrap items-center gap-3 text-sm">
           <span className="text-muted-foreground">
             {modelo
-              ? `Modelo ${modelo.version} · ${modelo.n_muestras} alumnos con actividad · exactitud ${(modelo.metricas as { accuracy?: number })?.accuracy ?? "—"}`
-              : "Sin modelo entrenado todavía."}
+              ? `Logística ${modelo.version} · ${modelo.n_muestras} alumnos · exactitud ${(modelo.metricas as { accuracy?: number })?.accuracy ?? "—"}`
+              : "Sin modelo logístico."}
+            {" · "}
+            {modeloLineal
+              ? `Lineal ${modeloLineal.version} · R² ${(modeloLineal.metricas as { r2?: number })?.r2 ?? "—"} · RMSE ${(modeloLineal.metricas as { rmse?: number })?.rmse ?? "—"}`
+              : "Sin modelo lineal."}
           </span>
-          <form action={recompute}><Button size="sm" variant="secondary" type="submit">Recalcular analítica + reentrenar</Button></form>
+          <form action={recompute}><Button size="sm" variant="secondary" type="submit">Recalcular analítica + reentrenar (logística + lineal)</Button></form>
           <a href="/api/reports/export" className="text-primary hover:underline text-sm">Exportar CSV</a>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle className="text-base">Nota predicha — Regresión lineal</CardTitle></CardHeader>
+        <CardContent className="space-y-2">
+          {prediccionesLineal.length === 0 && <p className="text-sm text-muted-foreground">Sin predicciones lineales. Reentrena.</p>}
+          {prediccionesLineal.slice(0, 12).map((p) => (
+            <div key={p.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+              <span>{[p.alumno.nombre, p.alumno.apellido].filter(Boolean).join(" ") || p.alumno.username}</span>
+              <Badge variant={p.etiqueta === "aprobado" ? "default" : p.etiqueta === "en_riesgo" ? "warning" : "destructive"}>
+                {Math.round(Number(p.valor) * 100)}/100 · {p.etiqueta}
+              </Badge>
+            </div>
+          ))}
+          <p className="text-xs text-muted-foreground">y = w·x + b con x estandarizado (9 features). R² y RMSE en modelo lineal.</p>
         </CardContent>
       </Card>
 

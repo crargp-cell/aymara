@@ -147,6 +147,7 @@ enum PrediccionTipo {
   riesgo_bajo_rendimiento
   tendencia
   refuerzo_sugerido
+  score_predicho
   @@map("prediccion_tipo_enum")
 }
 

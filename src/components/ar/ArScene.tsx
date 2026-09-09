@@ -76,14 +76,14 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
 
         const modelTag = modelUrl
           ? `<a-entity gltf-model="url(${modelUrl})" position="0 0 0.1" scale="0.15 0.15 0.15"></a-entity>`
-          : `<a-box position="0 0 0.1" scale="0.2 0.2 0.2" color="#7c3aed"></a-box>`;
+          : `<a-box position="0 0 0.1" scale="0.35 0.35 0.35" color="#10b981" material="opacity: 0.9"></a-box>`;
 
         containerRef.current.innerHTML = `
           <a-scene
             mindar-image="imageTargetSrc: ${objectUrl}; autoStart: true; uiScanning: no; uiLoading: no; filterMinCF:0.0001; filterBeta: 1000; warmupTolerance: 10; missTolerance: 12;"
             vr-mode-ui="enabled: false"
             device-orientation-permission-ui="enabled: false"
-            renderer="colorManagement: true"
+            renderer="colorManagement: true; alpha: true"
             embedded
             style="width:100%;height:100%;"
           >
@@ -124,8 +124,26 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
         await import("aframe");
         if (!containerRef.current) return;
         if (!modelUrl) {
-          containerRef.current.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:white;font-size:14px">Sin modelo .glb — sube uno en /admin/ar-cards</div>`;
-          setStatus("ready");
+          containerRef.current.innerHTML = `
+            <a-scene
+              embedded
+              renderer="antialias: true; colorManagement: true"
+              vr-mode-ui="enabled: false"
+              style="width:100%;height:100%;"
+            >
+              <a-entity light="type: ambient; intensity: 1.2"></a-entity>
+              <a-entity light="type: directional; intensity: 0.9" position="1 2 1"></a-entity>
+              <a-box position="0 0 -2.2" scale="0.7 0.7 0.7" color="#10b981" material="opacity: 0.9" animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear"></a-box>
+              <a-camera position="0 1.2 3" look-controls="enabled: true" wasd-controls="enabled: false"></a-camera>
+            </a-scene>
+          `;
+          sceneEl = containerRef.current.querySelector("a-scene");
+          sceneEl?.addEventListener("loaded", () => {
+            if (!cancelled) setStatus("ready");
+          });
+          setTimeout(() => {
+            if (!cancelled) setStatus((s) => (s === "loading" ? "ready" : s));
+          }, 800);
           return;
         }
         containerRef.current.innerHTML = `

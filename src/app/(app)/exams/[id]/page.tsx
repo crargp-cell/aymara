@@ -48,7 +48,13 @@ export default async function ExamPlayPage({ params }: { params: Promise<{ id: s
     const cards = exam.ar_cards
       .map((l) => l.ar_card)
       .filter((c) => c.estado === "activo")
-      .map((c) => ({ id: c.id, code: c.card_code, title: c.title ?? c.card_code, markerImageUrl: `/ar/${c.image_file ?? c.marker_file}` }));
+      .map((c) => ({
+        id: c.id,
+        code: c.card_code,
+        title: c.title ?? c.card_code,
+        markerImageUrl: `/ar/${c.image_file ?? c.marker_file}`,
+        modelUrl: c.card_data && c.card_data.startsWith("/ar/") ? c.card_data : null,
+      }));
 
     if (cards.length === 0) {
       return (

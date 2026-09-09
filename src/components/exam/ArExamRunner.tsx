@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { submitArExam } from "@/app/(app)/exams/[id]/ar-actions";
 
-type Card = { id: number; code: string; title: string; markerImageUrl: string };
+type Card = { id: number; code: string; title: string; markerImageUrl: string; modelUrl?: string | null };
 type ReqResult = { requestedCode: string; requestedTitle: string; detectedCode: string | null; correct: boolean; timeMs: number };
 
 function buildRequests(cards: Card[], n: number): number[] {
@@ -153,15 +153,17 @@ export function ArExamRunner({
         objectUrl = URL.createObjectURL(new Blob([buffer as BlobPart]));
 
         const targets = cards
-          .map(
-            (_, i) =>
-              `<a-entity mindar-image-target="targetIndex: ${i}" data-idx="${i}"><a-plane color="#10b981" opacity="0.35" width="1" height="1"></a-plane></a-entity>`,
-          )
+          .map((c, i) => {
+            const content = c.modelUrl
+              ? `<a-entity gltf-model="url(${c.modelUrl})" position="0 0 0.2" scale="0.4 0.4 0.4" animation="property: rotation; to: 0 360 0; loop: true; dur: 8000"></a-entity>`
+              : `<a-box position="0 0 0.15" scale="0.9 0.9 0.15" color="#10b981" material="opacity: 0.95; metalness: 0.2"></a-box><a-text value="${c.title.replace(/"/g, "&quot;")} " align="center" position="0 0 0.35" color="#ffffff" width="1.8" shader="msdf"></a-text>`;
+            return `<a-entity mindar-image-target="targetIndex: ${i}" data-idx="${i}">${content}</a-entity>`;
+          })
           .join("");
 
         containerRef.current.innerHTML = `
           <a-scene mindar-image="imageTargetSrc: ${objectUrl}; autoStart: true; uiScanning: no; uiLoading: no; maxTrack: 1; filterMinCF:0.0001; filterBeta: 1000; warmupTolerance: 10; missTolerance: 12"
-            vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true" embedded style="width:100%;height:100%;">
+            vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false" renderer="colorManagement: true; alpha: true" embedded style="width:100%;height:100%;">
             <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
             ${targets}
           </a-scene>`;
