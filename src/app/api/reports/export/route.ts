@@ -1,9 +1,10 @@
 import { getSessionUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { maestroParaleloIds } from "@/lib/rbac";
+import { buildGeneralReportPdf } from "@/lib/reports/pdf";
 import Papa from "papaparse";
 
-export async function GET() {
+export async function GET(req: Request) {
   const me = await getSessionUser();
   if (!me || !["maestro", "admin"].includes(me.role)) return new Response("Forbidden", { status: 403 });
 
@@ -41,6 +42,30 @@ export async function GET() {
       };
     }),
   );
+
+  const url = new URL(req.url);
+  if (url.searchParams.get("format") === "pdf") {
+    const pdfRows = rows.slice(0, 30).map((r, idx) => ({
+      id: String(idx + 1).padStart(2, "0"),
+      logro: r.nombre.slice(0, 28),
+      afectados: `${r.tasa_acierto_pct}%`,
+      estado: r.estado_inscripcion,
+      estadoColor: (r.tasa_acierto_pct >= 70 ? "emerald" : r.tasa_acierto_pct >= 50 ? "amber" : "blue") as "emerald" | "amber" | "blue",
+      observaciones: `${r.lecciones_completadas} lec. · ${r.examenes_aprobados}/${r.examenes_rendidos} ex.`,
+    }));
+    const pdf = await buildGeneralReportPdf({
+      titulo: "Informe de Desempeño Académico",
+      gestion: rows[0]?.gestion ?? "2026",
+      rows: pdfRows,
+      generadoPor: me ? `${me.name} / Sistema` : "Sistema",
+    });
+    return new Response(new Uint8Array(pdf), {
+      headers: {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename="reporte_aymara.pdf"`,
+      },
+    });
+  }
 
   return new Response(Papa.unparse(rows), {
     headers: {

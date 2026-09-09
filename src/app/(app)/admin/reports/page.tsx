@@ -55,6 +55,8 @@ export default async function ReportsPage() {
         <CardContent className="flex flex-wrap items-center gap-3">
           <a href="/api/reports/export" className="text-sm text-primary hover:underline">Exportar CSV</a>
           <span className="text-muted-foreground">·</span>
+          <a href="/api/reports/export?format=pdf" className="text-sm text-primary hover:underline">Exportar PDF</a>
+          <span className="text-muted-foreground">·</span>
           <a href="/admin/analitica" className="text-sm text-primary hover:underline">Analítica y predicción</a>
           <span className="text-muted-foreground">·</span>
           <form action={recalc}><Button type="submit" size="sm" variant="secondary">Recalcular analítica + reentrenar modelo</Button></form>
