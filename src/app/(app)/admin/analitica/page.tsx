@@ -81,7 +81,13 @@ export default async function AnaliticaPage() {
               : "Sin modelo lineal."}
           </span>
           <form action={recompute}><Button size="sm" variant="secondary" type="submit">Recalcular analítica + reentrenar (logística + lineal)</Button></form>
-          <a href="/api/reports/export" className="text-primary hover:underline text-sm">Exportar CSV</a>
+          <a href="/api/analitica/export" className="text-primary hover:underline text-sm">Exportar Analítica CSV</a>
+          <span className="text-muted-foreground">·</span>
+          <a href="/api/analitica/export?format=pdf" className="text-primary hover:underline text-sm">Exportar Analítica PDF</a>
+          <span className="text-muted-foreground">·</span>
+          <a href="/api/reports/export" className="text-primary hover:underline text-sm">Exportar Reportes CSV</a>
+          <span className="text-muted-foreground">·</span>
+          <a href="/api/reports/export?format=pdf" className="text-primary hover:underline text-sm">Exportar Reportes PDF</a>
         </CardContent>
       </Card>
 
