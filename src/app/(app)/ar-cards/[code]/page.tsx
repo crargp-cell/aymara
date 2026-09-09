@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { materialDeTarjeta } from "@/lib/ar/material";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,9 +37,24 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
     if (!allowed) notFound();
   }
 
-  const previewFile = card.image_file ?? `marker_${card.card_code}.png`;
-  const hasPreview = await fileExists(path.join(AR_DIR, previewFile));
-  const modelUrl = card.card_data && card.card_data.startsWith("/ar/models/") ? card.card_data : null;
+  /*
+    Qué hay guardado se pregunta a la base, no se deduce leyendo los blobs: están
+    excluidos de las consultas por peso. El disco es sólo el respaldo de las
+    tarjetas anteriores al cambio.
+  */
+  const material = await materialDeTarjeta(card.card_code);
+  const hasPreview =
+    material.imagen ||
+    !!card.image_file ||
+    (await fileExists(path.join(AR_DIR, card.image_file ?? `marker_${card.card_code}.png`)));
+  const previewUrl = `/api/ar/file?code=${card.card_code}&type=image`;
+  // El modelo se sirve por la ruta si está en la base; si no, queda la ruta de
+  // disco antigua, que en la nube ya no resuelve.
+  const modelUrl = material.modelo
+    ? `/api/ar/file?code=${card.card_code}&type=model`
+    : card.card_data && card.card_data.startsWith("/ar/")
+      ? card.card_data
+      : null;
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-0">
@@ -50,7 +66,7 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
         </CardHeader>
         <CardContent className="space-y-5 p-3 sm:p-6">
           {hasPreview ? (
-            <ArScene markerImageUrl={`/ar/${previewFile}`} modelUrl={modelUrl} />
+            <ArScene markerImageUrl={previewUrl} modelUrl={modelUrl} />
           ) : (
             <div className="h-[52vh] min-h-[360px] bg-black rounded-2xl flex items-center justify-center text-white text-sm px-4 text-center border border-border">
               Esta tarjeta no tiene un marcador de imagen todavía — pide a un docente que suba la imagen de referencia.
@@ -59,7 +75,7 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
           <div className="flex flex-wrap gap-2 justify-between items-center">
             <div className="flex gap-2">
               {hasPreview && (
-                <a href={`/ar/${previewFile}`} download={`tarjeta-${card.card_code}.png`}>
+                <a href={previewUrl} download={`tarjeta-${card.card_code}.png`}>
                   <Button variant="outline">Descargar tarjeta</Button>
                 </a>
               )}

@@ -52,8 +52,11 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
     if (!(image instanceof File) || image.size === 0) return;
     const patt = formData.get("patt");
     const pattBuffer = patt instanceof File && patt.size > 0 ? Buffer.from(await patt.arrayBuffer()) : null;
-    const { code, markerFile, previewFile } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
-    await prisma.arCard.update({ where: { id: cardId }, data: { card_code: code, marker_file: markerFile, image_file: previewFile, updated_by: u.id } });
+    const { code, markerFile, previewFile, pattBuffer: outPatt, patronBuffer, laminaBuffer } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
+    await prisma.arCard.update({
+      where: { id: cardId },
+      data: { card_code: code, marker_file: markerFile, image_file: previewFile, patt_data: outPatt.toString("utf8"), image_data: new Uint8Array(patronBuffer), lamina_data: new Uint8Array(laminaBuffer), updated_by: u.id },
+    });
     revalidatePath(`/admin/ar-cards/${cardId}`);
     revalidatePath("/admin/ar-cards");
   }
@@ -66,8 +69,9 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
     if (!(model instanceof File) || model.size === 0) throw new Error("Selecciona un .glb");
     if (!model.name.toLowerCase().endsWith(".glb")) throw new Error("Solo .glb");
     if (model.size > 15 * 1024 * 1024) throw new Error("Máximo 15MB");
-    const url = await saveArModel(card!.card_code, Buffer.from(await model.arrayBuffer()));
-    await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, updated_by: u.id } });
+    const buffer = Buffer.from(await model.arrayBuffer());
+    const url = await saveArModel(card!.card_code, buffer);
+    await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, model_data: new Uint8Array(buffer), model_mime: "model/gltf-binary", updated_by: u.id } });
     revalidatePath(`/admin/ar-cards/${cardId}`);
   }
 

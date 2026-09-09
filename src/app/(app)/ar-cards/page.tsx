@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { materialDeTarjetas } from "@/lib/ar/material";
 import { requireUser } from "@/lib/session";
 import { getParaleloActivoAlumno, getParaleloSeleccionado } from "@/lib/paralelo";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,8 @@ export default async function ArCardsPage() {
     orderBy: { id: "asc" },
   });
   const mine = await prisma.userArCard.findMany({ where: { alumno_id: user.id } });
+  // Qué tarjetas tienen dibujo guardado, sin traerse los blobs.
+  const material = await materialDeTarjetas(cards.map((c) => c.card_code));
   const ownedMap = new Map(mine.map((m) => [m.ar_card_id, m]));
 
   const activos = cards.filter((c) => c.estado === "activo");
@@ -36,7 +39,6 @@ export default async function ArCardsPage() {
   const renderCard = (c: (typeof cards)[number]) => {
     const owned = ownedMap.get(c.id);
     const hasIt = isStaff || (!!owned && !owned.revocado);
-    const preview = c.image_file ? `/ar/${c.image_file}` : null;
     const body = (
       <>
         <CardHeader>
@@ -49,13 +51,13 @@ export default async function ArCardsPage() {
           <p className="text-xs text-muted-foreground">{c.card_code}</p>
         </CardHeader>
         <CardContent className="space-y-3">
-          {preview ? (
-            <div className="relative h-32 w-full rounded-xl overflow-hidden">
-              <Image src={preview} alt={c.card_code} fill sizes="(max-width:768px) 100vw, 33vw" className={`object-cover ${hasIt ? "" : "grayscale opacity-50"}`} />
-            </div>
-          ) : (
-            <div className="h-32 panel rounded-xl flex items-center justify-center text-xs text-muted-foreground">Sin imagen</div>
-          )}
+                {material.get(c.card_code)?.imagen || c.image_file ? (
+                  <div className="relative h-32 w-full rounded-xl overflow-hidden">
+                    <Image src={`/api/ar/file?code=${c.card_code}&type=image`} alt={c.card_code} fill sizes="(max-width:768px) 100vw, 33vw" className={`object-cover ${hasIt ? "" : "grayscale opacity-50"}`} unoptimized />
+                  </div>
+                ) : (
+                  <div className="h-32 panel rounded-xl flex items-center justify-center text-xs text-muted-foreground">Sin imagen</div>
+                )}
           <p className="text-xs line-clamp-2">{c.description ?? "Sin descripción"}</p>
           {hasIt ? (
             <Button variant="gradient" size="sm" className="w-full pointer-events-none">Ver en AR</Button>

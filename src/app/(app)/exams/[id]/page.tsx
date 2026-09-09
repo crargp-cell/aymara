@@ -52,8 +52,11 @@ export default async function ExamPlayPage({ params }: { params: Promise<{ id: s
         id: c.id,
         code: c.card_code,
         title: c.title ?? c.card_code,
-        markerImageUrl: `/ar/${c.image_file ?? c.marker_file}`,
-        modelUrl: c.card_data && c.card_data.startsWith("/ar/") ? c.card_data : null,
+        // Por la ruta que lee de la base, no del disco: en Railway el sistema de
+        // archivos del contenedor se borra en cada despliegue y estos marcadores
+        // se suben desde el panel, así que en disco ya no están.
+        markerImageUrl: `/api/ar/file?code=${c.card_code}&type=image`,
+        modelUrl: c.card_data ? `/api/ar/file?code=${c.card_code}&type=model` : null,
       }));
 
     if (cards.length === 0) {

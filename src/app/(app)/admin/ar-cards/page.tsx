@@ -11,7 +11,9 @@ import { requireRole } from "@/lib/session";
 import { assertMaestroOwnsContent, assertMaestroOwnsParalelo } from "@/lib/rbac";
 import { badgeVariantContenido } from "@/lib/estado";
 import { saveUploadedMarker, regenerarMarcador, nombrePatt, nombreLamina, fileExists, AR_DIR } from "@/lib/ar/marker";
+import { materialDeTarjetas } from "@/lib/ar/material";
 import path from "path";
+import fs from "fs/promises";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -29,14 +31,24 @@ export default async function AdminArCardsPage() {
       ])
     : [[], []];
 
+  /*
+    Qué material tiene cada tarjeta. Se pregunta por la existencia en la base
+    (los blobs están excluidos de las consultas por peso) y, para las tarjetas
+    anteriores al cambio, se mira además el disco.
+  */
+  const enBase = await materialDeTarjetas(cards.map((c) => c.card_code));
   const material = new Map(
     await Promise.all(
       cards.map(async (c) => {
-        const [patt, lamina] = await Promise.all([
+        const b = enBase.get(c.card_code);
+        const [pattFs, laminaFs] = await Promise.all([
           fileExists(path.join(AR_DIR, nombrePatt(c.card_code))),
           fileExists(path.join(AR_DIR, nombreLamina(c.card_code))),
         ]);
-        return [c.id, { patt, lamina }] as const;
+        return [
+          c.id,
+          { patt: !!(b?.patt || pattFs), lamina: !!(b?.lamina || laminaFs), imagen: !!(b?.imagen || c.image_file) },
+        ] as const;
       }),
     ),
   );
@@ -48,10 +60,37 @@ export default async function AdminArCardsPage() {
     const id = Number(formData.get("id"));
     const { ok } = await assertMaestroOwnsContent(user.role, user.id, "arcard", id);
     if (!ok) return;
-    const card = await prisma.arCard.findUnique({ where: { id }, select: { card_code: true, image_file: true } });
-    if (!card?.image_file) return;
-    const { markerFile } = await regenerarMarcador(card.card_code, card.image_file);
-    await prisma.arCard.update({ where: { id }, data: { marker_file: markerFile, updated_by: user.id } });
+    const card = await prisma.arCard.findUnique({
+      where: { id },
+      select: { card_code: true, image_file: true, image_data: true },
+    });
+    if (!card) return;
+
+    /*
+      El dibujo sale de la base; sólo si la tarjeta es anterior a que se
+      guardasen los bytes se recurre al disco. En Railway ese disco se rehace en
+      cada despliegue, así que ahí el respaldo no existe y hay que volver a
+      subir la imagen.
+    */
+    let patron: Buffer | null = card.image_data ? Buffer.from(card.image_data) : null;
+    if (!patron && card.image_file) {
+      patron = await fs.readFile(path.join(AR_DIR, card.image_file)).catch(() => null);
+    }
+    if (!patron) return;
+
+    const { markerFile, pattBuffer, laminaBuffer } = await regenerarMarcador(card.card_code, patron);
+    await prisma.arCard.update({
+      where: { id },
+      data: {
+        marker_file: markerFile,
+        patt_data: pattBuffer.toString("utf8"),
+        lamina_data: new Uint8Array(laminaBuffer),
+        // Deja guardado el dibujo si venía sólo del disco, para que la próxima
+        // vez no dependa de él.
+        image_data: card.image_data ?? new Uint8Array(patron),
+        updated_by: user.id,
+      },
+    });
     revalidatePath("/admin/ar-cards");
   }
 
@@ -65,7 +104,7 @@ export default async function AdminArCardsPage() {
     if (!title || !(image instanceof File) || image.size === 0) return;
     const patt = formData.get("patt");
     const pattBuffer = patt instanceof File && patt.size > 0 ? Buffer.from(await patt.arrayBuffer()) : null;
-    const { code, markerFile, previewFile } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
+    const { code, markerFile, previewFile, pattBuffer: outPatt, patronBuffer, laminaBuffer } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
     const unlock_type = formData.get("unlock_type") === "exam" ? "exam" : "lesson";
     const unlock_lesson_id = formData.get("unlock_lesson_id") ? Number(formData.get("unlock_lesson_id")) : null;
     await prisma.arCard.create({
@@ -76,6 +115,9 @@ export default async function AdminArCardsPage() {
         card_code: code,
         marker_file: markerFile,
         image_file: previewFile,
+        patt_data: outPatt.toString("utf8"),
+        image_data: new Uint8Array(patronBuffer),
+        lamina_data: new Uint8Array(laminaBuffer),
         unlock_type,
         unlock_lesson_id: unlock_type === "lesson" ? unlock_lesson_id : null,
         created_by: user.id,
@@ -139,9 +181,9 @@ export default async function AdminArCardsPage() {
           {cards.map((c) => (
             <div key={c.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1">
-                {c.image_file && (
+                {material.get(c.id)?.imagen && (
                   <div className="relative h-12 w-12 rounded-lg overflow-hidden flex-shrink-0">
-                    <Image src={`/ar/${c.image_file}`} alt={c.card_code} fill sizes="48px" className="object-cover" />
+                    <Image src={`/api/ar/file?code=${c.card_code}&type=image`} alt={c.card_code} fill sizes="48px" className="object-cover" unoptimized />
                   </div>
                 )}
                 <div>
@@ -158,7 +200,7 @@ export default async function AdminArCardsPage() {
                     {material.get(c.id)?.lamina ? (
                       <a
                         className="underline underline-offset-2"
-                        href={`/ar/${nombreLamina(c.card_code)}`}
+                        href={`/api/ar/file?code=${c.card_code}&type=lamina`}
                         download={`lamina-${c.card_code}.png`}
                       >
                         Lámina para imprimir
@@ -169,7 +211,7 @@ export default async function AdminArCardsPage() {
                     {material.get(c.id)?.patt ? (
                       <a
                         className="underline underline-offset-2"
-                        href={`/ar/${nombrePatt(c.card_code)}`}
+                        href={`/api/ar/file?code=${c.card_code}&type=patt`}
                         download={`marcador-${c.card_code}.patt`}
                       >
                         Marcador .patt

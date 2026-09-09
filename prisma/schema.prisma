@@ -731,6 +731,11 @@ model ArCard {
   marker_file      String           @db.VarChar(255)
   image_file       String?          @db.VarChar(255)
   card_data        String?          @db.Text
+  patt_data        String?          @db.Text
+  image_data       Bytes?
+  lamina_data      Bytes?
+  model_data       Bytes?
+  model_mime       String?          @db.VarChar(50)
   unlock_type      ArCardUnlockType @default(lesson)
   unlock_lesson_id Int?
   unlock_exam_id   Int?

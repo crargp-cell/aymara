@@ -7,13 +7,35 @@ import { AR_DIR, saveUploadedMarker } from "@/lib/ar/marker";
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   if (!code) return NextResponse.json({ error: "code requerido" }, { status: 400 });
-  const file = path.join(AR_DIR, `marker_${code}.patt`);
+  /*
+    Primero la base y después el disco, no al revés: en la nube el disco se
+    rehace en cada despliegue y un marcador subido desde el panel sólo existe
+    en la base. El `select` es obligatorio porque los blobs están excluidos por
+    defecto de todas las consultas (ver src/lib/prisma.ts); sin él, `patt_data`
+    llegaría siempre vacío y esta ruta devolvería 404.
+  */
   try {
-    const data = await fs.readFile(file, "utf-8");
-    return new NextResponse(data, { headers: { "Content-Type": "text/plain", "Cache-Control": "public, max-age=31536000" } });
+    const { prisma } = await import("@/lib/prisma");
+    const card = await prisma.arCard.findFirst({ where: { card_code: code }, select: { patt_data: true } });
+    if (card?.patt_data) {
+      return new NextResponse(card.patt_data, {
+        headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=31536000, immutable" },
+      });
+    }
   } catch {
-    return NextResponse.json({ error: "no encontrado" }, { status: 404 });
+    /* si la base falla, aún queda el disco */
   }
+
+  try {
+    const data = await fs.readFile(path.join(AR_DIR, `marker_${code}.patt`), "utf-8");
+    return new NextResponse(data, {
+      headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "public, max-age=31536000, immutable" },
+    });
+  } catch {
+    /* tampoco en disco */
+  }
+
+  return NextResponse.json({ error: "no encontrado" }, { status: 404 });
 }
 
 export async function POST(req: NextRequest) {

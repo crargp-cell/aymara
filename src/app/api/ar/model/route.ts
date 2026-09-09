@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
   const url = await saveArModel(card.card_code, buffer);
-  await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url } });
+  await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, model_data: buffer, model_mime: "model/gltf-binary" } });
 
   return NextResponse.json({ url });
 }

@@ -32,6 +32,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...menos la plantilla: es lo único de lo que partir al clonar en otra máquina.
+!.env.example
 
 # vercel
 .vercel
