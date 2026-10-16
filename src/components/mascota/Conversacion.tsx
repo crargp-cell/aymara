@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Burbuja } from "./Condor";
@@ -24,6 +24,15 @@ export function Conversacion({
   const [hasta, setHasta] = useState(0);
   const [vocesActivas, setVocesActivas] = useState<string[]>([]);
 
+  // Al cambiar de guion se empieza de nuevo desde la primera frase. Se ajusta
+  // aquí en vez de en un efecto (patrón "Adjusting state" de react.dev): así
+  // no hay un primer render con el guion nuevo pero `hasta` todavía viejo.
+  const [guionAnterior, setGuionAnterior] = useState(guion.titulo);
+  if (guion.titulo !== guionAnterior) {
+    setGuionAnterior(guion.titulo);
+    setHasta(0);
+  }
+
   /*
     Cualquier frase puede ponerse a sonar, no sólo la que se está escribiendo:
     el alumno puede pulsar "Escuchar" en una de más arriba. Por eso se lleva la
@@ -38,9 +47,6 @@ export function Conversacion({
         : previas.filter((x) => x !== id),
     );
   }, []);
-
-  // Al cambiar de guion se empieza de nuevo desde la primera frase.
-  useEffect(() => setHasta(0), [guion.titulo]);
 
   const avanzar = useCallback(() => {
     setHasta((n) => Math.min(n + 1, guion.lineas.length - 1));

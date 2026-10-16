@@ -2,11 +2,14 @@ import { describe, it, expect } from "vitest";
 import {
   ARCHIVO_POSE,
   comentarioDePantalla,
+  guionJuego,
   guionPalabra,
   guionPresentacion,
+  poseDeRuta,
   guionProgreso,
   semillaDelDia,
   type ContextoAlumno,
+  type EstadoJuego,
   type Linea,
 } from "./guion";
 
@@ -121,5 +124,72 @@ describe("guion del cóndor", () => {
     expect(comentarioDePantalla("/map", base, semillaDelDia()).id).toBe(
       comentarioDePantalla("/map", base, semillaDelDia()).id,
     );
+  });
+});
+
+describe("guionJuego", () => {
+  const estados: EstadoJuego[] = [
+    { tipo: "intro", juego: "adivina" }, { tipo: "intro", juego: "arrastra" }, { tipo: "intro", juego: "ejercicio" }, { tipo: "intro", juego: "examen" },
+    { tipo: "borrosa", fallos: 0, intentos: 5 }, { tipo: "borrosa", fallos: 2, intentos: 5 }, { tipo: "borrosa", fallos: 4, intentos: 5 },
+    { tipo: "pensando" }, { tipo: "pensando", palabra: "inti" },
+    { tipo: "acierto" }, { tipo: "acierto", racha: 3 }, { tipo: "acierto", termino: { aymara: "inti", espanol: "sol" } },
+    { tipo: "fallo" }, { tipo: "fallo", restantes: 1 },
+    { tipo: "pierde" }, { tipo: "pierde", termino: { aymara: "uma", espanol: "agua" } },
+    { tipo: "forzado" }, { tipo: "completada" }, { tipo: "resultado", aprobado: true }, { tipo: "resultado", aprobado: false },
+    { tipo: "vacio", donde: "mapa" }, { tipo: "vacio", donde: "diccionario" }, { tipo: "vacio", donde: "examenes" }, { tipo: "vacio", donde: "ejercicios" },
+  ];
+
+  it("cada estado tiene una línea usable con una pose que existe", () => {
+    for (const e of estados) {
+      const l = guionJuego(e, 0);
+      esUsable(l);
+      expect(Object.keys(ARCHIVO_POSE)).toContain(l.pose);
+    }
+  });
+
+  it("la misma semilla repite la frase y los ids son estables", () => {
+    for (const e of estados) {
+      expect(guionJuego(e, 7).id).toBe(guionJuego(e, 7).id);
+    }
+    const ids = estados.flatMap((e) => [guionJuego(e, 0).id, guionJuego(e, 1).id]);
+    // Un id nunca puede servir a dos textos distintos (la grabación se ata al id).
+    const porId = new Map<string, string>();
+    for (const e of estados) for (const s of [0, 1]) {
+      const l = guionJuego(e, s);
+      const previo = porId.get(l.id);
+      if (previo !== undefined && !l.texto.includes("«")) expect(previo).toBe(l.texto);
+      porId.set(l.id, l.texto);
+    }
+    expect(ids.length).toBeGreaterThan(0);
+  });
+
+  it("la imagen borrosa se destapa: tímido al principio, atento al final", () => {
+    expect(guionJuego({ tipo: "borrosa", fallos: 0, intentos: 5 }).pose).toBe("timido");
+    expect(guionJuego({ tipo: "borrosa", fallos: 4, intentos: 5 }).pose).not.toBe("timido");
+  });
+
+  it("al enseñar una palabra la línea la lleva para poder oírla", () => {
+    expect(guionJuego({ tipo: "acierto", termino: { aymara: "inti", espanol: "sol" } }).termino?.aymara).toBe("inti");
+  });
+});
+
+describe("poseDeRuta", () => {
+  it("cada sección tiene su pose y las rutas anidadas heredan la de su sección", () => {
+    expect(poseDeRuta("/dictionary")).toBe("buscar");
+    expect(poseDeRuta("/topics/17")).toBe("leer");
+    expect(poseDeRuta("/play/17/116")).toBe("jugar");
+    expect(poseDeRuta("/admin/exercises")).toBe("ensenar");
+    expect(poseDeRuta("/admin/ar-cards")).toBe("ensenar");
+    expect(poseDeRuta("/dashboard")).toBe("normal");
+  });
+
+  it("no confunde prefijos parecidos (/mapa-x no es /map)", () => {
+    expect(poseDeRuta("/mapa-x")).toBe("normal");
+  });
+
+  it("siempre devuelve una pose que existe", () => {
+    for (const r of ["/", "/map", "/exams/3", "/logros", "/admin/analitica", "/zzz"]) {
+      expect(Object.keys(ARCHIVO_POSE)).toContain(poseDeRuta(r));
+    }
   });
 });

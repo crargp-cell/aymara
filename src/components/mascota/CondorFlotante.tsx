@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { X, MessageCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PanelChat } from "@/components/chat/PanelChat";
 import { Burbuja } from "./Condor";
 import { CondorHablante } from "./CondorHablante";
@@ -29,6 +29,9 @@ const CLAVE_OCULTO = "condor-oculto";
 
 export function CondorFlotante() {
   const ruta = usePathname();
+  // En los juegos Mallku ya está dentro de la pantalla (MallkuJuego): aquí no suelta su frase
+  // para no haber dos cóndores hablando. El botón y el chat siguen disponibles.
+  const enJuego = /^\/play\//.test(ruta ?? "") || /^\/exams\/\d+/.test(ruta ?? "");
   const [ctx, setCtx] = useState<ContextoAlumno | null>(null);
   const [linea, setLinea] = useState<Linea | null>(null);
   const [burbuja, setBurbuja] = useState(false);
@@ -41,7 +44,10 @@ export function CondorFlotante() {
   // Arranca oculto y sólo se muestra si el alumno no lo echó: así no parpadea
   // en la pantalla de quien ya dijo que no lo quiere.
   useEffect(() => {
+    // sessionStorage no existe durante el render del servidor: por eso el
+    // estado inicial es `true` (arranca oculto) y esto lo corrige en cliente.
     try {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOculto(sessionStorage.getItem(CLAVE_OCULTO) === "1");
     } catch {
       setOculto(false);
@@ -62,14 +68,17 @@ export function CondorFlotante() {
 
   // Frase nueva al cambiar de pantalla, con un respiro para no saltar encima.
   useEffect(() => {
-    if (!ctx || oculto || chat) return;
+    if (!ctx || oculto || chat || enJuego) return;
+    // Oculta la burbuja anterior mientras corre el temporizador de entrada;
+    // el resto del efecto es justamente ese temporizador.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBurbuja(false);
     const entra = setTimeout(() => {
       setLinea(comentarioDePantalla(ruta ?? "/", ctx, semillaDelDia(ruta?.length ?? 0)));
       setBurbuja(true);
     }, 1200);
     return () => clearTimeout(entra);
-  }, [ruta, ctx, oculto, chat]);
+  }, [ruta, ctx, oculto, chat, enJuego]);
 
   /*
     La burbuja se retira sola: dicho lo suyo, deja de estorbar.
@@ -118,7 +127,7 @@ export function CondorFlotante() {
         </Card>
       )}
 
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex items-end gap-2">
+      <div className={`fixed right-4 sm:bottom-6 sm:right-6 z-50 flex items-end gap-2 ${enJuego ? "bottom-28" : "bottom-4"}`}>
         {burbuja && !chat && (
           <div className="max-w-[min(20rem,calc(100vw-7rem))] relative">
             <Burbuja linea={lineaActual} onTerminado={empezarRetirada} onHablando={reportarVoz} />

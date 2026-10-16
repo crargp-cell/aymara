@@ -1,3 +1,4 @@
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,7 +97,7 @@ export default async function LessonDetailPage({ params }: { params: Promise<{ i
                 <Button variant="gradient">{progress?.completed ? "Repasar ejercicios" : progress?.current_index ? "Continuar" : "Comenzar ejercicios"}</Button>
               </Link>
             ) : (
-              <p className="text-sm text-muted-foreground">Esta lección todavía no tiene ejercicios.</p>
+              <MallkuJuego estado={{ tipo: "vacio", donde: "ejercicios" }} />
             )}
             {isStaff && (
               <div className="space-y-1 pt-2">

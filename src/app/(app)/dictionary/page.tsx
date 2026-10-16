@@ -1,3 +1,4 @@
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -58,7 +59,7 @@ export default async function DictionaryPage({ searchParams }: { searchParams: P
                 {w.categoria && <span className="text-xs text-muted-foreground shrink-0">{w.categoria}</span>}
               </div>
             ))}
-            {words.length === 0 && <p className="text-sm text-muted-foreground col-span-full">Sin resultados</p>}
+            {words.length === 0 && <div className="col-span-full"><MallkuJuego estado={{ tipo: "vacio", donde: "diccionario" }} /></div>}
           </div>
 
           {totalPages > 1 && (

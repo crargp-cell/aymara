@@ -252,6 +252,112 @@ export function comentarioDePantalla(ruta: string, ctx: ContextoAlumno, semilla:
   };
 }
 
+/**
+ * Lo que está pasando en un juego o ejercicio, para que Mallku reaccione.
+ * `termino` es la palabra aymara que el juego acaba de enseñar (se puede oír).
+ */
+export type EstadoJuego =
+  | { tipo: "intro"; juego: "adivina" | "arrastra" | "ejercicio" | "examen" }
+  /** «Adivina la imagen» en curso: cuanto menos nítida, más tímido. */
+  | { tipo: "borrosa"; fallos: number; intentos: number }
+  | { tipo: "pensando"; palabra?: string }
+  | { tipo: "acierto"; racha?: number; termino?: { aymara: string; espanol: string } }
+  | { tipo: "fallo"; restantes?: number }
+  | { tipo: "pierde"; termino?: { aymara: string; espanol: string } }
+  | { tipo: "forzado" }
+  | { tipo: "completada" }
+  | { tipo: "resultado"; aprobado: boolean }
+  | { tipo: "vacio"; donde: "mapa" | "diccionario" | "examenes" | "ejercicios" };
+
+/**
+ * Frase y pose de Mallku para un momento de un juego. Pura y sin azar propio: la
+ * `semilla` elige entre las variantes, así la misma partida no cambia de frase en
+ * cada repintado. Cada línea lleva un id estable para poder grabarla algún día.
+ */
+export function guionJuego(estado: EstadoJuego, semilla = 0): Linea {
+  const elegir = (opciones: Linea[]) => opciones[Math.abs(semilla) % opciones.length];
+  const es = (id: string, texto: string, pose: Pose, termino?: Linea["termino"]): Linea => ({ id, texto, idioma: "es", pose, ...(termino ? { termino } : {}) });
+
+  switch (estado.tipo) {
+    case "intro":
+      if (estado.juego === "adivina") return es("juego-intro-adivina", "Escondí una imagen tras la niebla. Dime qué palabra es y se irá aclarando.", "jugar");
+      if (estado.juego === "arrastra") return es("juego-intro-arrastra", "Te doy una palabra y tú arrastras la tarjeta que le corresponde.", "jugar");
+      if (estado.juego === "examen") return es("juego-intro-examen", "Tranquilo, respira. Lo que sabes, sabes; lo demás se aprende.", "estudiar");
+      return es("juego-intro-ejercicio", "Vamos con este ejercicio. Tómate tu tiempo.", "jugar");
+
+    case "borrosa": {
+      const avance = estado.intentos > 0 ? estado.fallos / estado.intentos : 0;
+      if (avance < 0.4) return elegir([
+        es("juego-borrosa-1", "No miro… ¿qué crees que es?", "timido"),
+        es("juego-borrosa-2", "Aún no se ve nada. Prueba con lo primero que se te ocurra.", "timido"),
+      ]);
+      if (avance < 0.8) return es("juego-borrosa-3", "Ya se asoma… ¡fíjate en las formas!", "buscar");
+      return es("juego-borrosa-4", "Casi nítida. Última oportunidad: ¿qué ves?", "estudiar");
+    }
+
+    case "pensando":
+      return estado.palabra
+        ? es("juego-pensando-palabra", `¿Dónde estará «${estado.palabra}»? Busca la tarjeta que le corresponde.`, "buscar")
+        : es("juego-pensando", "Piénsalo con calma.", "estudiar");
+
+    case "acierto":
+      if (estado.termino) return es("juego-acierto-termino", estado.termino.espanol ? `¡Eso es! «${estado.termino.aymara}» significa «${estado.termino.espanol}».` : `¡Eso es! Se dice «${estado.termino.aymara}».`, "ensenar", estado.termino);
+      if ((estado.racha ?? 0) >= 3) return es("juego-acierto-racha", `¡${estado.racha} seguidas! Vas volando.`, "jugar");
+      return elegir([es("juego-acierto-1", "¡Muy bien!", "aprender"), es("juego-acierto-2", "¡Correcto! Así se hace.", "aprender")]);
+
+    case "fallo":
+      if (estado.restantes === 1) return es("juego-fallo-ultimo", "Ups. Te queda un intento: piénsalo bien.", "escucha");
+      return elegir([
+        es("juego-fallo-1", "Casi. Escucha otra vez y prueba de nuevo.", "escucha"),
+        es("juego-fallo-2", "No pasa nada: equivocarse también enseña.", "escucha"),
+      ]);
+
+    case "pierde":
+      return estado.termino
+        ? es("juego-pierde-termino", estado.termino.espanol ? `Era «${estado.termino.aymara}» (${estado.termino.espanol}). Ahora ya la conoces.` : `Era «${estado.termino.aymara}». Ahora ya la conoces.`, "ensenar", estado.termino)
+        : es("juego-pierde", "Esta vez no salió. Mírala bien y la próxima será tuya.", "aprender");
+
+    case "forzado":
+      return es("juego-forzado", "Repasemos el tema juntos antes de seguir. Te ayudará.", "leer");
+
+    case "completada":
+      return es("juego-completada", "¡Lección completada! Estoy muy orgulloso de ti.", "naturaleza");
+
+    case "resultado":
+      return estado.aprobado
+        ? es("juego-resultado-ok", "¡Aprobaste! Lo hiciste muy bien.", "jugar")
+        : es("juego-resultado-no", "Todavía no, pero puedes intentarlo otra vez. Yo te acompaño.", "estudiar");
+
+    case "vacio":
+      if (estado.donde === "diccionario") return es("juego-vacio-diccionario", "No encontré nada. Prueba con otra palabra.", "buscar");
+      if (estado.donde === "examenes") return es("juego-vacio-examenes", "Aún no hay exámenes por aquí. Practica y vuelve pronto.", "estudiar");
+      if (estado.donde === "ejercicios") return es("juego-vacio-ejercicios", "Todavía no hay ejercicios en esta lección.", "leer");
+      return es("juego-vacio-mapa", "Tu camino empieza aquí. ¡Elige una lección!", "leer");
+  }
+}
+
+/**
+ * Pose de Mallku para una pantalla: la que lleva en la cabecera de cada sección.
+ * Pura y por prefijo de ruta, así una sección nueva sólo necesita una línea aquí.
+ */
+export function poseDeRuta(ruta: string): Pose {
+  const tabla: [string, Pose][] = [
+    ["/dictionary", "buscar"],
+    ["/exams", "estudiar"],
+    ["/topics", "leer"],
+    ["/lessons", "leer"],
+    ["/map", "aprender"],
+    ["/play", "jugar"],
+    ["/logros", "jugar"],
+    ["/ar-cards", "naturaleza"],
+    ["/admin/ar", "naturaleza"],
+    ["/admin/analitica", "estudiar"],
+    ["/analitica", "estudiar"],
+    ["/admin", "ensenar"],
+  ];
+  return tabla.find(([prefijo]) => ruta === prefijo || ruta.startsWith(prefijo + "/"))?.[1] ?? "normal";
+}
+
 /** Semilla estable por día: el cóndor no cambia de frase en cada recarga. */
 export function semillaDelDia(extra = 0): number {
   const hoy = new Date();

@@ -32,8 +32,10 @@ export function Condor({
       alt=""
       width={size}
       height={size}
-      className={cn("shrink-0 object-contain", hablando ? "animate-float-fast" : "animate-float", className)}
+      className={cn("shrink-0 rounded-2xl object-contain", hablando ? "animate-float-fast" : "animate-float", className)}
       priority={false}
+      // Fija ambas medidas: sin esto el reset de CSS deja la altura en auto y Next avisa de la proporción.
+      style={{ width: size, height: size }}
     />
   );
 }
@@ -91,6 +93,9 @@ export function Burbuja({
       return;
     }
 
+    // Arranca el tipeo: el resto del efecto es la animación en sí (rAF +
+    // temporizador), no algo derivable durante el render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible("");
     setCompleto(false);
     const inicio = performance.now();

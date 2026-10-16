@@ -6,10 +6,9 @@ import { getStudentBoard } from "@/lib/student-board";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import Link from "next/link";
 import { Chaska, Guarda } from "@/components/brand/Andino";
-import { CondorVideo } from "@/components/mascota/CondorVideo";
+import { Condor } from "@/components/mascota/Condor";
 import { Map, BookOpen, Search, Sparkles, Trophy, FileQuestion } from "lucide-react";
 
 // Cada acceso lleva su propio tono del fondo andino: el icono en color hace que
@@ -227,11 +226,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-6">
-      {/* El cóndor saluda en vídeo. Viene grabado sobre croma verde, así que el
-          componente le recorta el fondo en el navegador: si se dejara tal cual,
-          un rectángulo verde taparía el fondo andino de la página. */}
+      {/* Mallku saluda. Es una imagen (no un vídeo): carga al instante y se ve igual en todos los dispositivos. */}
       <div className="panel rounded-2xl p-6 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-        <CondorVideo ancho={132} />
+        <Condor linea={{ id: "dashboard-saludo", texto: "", idioma: "es", pose: "ensenar" }} size={140} />
         <div>
           <h1 className="text-xl font-semibold">Hola, {user.name}</h1>
           <div className="flex items-center justify-center sm:justify-start gap-1.5 text-sm text-muted-foreground">

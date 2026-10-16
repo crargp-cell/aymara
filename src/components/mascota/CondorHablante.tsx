@@ -53,7 +53,11 @@ export function CondorHablante({
   const frameRef = useRef(0);
 
   useEffect(() => {
+    // El efecto entero sincroniza con un reloj externo (rAF); estos dos
+    // primeros casos sólo paran esa animación en un estado fijo, no calculan
+    // nada que pudiera resolverse durante el render.
     if (!hablando) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCuadro(0);
       return;
     }
