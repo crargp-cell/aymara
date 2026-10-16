@@ -1,0 +1,1048 @@
+{
+ "alfabeto": [
+  {
+   "letra": "A",
+   "palabra": "Alaña",
+   "glosa": "Comprar",
+   "oracion": "El cóndor va al mercado a comprar (alaña).",
+   "categoria": "Vocales",
+   "img": "Alaña.png",
+   "audio": null
+  },
+  {
+   "letra": "I",
+   "palabra": "Ikintaña",
+   "glosa": "Durmiendo",
+   "oracion": "El cóndor está durmiendo en su nido (ikintaña).",
+   "categoria": "Vocales",
+   "img": "Ikitaña.png",
+   "audio": null
+  },
+  {
+   "letra": "U",
+   "palabra": "Uma",
+   "glosa": "Agua",
+   "oracion": "El cóndor bebe agua del río (uma).",
+   "categoria": "Vocales",
+   "img": "Uma.png",
+   "audio": null
+  },
+  {
+   "letra": "P",
+   "palabra": "Patxa",
+   "glosa": "Arriba / encima",
+   "oracion": "El cóndor está patxa de la roca.",
+   "categoria": "Consonantes",
+   "img": "Patxa.png",
+   "audio": "patxa.mp3"
+  },
+  {
+   "letra": "Ph",
+   "palabra": "Phaxsi",
+   "glosa": "Luna",
+   "oracion": "La phaxsi ilumina la noche.",
+   "categoria": "Consonantes",
+   "img": "Phaxsi.png",
+   "audio": "phaxi.mp3"
+  },
+  {
+   "letra": "P’",
+   "palabra": "P’iqi",
+   "glosa": "Cabeza",
+   "oracion": "Cuida tu p’iqi.",
+   "categoria": "Consonantes",
+   "img": "P’iqi.png",
+   "audio": "piqi.mp3"
+  },
+  {
+   "letra": "T",
+   "palabra": "Titi",
+   "glosa": "Gato salvaje",
+   "oracion": "Vimos un titi en el cerro.",
+   "categoria": "Consonantes",
+   "img": "Titi.png",
+   "audio": "titi.mp3"
+  },
+  {
+   "letra": "Th",
+   "palabra": "Thanta",
+   "glosa": "Ropa usada",
+   "oracion": "Lleva thanta al trueque.",
+   "categoria": "Consonantes",
+   "img": "Thanta.png",
+   "audio": null
+  },
+  {
+   "letra": "T’",
+   "palabra": "T’ula",
+   "glosa": "Leña / combustible",
+   "oracion": "Trajo t’ula para la fogata.",
+   "categoria": "Consonantes",
+   "img": "T’ula.png",
+   "audio": "tula.mp3"
+  },
+  {
+   "letra": "K",
+   "palabra": "Kanka",
+   "glosa": "Carne asada o frita",
+   "oracion": "Comimos kanka el domingo.",
+   "categoria": "Consonantes",
+   "img": "Kanka.png",
+   "audio": "kanka.mp3"
+  },
+  {
+   "letra": "Kh",
+   "palabra": "Khusa",
+   "glosa": "Bueno (respuesta corta)",
+   "oracion": "—Khusa.—",
+   "categoria": "Consonantes",
+   "img": "Khusa.png",
+   "audio": "khusa.mp3"
+  },
+  {
+   "letra": "K’",
+   "palabra": "K’utuña",
+   "glosa": "Cortar",
+   "oracion": "Vas a k’utuña la ensalada.",
+   "categoria": "Consonantes",
+   "img": "K’utuña.png",
+   "audio": "kutuna.mp3"
+  },
+  {
+   "letra": "Q",
+   "palabra": "Qaqa",
+   "glosa": "Volverse canoso",
+   "oracion": "Mi abuelo qaqa.",
+   "categoria": "Consonantes",
+   "img": "Qaqa.png",
+   "audio": "qaqa.mp3"
+  },
+  {
+   "letra": "Qh",
+   "palabra": "Qhachu",
+   "glosa": "Chuño",
+   "oracion": "Comimos phisara con qhachu.",
+   "categoria": "Consonantes",
+   "img": "Qhachu.png",
+   "audio": "qhachu.mp3"
+  },
+  {
+   "letra": "Q’",
+   "palabra": "Q’urawa",
+   "glosa": "Resortera para lanzar piedras",
+   "oracion": "Tira piedras con q’urawa.",
+   "categoria": "Consonantes",
+   "img": "Q’urawa.png",
+   "audio": "qurawa.mp3"
+  },
+  {
+   "letra": "Ch",
+   "palabra": "Chacha",
+   "glosa": "Hombre",
+   "oracion": "El chacha saluda al cóndor.",
+   "categoria": "Consonantes",
+   "img": "Chacha.png",
+   "audio": "chacha.mp3"
+  },
+  {
+   "letra": "Chh",
+   "palabra": "Chhala",
+   "glosa": "Deber",
+   "oracion": "El cóndor tiene chhala en su tienda.",
+   "categoria": "Consonantes",
+   "img": "Chhala.png",
+   "audio": "chhala.mp3"
+  },
+  {
+   "letra": "Ch’",
+   "palabra": "Ch’illiwa",
+   "glosa": "Paja para escobas",
+   "oracion": "El cóndor barre con una escoba de ch’illiwa.",
+   "categoria": "Consonantes",
+   "img": "Ch’illiwa.png",
+   "audio": "chilliwa.mp3"
+  },
+  {
+   "letra": "S",
+   "palabra": "Saxra",
+   "glosa": "Viento",
+   "oracion": "Hoy hay saxra fuerte.",
+   "categoria": "Consonantes",
+   "img": "Saxra.png",
+   "audio": "saxra.mp3"
+  },
+  {
+   "letra": "J",
+   "palabra": "Jach’a",
+   "glosa": "Grande / fuerte / importante",
+   "oracion": "Es un jach’a yatichiri.",
+   "categoria": "Consonantes",
+   "img": "Jach’a.png",
+   "audio": "jacha.mp3"
+  },
+  {
+   "letra": "X",
+   "palabra": "Xixa",
+   "glosa": "Chicha",
+   "oracion": "Preparan xixa para la fiesta.",
+   "categoria": "Consonantes",
+   "img": "Xixa.png",
+   "audio": null
+  },
+  {
+   "letra": "M",
+   "palabra": "Mama",
+   "glosa": "Señora / Madre",
+   "oracion": "Su mamá le abraza.",
+   "categoria": "Consonantes",
+   "img": "Mama.png",
+   "audio": null
+  },
+  {
+   "letra": "N",
+   "palabra": "Nasa",
+   "glosa": "Nariz",
+   "oracion": "Me pica la nasa.",
+   "categoria": "Consonantes",
+   "img": "Nasa.png",
+   "audio": "nasa.mp3"
+  },
+  {
+   "letra": "Ñ",
+   "palabra": "Ñiq'i",
+   "glosa": "Barro",
+   "oracion": "Hay ñiq’i después de la lluvia.",
+   "categoria": "Consonantes",
+   "img": "Ñiq'i.png",
+   "audio": "niqi.mp3"
+  },
+  {
+   "letra": "L",
+   "palabra": "Layqa",
+   "glosa": "Curandero / chamán",
+   "oracion": "El layqa curó al niño.",
+   "categoria": "Consonantes",
+   "img": "Layqa.png",
+   "audio": "layqa.mp3"
+  },
+  {
+   "letra": "Ll",
+   "palabra": "Llij-lliju",
+   "glosa": "Relámpago / rayo",
+   "oracion": "Vimos llij-lliju anoche.",
+   "categoria": "Consonantes",
+   "img": "Lliglliju.png",
+   "audio": "lliju.mp3"
+  },
+  {
+   "letra": "R",
+   "palabra": "Rumi",
+   "glosa": "Piedra",
+   "oracion": "El cóndor construye una casa con rumi.",
+   "categoria": "Consonantes",
+   "img": "Rumi.png",
+   "audio": null
+  },
+  {
+   "letra": "W",
+   "palabra": "Wiphala",
+   "glosa": "Wiphala (bandera)",
+   "oracion": "La wiphala ondea en la plaza.",
+   "categoria": "Consonantes",
+   "img": "Wiphala.png",
+   "audio": null
+  },
+  {
+   "letra": "Y",
+   "palabra": "Yatiri",
+   "glosa": "Sabio / guía espiritual",
+   "oracion": "Consultaron al yatiri.",
+   "categoria": "Consonantes",
+   "img": "Yatiri.png",
+   "audio": null
+  },
+  {
+   "letra": "Ü",
+   "palabra": "Üru",
+   "glosa": "Día",
+   "oracion": "Jichha üru = hoy.",
+   "categoria": "Consonantes",
+   "img": "Üru.png",
+   "audio": null
+  }
+ ],
+ "frases": [
+  [
+   "Winus tiyas",
+   "Buenos días"
+  ],
+  [
+   "Winas täris",
+   "Buenas tardes"
+  ],
+  [
+   "Yuspagara",
+   "Gracias"
+  ],
+  [
+   "Uma",
+   "Agua"
+  ],
+  [
+   "Manq'a",
+   "Comida"
+  ],
+  [
+   "Qurpa",
+   "Alojamiento"
+  ],
+  [
+   "Thaki",
+   "Camino"
+  ],
+  [
+   "Jisa (Janiw)",
+   "Sí (No)"
+  ],
+  [
+   "Janiw yatkti",
+   "Yo no sé"
+  ],
+  [
+   "Nayax Aymara parlt'awa",
+   "Yo hablo Aymara"
+  ],
+  [
+   "Jaya (Jak'a)",
+   "Lejos (Cerca)"
+  ],
+  [
+   "Aynacha (Alaxa)",
+   "Abajo (Arriba)"
+  ],
+  [
+   "Kamisaraki",
+   "Hola"
+  ],
+  [
+   "Kunjamaskatasa?",
+   "¿Cómo estás?"
+  ],
+  [
+   "Nayax walisktaw,..., jumasti",
+   "Yo estoy bien ...¿y tú?"
+  ],
+  [
+   "Kawki",
+   "¿Dónde?"
+  ],
+  [
+   "Kawki pirs munta?",
+   "¿Cuál quieres?"
+  ],
+  [
+   "Kunjata",
+   "¿Cómo?"
+  ],
+  [
+   "Kuna",
+   "¿Qué?"
+  ],
+  [
+   "Kunata",
+   "¿Por qué?"
+  ],
+  [
+   "Kawkis uñstanta?",
+   "¿De dónde apareces?"
+  ],
+  [
+   "Uka ch'ullu muntwa",
+   "Quiero ese chullo"
+  ],
+  [
+   "Uka ch'ullu alxïta",
+   "Véndeme ese chullo"
+  ],
+  [
+   "Khawkhas?",
+   "¿Cuánto es?"
+  ],
+  [
+   "Sarä",
+   "Me voy"
+  ],
+  [
+   "Jutma",
+   "Ven acá"
+  ],
+  [
+   "Mä rat past'arapï jilata",
+   "Voy a pasar un momento, amigo/hermano"
+  ],
+  [
+   "Ikiw puritu",
+   "Estoy con sueño"
+  ],
+  [
+   "Jaqinakan uñjkatawa",
+   "Con muchos testigos visuales"
+  ],
+  [
+   "Arsu mayaki arsuma",
+   "Di por lo menos alguna cosa"
+  ],
+  [
+   "Aka isix thathawa (t'iqiwa)",
+   "Esta ropa es ancha (apretada)"
+  ],
+  [
+   "Jakisiñkama",
+   "Adiós"
+  ],
+  [
+   "Kunjamas akax jumataqix?",
+   "¿Qué te parece esto?"
+  ],
+  [
+   "Askiru Churata Tatay (Mamay)",
+   "Buenos días, tardes o noches (saludo arcaico)"
+  ]
+ ],
+ "cuerpo": [
+  [
+   "p'iqi",
+   "cabeza"
+  ],
+  [
+   "ajanu",
+   "cara"
+  ],
+  [
+   "para",
+   "frente"
+  ],
+  [
+   "Illpa",
+   "sien"
+  ],
+  [
+   "nayra",
+   "ojo"
+  ],
+  [
+   "nasa",
+   "naríz"
+  ],
+  [
+   "jinchu",
+   "oreja"
+  ],
+  [
+   "laka",
+   "boca"
+  ],
+  [
+   "ñik'uta",
+   "cabello"
+  ],
+  [
+   "k'ana",
+   "trenza"
+  ],
+  [
+   "kunka",
+   "cuello"
+  ],
+  [
+   "k'achi",
+   "diente"
+  ],
+  [
+   "ati",
+   "espalda"
+  ],
+  [
+   "ampara",
+   "mano"
+  ],
+  [
+   "sillu",
+   "uña"
+  ],
+  [
+   "luk'ana",
+   "dedo"
+  ],
+  [
+   "chhiqanqara",
+   "axila"
+  ],
+  [
+   "kallachi",
+   "hombro"
+  ],
+  [
+   "chuyma",
+   "pulmón, corazón"
+  ],
+  [
+   "lluqu",
+   "corazón"
+  ],
+  [
+   "kururu",
+   "ombligo"
+  ],
+  [
+   "t'ixni",
+   "cadera"
+  ],
+  [
+   "jiphilla",
+   "intestinos"
+  ],
+  [
+   "anku",
+   "nervio"
+  ],
+  [
+   "ch'aka",
+   "hueso"
+  ],
+  [
+   "chara",
+   "pierna"
+  ],
+  [
+   "lanqhu chara",
+   "muslo"
+  ],
+  [
+   "qunquri",
+   "rodilla"
+  ],
+  [
+   "kayu",
+   "pie"
+  ],
+  [
+   "wila",
+   "sangre"
+  ],
+  [
+   "jump'i",
+   "sudor"
+  ],
+  [
+   "samana",
+   "respiración"
+  ],
+  [
+   "jurma",
+   "muco nasal"
+  ],
+  [
+   "jacha",
+   "lágrima"
+  ],
+  [
+   "ñuñu",
+   "teta"
+  ],
+  [
+   "chinqi",
+   "vagina"
+  ],
+  [
+   "allu",
+   "pene"
+  ],
+  [
+   "q'uruta",
+   "testículos"
+  ],
+  [
+   "ch'ina",
+   "trasero"
+  ],
+  [
+   "chhuxu",
+   "orines"
+  ],
+  [
+   "jama",
+   "heces"
+  ],
+  [
+   "sira",
+   "gases intestinales"
+  ]
+ ],
+ "alimentos": [
+  [
+   "uma",
+   "agua"
+  ],
+  [
+   "manq'a",
+   "comida"
+  ],
+  [
+   "ch'uqi",
+   "papa"
+  ],
+  [
+   "ch'uñu",
+   "chuño"
+  ],
+  [
+   "qhati",
+   "papa sancochada"
+  ],
+  [
+   "waja",
+   "papa asada con terrones"
+  ],
+  [
+   "ch'aqu,phasa",
+   "tierra comestible con qhati"
+  ],
+  [
+   "apilla",
+   "oca (tubérculo dulce)"
+  ],
+  [
+   "isañu",
+   "isaño (tubérculo dulce)"
+  ],
+  [
+   "aycha",
+   "carne"
+  ],
+  [
+   "chichi",
+   "carne cocida en sopas"
+  ],
+  [
+   "k'awna",
+   "huevo"
+  ],
+  [
+   "ch'arki",
+   "charque (carne salada seca)"
+  ],
+  [
+   "t'ant'a",
+   "pan"
+  ],
+  [
+   "mut'i",
+   "mote (granos sancochados)"
+  ],
+  [
+   "jamp'i",
+   "tostado"
+  ],
+  [
+   "ququ",
+   "rancho frío, merienda"
+  ],
+  [
+   "misk'i",
+   "miel"
+  ],
+  [
+   "lik'i",
+   "grasa, cebo"
+  ],
+  [
+   "jupha,jiwra",
+   "quinua"
+  ],
+  [
+   "k'usa",
+   "chicha"
+  ],
+  [
+   "wayq'a",
+   "ají"
+  ],
+  [
+   "jayu",
+   "sal"
+  ],
+  [
+   "kanka",
+   "churrasco"
+  ],
+  [
+   "khallu",
+   "crudo"
+  ],
+  [
+   "qhatita",
+   "cocido"
+  ],
+  [
+   "qhatatiri",
+   "hirviendo"
+  ],
+  [
+   "phuti",
+   "cocido al vapor"
+  ],
+  [
+   "q'allu",
+   "tajada"
+  ],
+  [
+   "thaxti",
+   "panecillo de harina de quinua"
+  ],
+  [
+   "allpi",
+   "mazamorra"
+  ],
+  [
+   "p'isqi",
+   "puré de quinua"
+  ],
+  [
+   "k'ispiña",
+   "tortillas de quinua (phuti)"
+  ],
+  [
+   "jak'u",
+   "harina"
+  ],
+  [
+   "muxsa, musq'a",
+   "dulce"
+  ],
+  [
+   "chawlla",
+   "pescado"
+  ]
+ ],
+ "familia": [
+  [
+   "chacha",
+   "hombre, esposo"
+  ],
+  [
+   "warmi",
+   "mujer, esposa"
+  ],
+  [
+   "awki",
+   "padre"
+  ],
+  [
+   "tayka",
+   "madre"
+  ],
+  [
+   "wawa",
+   "hijo, niño"
+  ],
+  [
+   "asuwawa",
+   "bebe"
+  ],
+  [
+   "jilïri",
+   "hermano mayor"
+  ],
+  [
+   "sullka",
+   "hermano menor"
+  ],
+  [
+   "jila",
+   "hermano"
+  ],
+  [
+   "kullaka",
+   "hermana"
+  ],
+  [
+   "yuqalla",
+   "muchacho, chico"
+  ],
+  [
+   "imilla",
+   "muchacha, chica"
+  ],
+  [
+   "wayna",
+   "joven (varón), mozo"
+  ],
+  [
+   "tawaqu",
+   "joven (mujer), moza"
+  ],
+  [
+   "achachila",
+   "abuelito"
+  ],
+  [
+   "awicha",
+   "abuelita"
+  ],
+  [
+   "allchhi",
+   "nieto"
+  ],
+  [
+   "tunu",
+   "tronco (familiar)"
+  ],
+  [
+   "tullqa",
+   "yerno"
+  ],
+  [
+   "yuxch'a",
+   "nuera"
+  ],
+  [
+   "läsi",
+   "padre(madre) del(a) yerno(nuera)"
+  ],
+  [
+   "lari",
+   "familiar de la nuera"
+  ],
+  [
+   "tata",
+   "papá"
+  ],
+  [
+   "mama",
+   "mamá"
+  ],
+  [
+   "jisk'alala",
+   "niño pequeño"
+  ],
+  [
+   "ichutata",
+   "padrino"
+  ],
+  [
+   "ichumama",
+   "madrina"
+  ],
+  [
+   "wajcha",
+   "huérfano"
+  ],
+  [
+   "ijma",
+   "viuda"
+  ],
+  [
+   "chupa",
+   "viudo"
+  ],
+  [
+   "jatjata",
+   "abandonado"
+  ],
+  [
+   "munata",
+   "querido(a) / enamorado(a)"
+  ],
+  [
+   "uta masi",
+   "vecino"
+  ]
+ ],
+ "nums1": [
+  [
+   "Maya",
+   1
+  ],
+  [
+   "Paya",
+   2
+  ],
+  [
+   "Kimsa",
+   3
+  ],
+  [
+   "Pusi",
+   4
+  ],
+  [
+   "Phisqa",
+   5
+  ],
+  [
+   "Suxta",
+   6
+  ],
+  [
+   "Paqalqu",
+   7
+  ],
+  [
+   "Kimsaqalqu",
+   8
+  ],
+  [
+   "Llatunka",
+   9
+  ],
+  [
+   "Tunka",
+   10
+  ],
+  [
+   "Tunka-mayani",
+   11
+  ],
+  [
+   "Tunka-payani",
+   12
+  ],
+  [
+   "Tunka-kimsani",
+   13
+  ],
+  [
+   "Tunka-pusini",
+   14
+  ],
+  [
+   "Tunka-phisqani",
+   15
+  ],
+  [
+   "Tunka-suxtani",
+   16
+  ],
+  [
+   "Tunka-paqalquni",
+   17
+  ],
+  [
+   "Tunka-kimsaqalquni",
+   18
+  ],
+  [
+   "Tunka-llatunkani",
+   19
+  ]
+ ],
+ "nums2": [
+  [
+   "Pätunka",
+   20
+  ],
+  [
+   "Kimsa-tunka",
+   30
+  ],
+  [
+   "Pusi-tunka",
+   40
+  ],
+  [
+   "Phisqa-tunka",
+   50
+  ],
+  [
+   "Suxta-tunka",
+   60
+  ],
+  [
+   "Paqalqu-tunka",
+   70
+  ],
+  [
+   "Kimsaqalqu-tunka",
+   80
+  ],
+  [
+   "Llatunka-tunka",
+   90
+  ],
+  [
+   "Pataka",
+   100
+  ],
+  [
+   "Phisqa-pataka",
+   500
+  ],
+  [
+   "Waranqa",
+   1000
+  ]
+ ],
+ "preguntasPersonas": [
+  {
+   "q": "¿Cuál es “Nosotros (incluye al interlocutor)”?",
+   "opts": [
+    "Nayanaka",
+    "Jiwasanaka",
+    "Jumanaka",
+    "Jupanaka"
+   ],
+   "a": 1
+  },
+  {
+   "q": "“Jupanakax utanipxiwa” significa…",
+   "opts": [
+    "Ellos no tienen casa",
+    "Ellos tienen casa",
+    "Ustedes tienen casa",
+    "Nosotros tenemos casa"
+   ],
+   "a": 1
+  },
+  {
+   "q": "Forma para “Tú y yo”",
+   "opts": [
+    "Jiwasa",
+    "Juma",
+    "Naya",
+    "Jupa"
+   ],
+   "a": 0
+  },
+  {
+   "q": "“Nänakax awatiripxtawa” =",
+   "opts": [
+    "Nosotros (incl.) somos pastores",
+    "Nosotros (excl.) somos pastores",
+    "Ustedes son pastores",
+    "Ellos son pastores"
+   ],
+   "a": 1
+  },
+  {
+   "q": "Negación correcta: “Yo no tengo casa”",
+   "opts": [
+    "Nayax janiw utanïkti",
+    "Nayax utaniwa",
+    "Jupax janiw utanïkiti",
+    "Nayax utanitwa"
+   ],
+   "a": 0
+  },
+  {
+   "q": "“Jumax utanitawa” =",
+   "opts": [
+    "Tú tienes casa",
+    "Él tiene casa",
+    "Ustedes tienen casa",
+    "Tú no tienes casa"
+   ],
+   "a": 0
+  }
+ ]
+}

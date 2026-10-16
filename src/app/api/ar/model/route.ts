@@ -5,8 +5,8 @@ import { saveArModel } from "@/lib/ar/marker";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const role = (session?.user as any)?.role;
-  if (!role || !["maestro", "admin"].includes(role)) return NextResponse.json({ error: "no autorizado" }, { status: 401 });
+  const role = session?.user?.role;
+  if (role !== "maestro" && role !== "admin") return NextResponse.json({ error: "no autorizado" }, { status: 401 });
 
   const form = await req.formData();
   const file = form.get("model") as File | null;

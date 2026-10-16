@@ -13,9 +13,9 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
 
   useEffect(() => {
     let cancelled = false;
-    let sceneEl: any = null;
+    let sceneEl: HTMLElement | null = null;
     let objectUrl: string | null = null;
-    let onError: any = null;
+    let onError: ((e: ErrorEvent) => void) | null = null;
 
     async function startMiniCam() {
       try {
@@ -67,7 +67,7 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
           if (e.message?.includes("fov")) {
             e.preventDefault();
             if (!cancelled) {
-              setErrorMsg("Error de cámara AR (fov). Probá vista previa 3D.");
+              setErrorMsg("Error de cámara AR (fov). Prueba la vista previa 3D.");
               setStatus("error");
             }
           }
@@ -176,6 +176,9 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
     }
 
     if (containerRef.current) containerRef.current.innerHTML = "";
+    // Se apaga antes de (re)montar la escena AR/preview; el resto del efecto
+    // es justamente ese montaje (carga async de aframe/mind-ar, cámara, DOM).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCamActive(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -184,10 +187,15 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
     if (mode === "preview") initPreview();
     else initAr();
 
+    // Copiado aquí, no leído como `containerRef.current` dentro del cleanup:
+    // para cuando ese cleanup corra (React ya desmontando o reasignando el
+    // ref a otro nodo) puede no ser el mismo contenedor que se llenó arriba.
+    const container = containerRef.current;
     return () => {
       cancelled = true;
       if (onError) window.removeEventListener("error", onError);
       try {
+        // @ts-expect-error runtime shape — `systems` lo añade AFRAME al montar la escena.
         sceneEl?.systems?.["mindar-image-system"]?.stop?.();
       } catch {}
       if (objectUrl) URL.revokeObjectURL(objectUrl);
@@ -196,7 +204,7 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
         streamRef.current = null;
       }
       try {
-        if (containerRef.current) containerRef.current.innerHTML = "";
+        if (container) container.innerHTML = "";
       } catch {}
     };
   }, [markerImageUrl, modelUrl, mode]);
@@ -225,7 +233,7 @@ export function ArScene({ markerImageUrl, modelUrl }: { markerImageUrl: string; 
             </div>
             <span className="absolute bottom-0.5 left-1 text-[8px] font-mono bg-black/60 text-white px-1 rounded">mini visor</span>
           </div>
-          <span className="text-[10px] text-white/60 bg-black/40 backdrop-blur px-2 py-0.5 rounded-full w-fit">Apuntá la tarjeta al centro</span>
+          <span className="text-[10px] text-white/60 bg-black/40 backdrop-blur px-2 py-0.5 rounded-full w-fit">Apunta la tarjeta al centro</span>
         </div>
       )}
 

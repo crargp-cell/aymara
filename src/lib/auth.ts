@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { bloqueado, desdeVentana } from "@/lib/login-throttle";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
@@ -83,6 +84,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
         const { username, password } = parsed.data;
+
+        // Freno a la fuerza bruta: demasiados fallos recientes desde esta dirección.
+        const desde = desdeVentana();
+        const [usuarioIp, porIp] = await Promise.all([
+          prisma.accessLog.count({ where: { action: "login_failed", username, ip, created_at: { gt: desde } } }),
+          prisma.accessLog.count({ where: { action: "login_failed", ip, created_at: { gt: desde } } }),
+        ]).catch(() => [0, 0]);
+        if (bloqueado({ usuarioIp, ip: porIp })) {
+          registrarIntento({ username, ok: false, ip, userAgent, motivo: "Bloqueado temporalmente: demasiados intentos fallidos" });
+          return null;
+        }
         const user = await prisma.usuario.findFirst({
           where: { username, activo: true },
         });
@@ -90,26 +102,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           registrarIntento({ username, ok: false, ip, userAgent, motivo: "Usuario inexistente o dado de baja" });
           return null;
         }
-        let hash = user.password;
-        if (hash.startsWith("$2y$")) hash = "$2b$" + hash.slice(4);
-        const valid = await bcrypt.compare(password, hash);
+        const valid = await bcrypt.compare(password, user.password);
         if (!valid) {
-          if (user.password !== password) {
-            registrarIntento({
-              userId: user.id,
-              email: user.email,
-              username,
-              ok: false,
-              ip,
-              userAgent,
-              motivo: "Contraseña incorrecta",
-            });
-            return null;
-          }
-          // Legacy plaintext password matched: rehash to bcrypt immediately so this
-          // account never authenticates via plaintext comparison again.
-          const rehashed = await bcrypt.hash(password, 10);
-          await prisma.usuario.update({ where: { id: user.id }, data: { password: rehashed } }).catch(() => {});
+          registrarIntento({
+            userId: user.id,
+            email: user.email,
+            username,
+            ok: false,
+            ip,
+            userAgent,
+            motivo: "Contraseña incorrecta",
+          });
+          return null;
         }
         registrarIntento({
           userId: user.id,
@@ -125,7 +129,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.username,
           email: user.email ?? undefined,
           role: user.role,
-        } as any;
+        };
       },
     }),
   ],

@@ -23,5 +23,3 @@ export const registerSchema = z.object({
   apellido: z.string().min(1, "Apellido requerido").max(120),
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;

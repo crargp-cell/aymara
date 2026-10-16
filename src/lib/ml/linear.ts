@@ -74,7 +74,7 @@ export async function trainScoreModel(): Promise<TrainLinearResult> {
   let sse = 0;
   let sst = 0;
   const yMean = y.reduce((a, b) => a + b, 0) / y.length;
-  conDatos.forEach((f, i) => {
+  conDatos.forEach((_, i) => {
     const p = Math.max(0, Math.min(1, z[i].reduce((s, x, j) => s + x * weights[j], bias)));
     sse += (y[i] - p) ** 2;
     sst += (y[i] - yMean) ** 2;

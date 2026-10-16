@@ -48,7 +48,7 @@ export default async function StudentDetailPage({ params }: { params: Promise<{ 
         <CardContent className="space-y-2">
           {historial.map((h) => (
             <div key={h.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
-              <span>{h.paralelo.gestion.nombre} · {h.paralelo.grado.nombre} "{h.paralelo.nombre}"</span>
+              <span>{h.paralelo.gestion.nombre} · {h.paralelo.grado.nombre} «{h.paralelo.nombre}»</span>
               <span className="flex items-center gap-2">
                 <Badge variant={badgeVariantAlumno(h.estado)}>{h.estado}</Badge>
                 <span className="text-xs text-muted-foreground">{h.fecha_inscripcion.toLocaleDateString()}{h.fecha_baja ? ` – ${h.fecha_baja.toLocaleDateString()}` : ""}</span>

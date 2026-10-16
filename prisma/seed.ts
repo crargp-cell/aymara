@@ -20,6 +20,7 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { generateMarkerImage, generateTopicPdf, installMarkerAssets } from "./seed-assets";
+import { planLimpieza } from "../src/lib/diccionario-limpieza";
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }) });
 
@@ -32,15 +33,15 @@ const día = (offset: number, hora = 10) => {
   return d;
 };
 
-type Legacy = {
+type DatosBase = {
   diccionario: { aymara: string | null; espanol: string | null; categoria: string | null }[];
   topics: { lesson_id: number; title: string; content: string | null }[];
 };
 
-function loadLegacy(): Legacy {
-  const p = join(process.cwd(), "prisma", "legacy-data.json");
+function cargarDatosBase(): DatosBase {
+  const p = join(process.cwd(), "prisma", "datos-base.json");
   if (!existsSync(p)) return { diccionario: [], topics: [] };
-  return JSON.parse(readFileSync(p, "utf8")) as Legacy;
+  return JSON.parse(readFileSync(p, "utf8")) as DatosBase;
 }
 
 // ---------------------------------------------------------------------------
@@ -329,10 +330,15 @@ async function main() {
   // -------------------------------------------------------------------------
   // 6. Diccionario
   // -------------------------------------------------------------------------
-  const legacy = loadLegacy();
-  if (legacy.diccionario.length) {
+  const base = cargarDatosBase();
+  if (base.diccionario.length) {
+    // Se limpia al cargar: categorías unificadas, repetidas fuera y entradas sin sentido ocultas.
+    const plan = planLimpieza(base.diccionario.map((d, i) => ({ id: i, aymara: d.aymara, espanol: d.espanol, categoria: d.categoria ?? "" })));
     await prisma.diccionario.createMany({
-      data: legacy.diccionario.map((d) => ({ aymara: d.aymara, espanol: d.espanol, categoria: (d.categoria ?? "").trim() })),
+      data: base.diccionario
+        .map((d, i) => ({ d, i }))
+        .filter(({ i }) => !plan.eliminar.has(i))
+        .map(({ d, i }) => ({ aymara: d.aymara, espanol: d.espanol, categoria: plan.categoria.get(i) ?? "", estado: plan.deshabilitar.has(i) ? ("inactivo" as const) : ("activo" as const) })),
     });
   }
   for (const [categoria, pares] of Object.entries(CAT_WORDS)) {
@@ -398,7 +404,7 @@ async function main() {
   // -------------------------------------------------------------------------
   // 8. Contenido del paralelo 1º A — lecciones, temas (uno con PDF), ejercicios
   // -------------------------------------------------------------------------
-  const topicByLegacy = new Map(legacy.topics.map((t) => [t.lesson_id, t]));
+  const temaBase = new Map(base.topics.map((t) => [t.lesson_id, t]));
 
   const pdf = await generateTopicPdf("guia-alfabeto-aymara.pdf", "Guía del alfabeto aymara", [
     "El aymara es una lengua fonémica: cada sonido se escribe siempre con la misma letra. Esto hace que leer y escribir sea predecible una vez aprendido el alfabeto.",
@@ -419,7 +425,7 @@ async function main() {
     min_correct: number;
     present_count: number | null;
     random: boolean;
-    legacyTopic: number;
+    temaBaseId: number;
     refs: string[];
     pdf?: boolean;
     reward?: string;
@@ -431,27 +437,27 @@ async function main() {
     {
       key: "L1", orden: 1, title: "Lección 1: El alfabeto aymara",
       desc: "Vocales, series de consonantes y puntos de articulación.",
-      min_correct: 8, present_count: 10, random: true, legacyTopic: 1, pdf: true, reward: "ARCHHAJNA",
+      min_correct: 8, present_count: 10, random: true, temaBaseId: 1, pdf: true, reward: "ARCHHAJNA",
       refs: ["alf_mc1", "alf_mc2", "alf_mc3", "alf_mc4", "alf_mc5", "alf_mat1", "alf_mat2", "alf_fib1", "alf_fib2", "alf_fib3", "alf_txt1", "alf_txt2"],
     },
     {
       key: "L2", orden: 2, title: "Lección 2: Las 4 personas gramaticales",
       desc: "Pronombres personales y la distinción inclusivo/exclusivo.",
-      min_correct: 3, present_count: null, random: false, legacyTopic: 2,
+      min_correct: 3, present_count: null, random: false, temaBaseId: 2,
       cambioMayor: "Se reemplazaron los ejercicios y se añadió el contraste jiwasa/nanaka",
       refs: ["per_mc1", "per_mat1", "per_fib1", "per_txt1", "per_mc2"],
     },
     {
       key: "L3", orden: 3, title: "Lección 3: Números y sufijos básicos",
       desc: "Contar en aymara y los sufijos -naka / -ni.",
-      min_correct: 3, present_count: null, random: false, legacyTopic: 3,
+      min_correct: 3, present_count: null, random: false, temaBaseId: 3,
       // alf_txt2 se reutiliza aquí: un mismo ejercicio en dos lecciones (Negocio.md §10)
       refs: ["num_mat1", "num_mc1", "num_fib1", "num_txt1", "num_mc2", "alf_txt2"],
     },
     {
       key: "L4", orden: 4, title: "Lección 4: Los colores",
       desc: "Léxico de colores y su uso con sustantivos.",
-      min_correct: 3, present_count: null, random: false, legacyTopic: 4,
+      min_correct: 3, present_count: null, random: false, temaBaseId: 4,
       refs: ["col_mat1", "col_mc1", "col_fib1", "col_txt1"],
     },
   ];
@@ -505,7 +511,7 @@ async function main() {
       });
     }
 
-    const lt = topicByLegacy.get(spec.legacyTopic);
+    const lt = temaBase.get(spec.temaBaseId);
     const topic = await prisma.lessonTopic.create({
       data: {
         lesson_id: lesson.id,
@@ -602,7 +608,7 @@ async function main() {
   });
   await prisma.lessonVersion.create({ data: { lesson_id: l1b.id, version: 1, tipo_cambio: "menor", resumen: "Copia desde 1º A", created_by: maestro1.id } });
   const t1b = await prisma.lessonTopic.create({
-    data: { lesson_id: l1b.id, title: "El alfabeto aymara", content: topicByLegacy.get(1)?.content ?? "", order: 0 },
+    data: { lesson_id: l1b.id, title: "El alfabeto aymara", content: temaBase.get(1)?.content ?? "", order: 0 },
   });
   await prisma.lesson.update({ where: { id: l1b.id }, data: { default_topic_id: t1b.id } });
   const exs1b: number[] = [];

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Topbar } from "@/components/layout/Topbar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { badgeVariantAlumno } from "@/lib/estado";
 import Link from "next/link";
 
@@ -172,7 +171,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: Pro
                       <input type="hidden" name="alumno_id" value={i.alumno_id} />
                       <input type="hidden" name="desde_id" value={selected!.id} />
                       <select name="hacia_id" className="h-8 rounded-md border border-input bg-card px-2 text-xs">
-                        {destinos.map((p) => <option key={p.id} value={p.id}>{p.grado.nombre} "{p.nombre}"</option>)}
+                        {destinos.map((p) => <option key={p.id} value={p.id}>{p.grado.nombre} «{p.nombre}»</option>)}
                       </select>
                       <Button size="sm" variant="ghost" type="submit">Mover</Button>
                     </form>

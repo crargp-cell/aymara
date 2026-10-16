@@ -11,7 +11,7 @@ const PAGE_SIZE = 25;
 
 export default async function AccessLogsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const session = await auth();
-  const role = (session?.user as any)?.role;
+  const role = session?.user?.role;
   if (role !== "admin") redirect("/dashboard");
 
   const sp = await searchParams;

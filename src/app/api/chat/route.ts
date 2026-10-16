@@ -14,8 +14,10 @@ function textToStream(text: string): ReadableStream<string> {
   });
 }
 
+type ChatMessage = { role: "user" | "assistant" | "system"; content: string };
+
 export async function POST(req: Request) {
-  const { messages } = await req.json();
+  const { messages }: { messages: ChatMessage[] } = await req.json();
   const last = messages?.[messages.length - 1]?.content ?? "";
   const q = String(last).toLowerCase().trim();
 
@@ -58,7 +60,7 @@ export async function POST(req: Request) {
       const result = streamText({
         model: xai("grok-3"),
         system: `Eres Yatichiri, asistente de aymara. Responde en español con toques aymara, breve y útil. ${context}`,
-        messages: messages.map((m: any) => ({ role: m.role, content: m.content })),
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
         onError: (err) => console.error("chat streamText error", err),
       });
       return result.toTextStreamResponse();

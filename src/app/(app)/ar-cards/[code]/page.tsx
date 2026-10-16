@@ -81,7 +81,7 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
               )}
               <Link href="/ar-cards"><Button variant="secondary">Volver</Button></Link>
             </div>
-            <span className="text-xs text-muted-foreground hidden sm:block">Usá el mini visor para centrar la tarjeta · Vista previa 3D no necesita cámara</span>
+            <span className="text-xs text-muted-foreground hidden sm:block">Usa el mini visor para centrar la tarjeta · Vista previa 3D no necesita cámara</span>
           </div>
         </CardContent>
       </Card>

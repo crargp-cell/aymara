@@ -81,7 +81,7 @@ export default async function ParalelosPage() {
             <div key={p.id} className="panel rounded-xl px-4 py-3 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-medium flex items-center gap-2">
-                  {p.gestion.nombre} · {p.grado.nombre} "{p.nombre}"
+                  {p.gestion.nombre} · {p.grado.nombre} «{p.nombre}»
                   {p.gestion.es_actual && <Badge variant="success">actual</Badge>}
                 </div>
                 <p className="text-xs text-muted-foreground">{p._count.inscripciones} alumno(s) · {p._count.lessons} lección(es)</p>

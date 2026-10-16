@@ -76,7 +76,7 @@ export default async function SupervisionPage({ searchParams }: { searchParams: 
       <div className="flex gap-2 flex-wrap">
         {paralelos.map((p) => (
           <Link key={p.id} href={`/admin/supervision?paralelo=${p.id}`}>
-            <Button size="sm" variant={sel?.id === p.id ? "secondary" : "outline"}>{p.gestion.nombre} · {p.grado.nombre} "{p.nombre}"</Button>
+            <Button size="sm" variant={sel?.id === p.id ? "secondary" : "outline"}>{p.gestion.nombre} · {p.grado.nombre} «{p.nombre}»</Button>
           </Link>
         ))}
       </div>
@@ -84,7 +84,7 @@ export default async function SupervisionPage({ searchParams }: { searchParams: 
       {sel && (
         <>
           <Card>
-            <CardHeader><CardTitle className="text-base">{sel.grado.nombre} "{sel.nombre}" — profesor: {sel.profesor ? [sel.profesor.nombre, sel.profesor.apellido].filter(Boolean).join(" ") || sel.profesor.username : "sin asignar"}</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-base">{sel.grado.nombre} «{sel.nombre}» — profesor: {sel.profesor ? [sel.profesor.nombre, sel.profesor.apellido].filter(Boolean).join(" ") || sel.profesor.username : "sin asignar"}</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               <p className="text-xs font-semibold uppercase text-muted-foreground">Lecciones</p>
               {lessons.map((l) => (

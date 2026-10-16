@@ -40,7 +40,7 @@ export function PanelRecompensas({
       <div className="p-5 space-y-5">
         {vacio && (
           <p className="text-xs opacity-70 leading-relaxed">
-            Todavía no obtuviste ninguna. Completá el primer nivel de la ruta para desbloquear tu primera insignia.
+            Todavía no obtuviste ninguna. Completa el primer nivel de la ruta para desbloquear tu primera insignia.
           </p>
         )}
 

@@ -21,6 +21,7 @@ enum UsuariosRoleEnum {
   maestro
   estudiante
   admin
+
   @@map("usuarios_role_enum")
 }
 
@@ -31,6 +32,7 @@ enum EstadoContenido {
   retirado
   archivado
   deshabilitado
+
   @@map("estado_contenido_enum")
 }
 
@@ -44,6 +46,7 @@ enum EstadoAlumno {
   promovido
   trasladado
   repitente
+
   @@map("estado_alumno_enum")
 }
 
@@ -52,6 +55,7 @@ enum EstadoGestion {
   activa
   cerrada
   archivada
+
   @@map("estado_gestion_enum")
 }
 
@@ -59,6 +63,7 @@ enum Dificultad {
   facil
   medio
   dificil
+
   @@map("dificultad_enum")
 }
 
@@ -67,12 +72,18 @@ enum ExercisesTypeEnum {
   multiple_choice
   matching
   fill_in_the_blank
+  /// Imagen borrosa que se aclara con cada fallo; el alumno escribe la palabra.
+  image_guess
+  /// Se arrastra a la palabra la tarjeta cuya imagen le corresponde.
+  drag_card
+
   @@map("exercises_type_enum")
 }
 
 enum ExamsTypeEnum {
   conectar_palabras
   ar_exam
+
   @@map("exams_type_enum")
 }
 
@@ -81,18 +92,21 @@ enum ExamAttemptPolicy {
   last
   first
   average
+
   @@map("exam_attempt_policy_enum")
 }
 
 enum PassPolicy {
   por_minimo
   todos
+
   @@map("pass_policy_enum")
 }
 
 enum TipoCambio {
   menor
   mayor
+
   @@map("tipo_cambio_enum")
 }
 
@@ -103,12 +117,14 @@ enum MovimientoTipo {
   retiro
   reincorporacion
   repitencia
+
   @@map("movimiento_tipo_enum")
 }
 
 enum ArCardUnlockType {
   lesson
   exam
+
   @@map("ar_card_unlock_type_enum")
 }
 
@@ -118,12 +134,14 @@ enum LogroCategoria {
   rendimiento
   examenes
   tarjetas
+
   @@map("logro_categoria_enum")
 }
 
 enum ContentOrderContentTypeEnum {
   lesson
   exam
+
   @@map("content_order_content_type_enum")
 }
 
@@ -131,6 +149,7 @@ enum ExamDetailsConfigTypeEnum {
   categories
   ar_markers
   ar_cards
+
   @@map("exam_details_config_type_enum")
 }
 
@@ -140,6 +159,7 @@ enum StatType {
   paralelo
   student
   gestion
+
   @@map("statistics_stat_type_enum")
 }
 
@@ -148,6 +168,7 @@ enum PrediccionTipo {
   tendencia
   refuerzo_sugerido
   score_predicho
+
   @@map("prediccion_tipo_enum")
 }
 
@@ -159,6 +180,7 @@ enum AccessLogsActionEnum {
   create
   update
   delete
+
   @@map("access_logs_action_enum")
 }
 
@@ -179,11 +201,12 @@ model Usuario {
   fecha_nacimiento  DateTime?        @db.Date
   created_at        DateTime         @default(now()) @db.Timestamp(6)
 
-  paralelos_dirige  Paralelo[]             @relation("ParaleloProfesor")
+  paralelos_dirige  Paralelo[]           @relation("ParaleloProfesor")
   asignaciones      AsignacionProfesor[]
   inscripciones     Inscripcion[]
   lesson_attempts   LessonAttempt[]
   exercise_attempts ExerciseAttempt[]
+  exercise_plays    ExercisePlay[]
   exam_attempts     ExamAttempt[]
   ar_cards          UserArCard[]
   logros            LogroAlumno[]
@@ -191,8 +214,8 @@ model Usuario {
   topic_readings    TopicReading[]
   predicciones      PrediccionAlumno[]
 
-  @@map("usuarios")
   @@index([role])
+  @@map("usuarios")
 }
 
 model Gestion {
@@ -207,8 +230,8 @@ model Gestion {
 
   paralelos Paralelo[]
 
-  @@map("gestiones")
   @@index([es_actual])
+  @@map("gestiones")
 }
 
 model Grado {
@@ -220,8 +243,8 @@ model Grado {
 
   paralelos Paralelo[]
 
-  @@map("grados")
   @@unique([nivel])
+  @@map("grados")
 }
 
 model Paralelo {
@@ -233,23 +256,24 @@ model Paralelo {
   estado      EstadoContenido @default(activo)
   created_at  DateTime        @default(now()) @db.Timestamp(6)
 
-  gestion      Gestion              @relation(fields: [gestion_id], references: [id])
-  grado        Grado                @relation(fields: [grado_id], references: [id])
-  profesor     Usuario?             @relation("ParaleloProfesor", fields: [profesor_id], references: [id])
-  asignaciones AsignacionProfesor[]
-  inscripciones Inscripcion[]
-  lessons      Lesson[]
-  exercises    Exercise[]
-  exams        Exam[]
-  ar_cards     ArCard[]
-  archivos     Archivo[]
-  content_order ContentOrder[]
-  comentarios  ComentarioRevision[]
+  gestion        Gestion              @relation(fields: [gestion_id], references: [id])
+  grado          Grado                @relation(fields: [grado_id], references: [id])
+  profesor       Usuario?             @relation("ParaleloProfesor", fields: [profesor_id], references: [id])
+  asignaciones   AsignacionProfesor[]
+  inscripciones  Inscripcion[]
+  lessons        Lesson[]
+  exercises      Exercise[]
+  exams          Exam[]
+  ar_cards       ArCard[]
+  archivos       Archivo[]
+  exercise_media ExerciseMedia[]
+  content_order  ContentOrder[]
+  comentarios    ComentarioRevision[]
 
-  @@map("paralelos")
   @@unique([gestion_id, grado_id, nombre])
   @@index([profesor_id])
   @@index([gestion_id])
+  @@map("paralelos")
 }
 
 /// Historial de "quién enseñó qué paralelo y cuándo" (Negocio.md §4, §35).
@@ -265,9 +289,9 @@ model AsignacionProfesor {
   paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
   profesor Usuario  @relation(fields: [profesor_id], references: [id])
 
-  @@map("asignaciones_profesor")
   @@index([paralelo_id])
   @@index([profesor_id])
+  @@map("asignaciones_profesor")
 }
 
 /// Una fila por (alumno, paralelo). El alumno acumula varias a lo largo de las
@@ -283,15 +307,15 @@ model Inscripcion {
   created_at        DateTime     @default(now()) @db.Timestamp(6)
   updated_at        DateTime     @updatedAt @db.Timestamp(6)
 
-  alumno      Usuario                @relation(fields: [alumno_id], references: [id])
-  paralelo    Paralelo               @relation(fields: [paralelo_id], references: [id])
+  alumno      Usuario               @relation(fields: [alumno_id], references: [id])
+  paralelo    Paralelo              @relation(fields: [paralelo_id], references: [id])
   movimientos MovimientoAcademico[]
 
-  @@map("inscripciones")
   @@unique([alumno_id, paralelo_id])
   @@index([alumno_id])
   @@index([paralelo_id])
   @@index([estado])
+  @@map("inscripciones")
 }
 
 /// Auditoría de los procesos de gestión académica (alta, promoción, retiro, ...).
@@ -306,8 +330,8 @@ model MovimientoAcademico {
 
   inscripcion Inscripcion @relation(fields: [inscripcion_id], references: [id])
 
-  @@map("movimientos_academicos")
   @@index([inscripcion_id])
+  @@map("movimientos_academicos")
 }
 
 // ---------------------------------------------------------------------------
@@ -315,45 +339,45 @@ model MovimientoAcademico {
 // ---------------------------------------------------------------------------
 
 model Lesson {
-  id               Int             @id @default(autoincrement())
-  paralelo_id      Int
-  title            String          @db.VarChar(255)
-  description      String?         @db.Text
-  orden            Int             @default(1)
-  estado           EstadoContenido @default(activo)
+  id          Int             @id @default(autoincrement())
+  paralelo_id Int
+  title       String          @db.VarChar(255)
+  description String?         @db.Text
+  orden       Int             @default(1)
+  estado      EstadoContenido @default(activo)
 
   // Criterio de completado (Negocio.md §9, §17, §35)
-  min_correct      Int             @default(1)
+  min_correct      Int        @default(1)
   present_count    Int?
-  random_selection Boolean         @default(false)
-  pass_policy      PassPolicy      @default(por_minimo)
+  random_selection Boolean    @default(false)
+  pass_policy      PassPolicy @default(por_minimo)
 
   // Versionado de contenido (Negocio.md §15, §24-25)
-  content_epoch    Int             @default(1)
-  min_valid_version Int            @default(1)
+  content_epoch     Int @default(1)
+  min_valid_version Int @default(1)
 
   // Recompensa
-  grants_ar        Boolean         @default(false)
-  ar_card_id       Int?
+  grants_ar  Boolean @default(false)
+  ar_card_id Int?
 
   default_topic_id Int?
   copiado_de       Int?
   created_by       Int?
   updated_by       Int?
-  created_at       DateTime        @default(now()) @db.Timestamp(6)
-  updated_at       DateTime        @updatedAt @db.Timestamp(6)
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @updatedAt @db.Timestamp(6)
 
-  paralelo         Paralelo         @relation(fields: [paralelo_id], references: [id])
-  reward_card      ArCard?          @relation("LessonRewardCard", fields: [ar_card_id], references: [id])
+  paralelo         Paralelo           @relation(fields: [paralelo_id], references: [id])
+  reward_card      ArCard?            @relation("LessonRewardCard", fields: [ar_card_id], references: [id])
   topics           LessonTopic[]
   lesson_exercises LessonExercise[]
   versions         LessonVersion[]
   attempts         LessonAttempt[]
   prereq_de        ExamPrerequisito[]
 
-  @@map("lessons")
   @@index([paralelo_id, orden])
   @@index([ar_card_id])
+  @@map("lessons")
 }
 
 model LessonVersion {
@@ -368,8 +392,8 @@ model LessonVersion {
 
   lesson Lesson @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
 
-  @@map("lesson_versions")
   @@unique([lesson_id, version])
+  @@map("lesson_versions")
 }
 
 model LessonTopic {
@@ -386,9 +410,53 @@ model LessonTopic {
   lesson   Lesson         @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
   archivo  Archivo?       @relation(fields: [archivo_id], references: [id])
   readings TopicReading[]
+  slides   TopicSlide[]
+  media    TopicMedia[]
 
-  @@map("lesson_topics")
   @@index([lesson_id])
+  @@map("lesson_topics")
+}
+
+/// Diapositiva de un tema didáctico, dibujada en el editor de lienzo (columna `canvas`).
+/// El alumno las recorre una a una; `audio_id` es el audio de toda la diapositiva.
+model TopicSlide {
+  id         Int      @id @default(autoincrement())
+  topic_id   Int
+  order      Int      @default(0)
+  /// Resumen de texto para listas (sale del texto más grande del lienzo).
+  title      String   @default("") @db.VarChar(255)
+  audio_id   Int?
+  /// Lienzo libre: { background, ..., elements[] }. Ver src/lib/slide-canvas.ts.
+  canvas     Json?
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @updatedAt @db.Timestamp(6)
+
+  topic LessonTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  audio TopicMedia? @relation("SlideAudio", fields: [audio_id], references: [id], onDelete: SetNull)
+
+  @@index([topic_id, order])
+  @@map("topic_slides")
+}
+
+/// Imagen o audio de una diapositiva. Vive en la base (no en disco) porque en
+/// Railway el sistema de archivos del contenedor se rehace en cada despliegue.
+/// `data` está excluido por defecto en src/lib/prisma.ts.
+model TopicMedia {
+  id         Int      @id @default(autoincrement())
+  topic_id   Int
+  /// image | audio
+  kind       String   @db.VarChar(10)
+  nombre     String   @db.VarChar(255)
+  mime       String   @db.VarChar(120)
+  size_bytes Int
+  data       Bytes
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  topic       LessonTopic  @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  audioSlides TopicSlide[] @relation("SlideAudio")
+
+  @@index([topic_id])
+  @@map("topic_media")
 }
 
 model Archivo {
@@ -405,36 +473,42 @@ model Archivo {
   paralelo Paralelo?     @relation(fields: [paralelo_id], references: [id])
   topics   LessonTopic[]
 
-  @@map("archivos")
   @@index([paralelo_id])
+  @@map("archivos")
 }
 
 /// Ejercicios reutilizables: viven en el pool del paralelo y se enlazan a N
 /// lecciones mediante LessonExercise (Negocio.md §10, §18).
 model Exercise {
-  id              Int             @id @default(autoincrement())
-  paralelo_id     Int
+  id               Int               @id @default(autoincrement())
+  paralelo_id      Int
   lesson_id_origen Int?
-  type            ExercisesTypeEnum
-  question        String          @db.Text
-  answer          String?         @db.Text
-  dificultad      Dificultad      @default(medio)
-  estado          EstadoContenido @default(activo)
-  copiado_de      Int?
-  created_by      Int?
-  updated_by      Int?
-  created_at      DateTime        @default(now()) @db.Timestamp(6)
-  updated_at      DateTime        @updatedAt @db.Timestamp(6)
+  type             ExercisesTypeEnum
+  question         String            @db.Text
+  answer           String?           @db.Text
+  dificultad       Dificultad        @default(medio)
+  estado           EstadoContenido   @default(activo)
+  copiado_de       Int?
+  /// Imagen principal (image_guess). Vive en ExerciseMedia, por paralelo.
+  image_id         Int?
+  /// Ajustes por tipo, p. ej. { "maxIntentos": 5 } en image_guess.
+  config           Json?
+  created_by       Int?
+  updated_by       Int?
+  created_at       DateTime          @default(now()) @db.Timestamp(6)
+  updated_at       DateTime          @updatedAt @db.Timestamp(6)
 
-  paralelo      Paralelo               @relation(fields: [paralelo_id], references: [id])
-  options       MultipleChoiceOption[]
-  pairs         MatchingPair[]
-  blanks        FillInTheBlankAnswer[]
-  lesson_links  LessonExercise[]
-  attempts      ExerciseAttempt[]
+  paralelo     Paralelo               @relation(fields: [paralelo_id], references: [id])
+  image        ExerciseMedia?         @relation("ExerciseImage", fields: [image_id], references: [id], onDelete: SetNull)
+  plays        ExercisePlay[]
+  options      MultipleChoiceOption[]
+  pairs        MatchingPair[]
+  blanks       FillInTheBlankAnswer[]
+  lesson_links LessonExercise[]
+  attempts     ExerciseAttempt[]
 
-  @@map("exercises")
   @@index([paralelo_id])
+  @@map("exercises")
 }
 
 model LessonExercise {
@@ -448,23 +522,65 @@ model LessonExercise {
   lesson   Lesson   @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
   exercise Exercise @relation(fields: [exercise_id], references: [id])
 
-  @@map("lesson_exercises")
   @@unique([lesson_id, exercise_id])
   @@index([lesson_id, orden])
   @@index([exercise_id])
+  @@map("lesson_exercises")
 }
 
 model MultipleChoiceOption {
-  id           Int      @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   exercise_id  Int
-  option_text  String?  @db.VarChar(255)
-  option_image String?  @db.VarChar(255)
-  is_correct   Boolean  @default(false)
+  option_text  String? @db.VarChar(255)
+  option_image String? @db.VarChar(255)
+  /// Imagen de la opción (tarjetas de drag_card y opciones con imagen).
+  image_id     Int?
+  is_correct   Boolean @default(false)
 
+  exercise Exercise       @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
+  image    ExerciseMedia? @relation("OptionImage", fields: [image_id], references: [id], onDelete: SetNull)
+
+  @@index([exercise_id])
+  @@map("multiple_choice_options")
+}
+
+/// Imagen de un ejercicio. Vive en la base (no en disco) y pertenece al paralelo,
+/// no a un tema: los ejercicios se reutilizan entre lecciones.
+/// `data` queda fuera por defecto (src/lib/prisma.ts).
+model ExerciseMedia {
+  id          Int      @id @default(autoincrement())
+  paralelo_id Int
+  nombre      String   @db.VarChar(255)
+  mime        String   @db.VarChar(120)
+  size_bytes  Int
+  data        Bytes
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+
+  paralelo  Paralelo               @relation(fields: [paralelo_id], references: [id], onDelete: Cascade)
+  exercises Exercise[]             @relation("ExerciseImage")
+  options   MultipleChoiceOption[] @relation("OptionImage")
+
+  @@index([paralelo_id])
+  @@map("exercise_media")
+}
+
+/// Partida de un ejercicio image_guess: el servidor lleva la cuenta de los fallos
+/// (y de ahí cuánto se aclara la imagen), nunca el navegador.
+model ExercisePlay {
+  id          Int      @id @default(autoincrement())
+  user_id     Int
+  exercise_id Int
+  fallos      Int      @default(0)
+  resuelto    Boolean  @default(false)
+  terminado   Boolean  @default(false)
+  created_at  DateTime @default(now()) @db.Timestamp(6)
+  updated_at  DateTime @updatedAt @db.Timestamp(6)
+
+  user     Usuario  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
 
-  @@map("multiple_choice_options")
-  @@index([exercise_id])
+  @@index([user_id, exercise_id])
+  @@map("exercise_plays")
 }
 
 model MatchingPair {
@@ -476,8 +592,8 @@ model MatchingPair {
 
   exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
 
-  @@map("matching_pairs")
   @@index([exercise_id])
+  @@map("matching_pairs")
 }
 
 model FillInTheBlankAnswer {
@@ -487,8 +603,8 @@ model FillInTheBlankAnswer {
 
   exercise Exercise @relation(fields: [exercise_id], references: [id], onDelete: Cascade)
 
-  @@map("fill_in_the_blank_answers")
   @@index([exercise_id])
+  @@map("fill_in_the_blank_answers")
 }
 
 // ---------------------------------------------------------------------------
@@ -519,9 +635,9 @@ model LessonAttempt {
   lesson  Lesson            @relation(fields: [lesson_id], references: [id])
   details ExerciseAttempt[]
 
-  @@map("lesson_attempts")
   @@index([alumno_id, lesson_id])
   @@index([lesson_id])
+  @@map("lesson_attempts")
 }
 
 /// Detalle: una fila por envío de ejercicio. NO guarda la respuesta correcta
@@ -548,13 +664,13 @@ model ExerciseAttempt {
   exercise       Exercise       @relation(fields: [exercise_id], references: [id])
   alumno         Usuario        @relation(fields: [alumno_id], references: [id])
 
-  @@map("exercise_attempts")
   @@index([alumno_id, exercise_id])
   @@index([alumno_id, lesson_id])
   @@index([lesson_id])
   @@index([exercise_id])
   @@index([is_correct])
   @@index([created_at])
+  @@map("exercise_attempts")
 }
 
 /// Caché de "posición actual / reanudar" de una lección. NO es historial.
@@ -574,9 +690,9 @@ model UserProgress {
 
   alumno Usuario @relation(fields: [alumno_id], references: [id])
 
-  @@map("user_progress")
   @@unique([alumno_id, lesson_id])
   @@index([alumno_id])
+  @@map("user_progress")
 }
 
 model TopicReading {
@@ -596,10 +712,10 @@ model TopicReading {
   alumno Usuario     @relation(fields: [alumno_id], references: [id])
   topic  LessonTopic @relation(fields: [topic_id], references: [id])
 
-  @@map("topic_readings")
   @@unique([alumno_id, topic_id, forced_by_failures])
   @@index([alumno_id, lesson_id])
   @@index([topic_id])
+  @@map("topic_readings")
 }
 
 // ---------------------------------------------------------------------------
@@ -634,9 +750,9 @@ model Exam {
   details       ExamDetail[]
   attempts      ExamAttempt[]
 
-  @@map("exams")
   @@index([paralelo_id])
   @@index([ar_card_id])
+  @@map("exams")
 }
 
 model ExamPrerequisito {
@@ -647,8 +763,8 @@ model ExamPrerequisito {
   exam   Exam   @relation(fields: [exam_id], references: [id], onDelete: Cascade)
   lesson Lesson @relation(fields: [lesson_id], references: [id])
 
-  @@map("exam_prerequisitos")
   @@unique([exam_id, lesson_id])
+  @@map("exam_prerequisitos")
 }
 
 model ExamArCard {
@@ -659,8 +775,8 @@ model ExamArCard {
   exam    Exam   @relation(fields: [exam_id], references: [id], onDelete: Cascade)
   ar_card ArCard @relation(fields: [ar_card_id], references: [id])
 
-  @@map("exam_ar_cards")
   @@unique([exam_id, ar_card_id])
+  @@map("exam_ar_cards")
 }
 
 model ExamDetail {
@@ -673,8 +789,8 @@ model ExamDetail {
 
   exam Exam @relation(fields: [exam_id], references: [id], onDelete: Cascade)
 
-  @@map("exam_details")
   @@unique([exam_id, config_type])
+  @@map("exam_details")
 }
 
 model ExamAttempt {
@@ -689,14 +805,17 @@ model ExamAttempt {
   passed             Boolean         @default(false)
   estado             EstadoContenido @default(activo)
   ar_card_granted_id Int?
+  /// Juego de unir palabras: lo que el servidor ya validó ({ placed: {palabraId: categoría} }) y los errores.
+  progreso           Json?
+  errores            Int             @default(0)
 
   exam    Exam                @relation(fields: [exam_id], references: [id])
   alumno  Usuario             @relation(fields: [alumno_id], references: [id])
   details ExamAttemptDetail[]
 
-  @@map("exam_attempts")
   @@index([exam_id])
   @@index([alumno_id])
+  @@map("exam_attempts")
 }
 
 /// Detalle de un intento de examen, neutral a la modalidad (Negocio.md §23).
@@ -712,8 +831,8 @@ model ExamAttemptDetail {
 
   exam_attempt ExamAttempt @relation(fields: [exam_attempt_id], references: [id], onDelete: Cascade)
 
-  @@map("exam_attempt_details")
   @@index([exam_attempt_id])
+  @@map("exam_attempt_details")
 }
 
 // ---------------------------------------------------------------------------
@@ -723,31 +842,31 @@ model ExamAttemptDetail {
 /// Plantilla de una tarjeta AR (física, imprimible). NO representa la copia de
 /// un alumno — eso vive en UserArCard.
 model ArCard {
-  id               Int              @id @default(autoincrement())
-  paralelo_id      Int
-  card_code        String           @unique @db.VarChar(50)
-  title            String?          @db.VarChar(255)
-  description      String?          @db.Text
-  marker_file      String           @db.VarChar(255)
-  image_file       String?          @db.VarChar(255)
-  card_data        String?          @db.Text
-  patt_data        String?          @db.Text
-  image_data       Bytes?
-  lamina_data      Bytes?
-  model_data       Bytes?
-  model_mime       String?          @db.VarChar(50)
-  unlock_type      ArCardUnlockType @default(lesson)
-  unlock_lesson_id Int?
-  unlock_exam_id   Int?
-  estado           EstadoContenido  @default(activo)
+  id                Int              @id @default(autoincrement())
+  paralelo_id       Int
+  card_code         String           @unique @db.VarChar(50)
+  title             String?          @db.VarChar(255)
+  description       String?          @db.Text
+  marker_file       String           @db.VarChar(255)
+  image_file        String?          @db.VarChar(255)
+  card_data         String?          @db.Text
+  patt_data         String?          @db.Text
+  image_data        Bytes?
+  lamina_data       Bytes?
+  model_data        Bytes?
+  model_mime        String?          @db.VarChar(50)
+  unlock_type       ArCardUnlockType @default(lesson)
+  unlock_lesson_id  Int?
+  unlock_exam_id    Int?
+  estado            EstadoContenido  @default(activo)
   deshabilitado_por Int?
-  deshabilitado_at DateTime?        @db.Timestamp(6)
-  motivo           String?          @db.VarChar(255)
-  copiado_de       Int?
-  created_by       Int?
-  updated_by       Int?
-  created_at       DateTime         @default(now()) @db.Timestamp(6)
-  updated_at       DateTime         @updatedAt @db.Timestamp(6)
+  deshabilitado_at  DateTime?        @db.Timestamp(6)
+  motivo            String?          @db.VarChar(255)
+  copiado_de        Int?
+  created_by        Int?
+  updated_by        Int?
+  created_at        DateTime         @default(now()) @db.Timestamp(6)
+  updated_at        DateTime         @updatedAt @db.Timestamp(6)
 
   paralelo       Paralelo     @relation(fields: [paralelo_id], references: [id])
   user_cards     UserArCard[]
@@ -755,34 +874,34 @@ model ArCard {
   lesson_rewards Lesson[]     @relation("LessonRewardCard")
   exam_rewards   Exam[]       @relation("ExamRewardCard")
 
-  @@map("ar_cards")
   @@index([paralelo_id])
   @@index([unlock_lesson_id])
   @@index([unlock_exam_id])
+  @@map("ar_cards")
 }
 
 /// La copia de una tarjeta que un alumno desbloqueó. Se puede REVOCAR
 /// individualmente si fue obtenida por error (Negocio.md §21, §32); la fila se
 /// conserva siempre.
 model UserArCard {
-  id          Int              @id @default(autoincrement())
-  alumno_id   Int
-  ar_card_id  Int
-  unlocked_at DateTime         @default(now()) @db.Timestamp(6)
-  unlocked_by ArCardUnlockType @default(lesson)
-  source_id   Int?
-  revocado    Boolean          @default(false)
-  revocado_at DateTime?        @db.Timestamp(6)
+  id           Int              @id @default(autoincrement())
+  alumno_id    Int
+  ar_card_id   Int
+  unlocked_at  DateTime         @default(now()) @db.Timestamp(6)
+  unlocked_by  ArCardUnlockType @default(lesson)
+  source_id    Int?
+  revocado     Boolean          @default(false)
+  revocado_at  DateTime?        @db.Timestamp(6)
   revocado_por Int?
-  motivo      String?          @db.VarChar(255)
+  motivo       String?          @db.VarChar(255)
 
   alumno  Usuario @relation(fields: [alumno_id], references: [id])
   ar_card ArCard  @relation(fields: [ar_card_id], references: [id])
 
-  @@map("user_ar_cards")
   @@unique([alumno_id, ar_card_id])
   @@index([alumno_id])
   @@index([ar_card_id])
+  @@map("user_ar_cards")
 }
 
 // ---------------------------------------------------------------------------
@@ -816,9 +935,9 @@ model LogroAlumno {
   alumno Usuario @relation(fields: [alumno_id], references: [id])
   logro  Logro   @relation(fields: [logro_id], references: [id])
 
-  @@map("logro_alumnos")
   @@unique([alumno_id, logro_id])
   @@index([alumno_id])
+  @@map("logro_alumnos")
 }
 
 // ---------------------------------------------------------------------------
@@ -836,9 +955,9 @@ model ContentOrder {
 
   paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
 
-  @@map("content_order")
   @@unique([paralelo_id, content_type, content_id])
   @@index([paralelo_id, orden])
+  @@map("content_order")
 }
 
 // ---------------------------------------------------------------------------
@@ -853,9 +972,9 @@ model Diccionario {
   estado      EstadoContenido @default(activo)
   paralelo_id Int?
 
-  @@map("diccionario")
   @@index([categoria])
   @@index([paralelo_id])
+  @@map("diccionario")
 }
 
 model SearchHistory {
@@ -872,21 +991,21 @@ model SearchHistory {
 // ---------------------------------------------------------------------------
 
 model ComentarioRevision {
-  id            Int      @id @default(autoincrement())
-  contenido_tipo String  @db.VarChar(30)
-  contenido_id  Int
-  paralelo_id   Int
-  autor_id      Int
-  texto         String   @db.Text
-  resuelto      Boolean  @default(false)
-  created_at    DateTime @default(now()) @db.Timestamp(6)
-  updated_at    DateTime @updatedAt @db.Timestamp(6)
+  id             Int      @id @default(autoincrement())
+  contenido_tipo String   @db.VarChar(30)
+  contenido_id   Int
+  paralelo_id    Int
+  autor_id       Int
+  texto          String   @db.Text
+  resuelto       Boolean  @default(false)
+  created_at     DateTime @default(now()) @db.Timestamp(6)
+  updated_at     DateTime @updatedAt @db.Timestamp(6)
 
   paralelo Paralelo @relation(fields: [paralelo_id], references: [id])
 
-  @@map("comentarios_revision")
   @@index([paralelo_id])
   @@index([contenido_tipo, contenido_id])
+  @@map("comentarios_revision")
 }
 
 // ---------------------------------------------------------------------------
@@ -916,11 +1035,11 @@ model StatisticsAggregated {
   created_at           DateTime    @default(now()) @db.Timestamp(6)
   updated_at           DateTime    @updatedAt @db.Timestamp(6)
 
-  @@map("statistics_aggregated")
   @@unique([stat_type, alumno_id, exercise_id, lesson_id, paralelo_id, gestion_id])
   @@index([stat_type])
   @@index([paralelo_id])
   @@index([alumno_id])
+  @@map("statistics_aggregated")
 }
 
 model ErrorPattern {
@@ -935,9 +1054,9 @@ model ErrorPattern {
   detected_at       DateTime @default(now()) @db.Timestamp(6)
   last_occurrence   DateTime @default(now()) @db.Timestamp(6)
 
-  @@map("error_patterns")
   @@index([alumno_id, exercise_id])
   @@index([error_type])
+  @@map("error_patterns")
 }
 
 /// Predicción por alumno producida por el modelo ML entrenable (Negocio.md §27).
@@ -955,11 +1074,11 @@ model PrediccionAlumno {
 
   alumno Usuario @relation(fields: [alumno_id], references: [id])
 
-  @@map("predicciones_alumno")
   @@unique([alumno_id, tipo, modelo_version])
   @@index([alumno_id])
   @@index([paralelo_id])
   @@index([tipo])
+  @@map("predicciones_alumno")
 }
 
 /// Coeficientes/params de un modelo ML entrenado, para reproducibilidad.
@@ -994,8 +1113,8 @@ model AccessLog {
   message    String?              @db.VarChar(255)
   created_at DateTime             @default(now()) @db.Timestamp(6)
 
-  @@map("access_logs")
   @@index([created_at])
   @@index([user_id, action])
   @@index([action])
+  @@map("access_logs")
 }

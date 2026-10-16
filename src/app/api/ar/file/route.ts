@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
   const nombre = archivo(code);
   for (const p of [path.join(AR_DIR, nombre), path.join(AR_DIR, "models", nombre)]) {
     try {
-      const datos = await fs.readFile(p);
+      const datos = await fs.readFile(/*turbopackIgnore: true*/ p);
       return new NextResponse(new Uint8Array(datos), {
         headers: { "Content-Type": mime, "Cache-Control": "public, max-age=31536000, immutable" },
       });

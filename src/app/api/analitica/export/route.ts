@@ -13,10 +13,9 @@ export async function GET(req: Request) {
   const paraleloIds = isAdmin ? [] : await maestroParaleloIds(me.id);
   const statWhere: Prisma.StatisticsAggregatedWhereInput = paraleloIds.length ? { paralelo_id: { in: paraleloIds } } : {};
 
-  const [porEjercicio, porLeccion, porParalelo] = await Promise.all([
+  const [porEjercicio, porLeccion] = await Promise.all([
     prisma.statisticsAggregated.findMany({ where: { stat_type: "exercise", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
     prisma.statisticsAggregated.findMany({ where: { stat_type: "lesson", ...statWhere }, orderBy: { difficulty_score: "desc" }, take: 12 }),
-    prisma.statisticsAggregated.findMany({ where: { stat_type: "paralelo", ...statWhere }, orderBy: { average_score: "asc" }, take: 12 }),
   ]);
 
   const url = new URL(req.url);

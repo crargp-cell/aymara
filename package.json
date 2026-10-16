@@ -2,6 +2,7 @@
   "name": "aymara",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "engines": {
     "node": "20.x"
   },
@@ -15,6 +16,9 @@
     "start": "next start -H 0.0.0.0",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
+    "db:temas": "tsx prisma/seed-temas.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "test": "vitest run"
   },
   "dependencies": {

@@ -1,14 +1,5 @@
 import type { EstadoContenido, EstadoAlumno } from "@/generated/prisma/enums";
 
-/** Estado que se considera "publicado / utilizable" para contenido. */
-export const ESTADO_VISIBLE: EstadoContenido = "activo";
-
-/** Estados de contenido que un alumno puede consumir. */
-export const ESTADOS_CONSUMIBLES: EstadoContenido[] = ["activo"];
-
-/** Estados de contenido que el maestro/admin todavía puede ver y editar. */
-export const ESTADOS_GESTIONABLES: EstadoContenido[] = ["activo", "inactivo", "deshabilitado"];
-
 export function badgeVariantContenido(estado: EstadoContenido): "success" | "secondary" | "warning" | "destructive" {
   switch (estado) {
     case "activo":

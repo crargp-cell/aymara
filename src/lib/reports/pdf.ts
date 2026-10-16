@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb, PDFFont } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFPage, type PDFImage } from "pdf-lib";
 import fs from "fs/promises";
 import path from "path";
 
@@ -80,26 +80,18 @@ async function loadLogoBytes(): Promise<Uint8Array | null> {
   ];
   for (const p of candidates) {
     try {
-      return await fs.readFile(p);
+      return await fs.readFile(/*turbopackIgnore: true*/ p);
     } catch {}
   }
   return null;
-}
-
-function hexToRgb(hex: string) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return rgb(r, g, b);
 }
 
 async function buildCeaDocument(data: CeaReportData): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create();
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
   const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-  const italic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
 
-  let logoImage: any = null;
+  let logoImage: PDFImage | null = null;
   let logoDims: { width: number; height: number } | null = null;
   const logoBytes = await loadLogoBytes();
   if (logoBytes) {
@@ -123,7 +115,7 @@ async function buildCeaDocument(data: CeaReportData): Promise<Uint8Array> {
     }
   };
 
-  const drawWatermark = (pg: any, img: any, dims: any) => {
+  const drawWatermark = (pg: PDFPage, img: PDFImage | null, dims: { width: number; height: number } | null) => {
     if (!img || !dims) return;
     const scale = Math.min(450 / dims.width, 450 / dims.height);
     const w = dims.width * scale;
@@ -137,7 +129,7 @@ async function buildCeaDocument(data: CeaReportData): Promise<Uint8Array> {
     });
   };
 
-  const drawHeader = (pg: any) => {
+  const drawHeader = (pg: PDFPage) => {
     pg.drawRectangle({ x: 0, y: PAGE_H - HEADER_H, width: PAGE_W, height: HEADER_H, color: COLORS.headerBg });
     if (logoImage && logoDims) {
       const s = 48 / Math.max(logoDims.width, logoDims.height);
@@ -153,7 +145,7 @@ async function buildCeaDocument(data: CeaReportData): Promise<Uint8Array> {
     pg.drawRectangle({ x: (PAGE_W / 3) * 2, y: PAGE_H - HEADER_H - 8, width: PAGE_W / 3, height: 8, color: COLORS.tricolorGreen });
   };
 
-  const drawFooter = (pg: any) => {
+  const drawFooter = (pg: PDFPage) => {
     pg.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: FOOTER_H, color: rgb(0.97, 0.97, 0.97) });
     pg.drawLine({ start: { x: 0, y: FOOTER_H }, end: { x: PAGE_W, y: FOOTER_H }, thickness: 0.5, color: COLORS.gray200 });
     pg.drawText("Generado por Sistema Central", { x: MARGIN_X, y: 14, size: 7, font, color: COLORS.gray500 });
@@ -245,7 +237,7 @@ export async function buildStudentReportPdf(data: StudentReportData): Promise<Ui
     });
   }
   if (data.examAttempts.length > 0) {
-    data.examAttempts.slice(0, 3).forEach((e, i) => {
+    data.examAttempts.slice(0, 3).forEach((e) => {
       rows.push({
         id: String(rows.length + 1).padStart(2, "0"),
         logro: e.exam.slice(0, 28),

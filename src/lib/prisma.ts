@@ -29,6 +29,9 @@ export const prisma =
         model_data: true,
         patt_data: true,
       },
+      // Mismo motivo: imágenes y audios de las diapositivas viven en la fila.
+      topicMedia: { data: true },
+      exerciseMedia: { data: true },
     },
   });
 
