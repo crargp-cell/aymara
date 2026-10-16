@@ -101,17 +101,6 @@ export function Tocapu({
   );
 }
 
-/** Serie horizontal de tocapus, cada uno con motivo y color distintos. */
-export function TocapuBanda({ n = 6, size = 28, className }: { n?: number; size?: number; className?: string }) {
-  return (
-    <div className={`flex gap-1.5 ${className ?? ""}`} aria-hidden="true">
-      {Array.from({ length: n }).map((_, i) => (
-        <Tocapu key={i} variante={i} size={size} />
-      ))}
-    </div>
-  );
-}
-
 /* -------------------------------------------------------------------- Guarda */
 
 type MotivoGuarda = "escalones" | "rombos" | "chaska";

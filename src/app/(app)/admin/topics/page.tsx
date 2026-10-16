@@ -8,7 +8,7 @@ import { Topbar } from "@/components/layout/Topbar";
 import { ParaleloSwitcher } from "@/components/layout/ParaleloSwitcher";
 import { maestroContext } from "@/lib/maestro-page";
 import { requireRole } from "@/lib/session";
-import { assertMaestroOwnsContent, assertMaestroOwnsParalelo } from "@/lib/rbac";
+import { assertMaestroOwnsContent } from "@/lib/rbac";
 import { badgeVariantContenido, toggleEstado } from "@/lib/estado";
 import { saveUpload } from "@/lib/uploads";
 import Link from "next/link";

@@ -9,6 +9,8 @@ import { revalidatePath } from "next/cache";
 import { lessonCoverUrl } from "@/lib/lesson-cover";
 import { getAlphabetCards } from "@/lib/alphabet-gallery";
 import { PdfViewer } from "@/components/topic/PdfViewer";
+import { SlidePlayer } from "@/components/topic/SlidePlayer";
+import { getSlideViews } from "@/lib/topic-slides";
 import { requireUser } from "@/lib/session";
 
 export default async function TopicViewPage({ params }: { params: Promise<{ id: string }> }) {
@@ -24,7 +26,11 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
   const reading = await prisma.topicReading.findFirst({ where: { alumno_id: user.id, topic_id: topicId, forced_by_failures: false } });
   const completed = !!reading?.reading_completed;
 
-  const isAlphabetTopic = /alfabeto/i.test(topic.title);
+  const slides = await getSlideViews(topicId);
+  const hasSlides = slides.length > 0;
+
+  // Los temas con diapositivas sustituyen a la galería fija del alfabeto.
+  const isAlphabetTopic = !hasSlides && /alfabeto/i.test(topic.title);
   const alphabetCards = isAlphabetTopic ? await getAlphabetCards() : [];
 
   async function markCompleted() {
@@ -49,7 +55,7 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
   }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className={`space-y-6 mx-auto ${hasSlides ? "max-w-5xl" : "max-w-3xl"}`}>
       <Card className="overflow-hidden">
         <div className="relative h-32 w-full">
           <Image src={lessonCoverUrl(lesson.orden)} alt={topic.title} fill sizes="768px" className="object-cover" />
@@ -63,11 +69,15 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
           <p className="text-sm text-muted-foreground">Lección: {lesson.title}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          {topic.content ? (
+          {hasSlides && (
+            <SlidePlayer slides={slides} completed={completed} onFinish={user.role === "estudiante" ? markCompleted : undefined} />
+          )}
+
+          {!hasSlides && (topic.content ? (
             <div className="prose max-w-none text-sm leading-relaxed whitespace-pre-wrap">{topic.content}</div>
           ) : (
             !topic.archivo && <p className="text-sm text-muted-foreground">Sin contenido textual</p>
-          )}
+          ))}
 
           {topic.archivo && <PdfViewer url={topic.archivo.ruta} title={topic.archivo.nombre} />}
 
@@ -92,7 +102,7 @@ export default async function TopicViewPage({ params }: { params: Promise<{ id: 
             </div>
           )}
 
-          {!completed && user.role === "estudiante" && (
+          {!hasSlides && !completed && user.role === "estudiante" && (
             <form action={markCompleted}>
               <Button variant="gradient" type="submit">Marcar como leído</Button>
             </form>

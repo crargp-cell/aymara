@@ -10,16 +10,27 @@ import { PdfViewer } from "@/components/topic/PdfViewer";
 import { requireRole } from "@/lib/session";
 import { assertMaestroOwnsContent } from "@/lib/rbac";
 import { saveUpload } from "@/lib/uploads";
+import { SlideEditor } from "@/components/topic/SlideEditor";
+import { emptyCanvas, sanitizeCanvas } from "@/lib/slide-canvas";
 import Link from "next/link";
 
-export default async function AdminTopicDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminTopicDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ ok?: string; error?: string }>;
+}) {
   const user = await requireRole(["maestro", "admin"]);
   const { id } = await params;
+  const { ok: aviso, error: fallo } = await searchParams;
   const topicId = Number(id);
   const { ok } = await assertMaestroOwnsContent(user.role, user.id, "topic", topicId);
   if (!ok) notFound();
   const topic = await prisma.lessonTopic.findUnique({ where: { id: topicId }, include: { archivo: true, lesson: { select: { title: true } } } });
   if (!topic) notFound();
+
+  const slideRows = await prisma.topicSlide.findMany({ where: { topic_id: topicId }, orderBy: [{ order: "asc" }, { id: "asc" }] });
 
   async function guard() {
     "use server";
@@ -66,9 +77,32 @@ export default async function AdminTopicDetailPage({ params }: { params: Promise
   }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <Topbar title={`Editar tema #${topic.id}`} subtitle={topic.lesson.title} />
       <Link href="/admin/topics" className="text-sm text-primary hover:underline">← Volver a temas</Link>
+
+      {fallo && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">{fallo}</p>}
+      {aviso && <p role="status" className="rounded-lg border border-border bg-primary-soft px-4 py-2 text-sm">{aviso}</p>}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Diapositivas ({slideRows.length})</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Diseña cada diapositiva como en Canva: agrega textos, imágenes y figuras, arrástralos y cambia su tamaño. Se guarda solo. Si hay diapositivas, el alumno ve la presentación en lugar del texto de abajo.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <SlideEditor
+            topicId={topic.id}
+            initial={slideRows.map((r) => ({
+              id: r.id,
+              canvas: r.canvas ? sanitizeCanvas(r.canvas) : emptyCanvas(),
+              audioId: r.audio_id,
+              version: r.updated_at.toISOString(),
+            }))}
+          />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader><CardTitle className="text-base">Contenido de texto</CardTitle></CardHeader>
