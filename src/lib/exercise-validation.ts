@@ -35,3 +35,14 @@ export function checkFillInTheBlank(rawAnswer: string, validAnswers: string[]): 
     return false;
   }
 }
+
+/**
+ * El juego de memoria se juega en el navegador, así que el servidor no puede ver
+ * las jugadas; sí puede descartar lo imposible. Ganar con `pares` pares exige al
+ * menos un movimiento por par y que cada giro (700 ms de animación) haya llevado
+ * su tiempo. Un envío que "ganó" sin jugar no pasa este filtro.
+ */
+export function partidaMemoriaPlausible(p: { pares: number; movimientos: number; tiempoMs: number }): boolean {
+  if (p.pares <= 0) return false;
+  return p.movimientos >= p.pares && p.tiempoMs >= p.pares * 1000;
+}

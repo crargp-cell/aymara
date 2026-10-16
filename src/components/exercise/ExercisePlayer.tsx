@@ -1,18 +1,24 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useLazyRef } from "@/lib/hooks/useLazyRef";
+import { DragCardGame } from "@/components/exercise/DragCardGame";
 
 type Props = {
   exercise: { id: number; lesson_id?: number | null; type: string; question: string; answer: string | null };
-  options?: { id: number; option_text: string | null; is_correct: boolean }[];
+  /** Nunca lleva `is_correct`: lo correcto se decide en el servidor. */
+  options?: { id: number; option_text: string | null; image_id?: number | null }[];
   pairs?: { id: number; aymara_word: string; spanish_word: string }[];
   answers?: { answer_text: string }[];
   action: (formData: FormData) => void;
+  /** La página ya muestra a Mallku con el resultado: el juego no pone el suyo. */
+  sinMallku?: boolean;
 };
 
-export function ExercisePlayer({ exercise, options, pairs, answers, action }: Props) {
-  const startedAt = useRef(Date.now());
+export function ExercisePlayer({ exercise, options, pairs, answers, action, sinMallku = false }: Props) {
+  const startedAt = useLazyRef(() => Date.now());
+  const [enviando, iniciarEnvio] = useTransition();
   const [fillAnswers, setFillAnswers] = useState<string[]>(() => (answers && answers.length > 1 ? answers.map(() => "") : [""]));
 
   const withTiming = (extra?: (fd: FormData) => void) => async (fd: FormData) => {
@@ -38,11 +44,29 @@ export function ExercisePlayer({ exercise, options, pairs, answers, action }: Pr
         {options.map((o) => (
           <label key={o.id} className="flex items-center gap-2 panel rounded-xl px-4 py-2 cursor-pointer transition-colors hover:bg-muted">
             <input type="radio" name="user_answer" value={String(o.id)} required className="accent-primary" />
-            <span className="text-sm">{o.option_text}</span>
+            {o.image_id ? (
+              // <img> a propósito: /api/exercise-media pide sesión y el optimizador de next/image no manda cookies.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={`/api/exercise-media/${o.image_id}`} alt="" className="h-20 w-20 shrink-0 rounded-lg border border-border bg-muted/40 object-contain" />
+            ) : null}
+            {o.option_text && <span className="text-sm">{o.option_text}</span>}
           </label>
         ))}
         <Button type="submit" variant="gradient">Enviar</Button>
       </form>
+    );
+  }
+
+  if (exercise.type === "drag_card" && options) {
+    return (
+      <DragCardGame
+        palabra={exercise.question}
+        tarjetas={options.map((o) => ({ id: o.id, imageId: o.image_id ?? null }))}
+        enviando={enviando}
+        sinMallku={sinMallku}
+        // Dentro de una transición para poder mostrar «Comprobando…» mientras responde el servidor.
+        onEnviar={(opcionId) => iniciarEnvio(async () => { await withTiming((f) => f.set("user_answer", String(opcionId)))(new FormData()); })}
+      />
     );
   }
 
@@ -92,6 +116,10 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
       cards.push({ uid: `${p.id}-ay`, pairId: p.id, label: p.aymara_word, lang: "ay" });
       cards.push({ uid: `${p.id}-es`, pairId: p.id, label: p.spanish_word, lang: "es" });
     }
+    // Mezclar con Math.random() en el primer render produciría un orden
+    // distinto en servidor y cliente (mismatch de hidratación): el mazo
+    // barajado sólo existe después de montar, aquí.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDeck(shuffle(cards));
     setHydrated(true);
   }, [pairs]);
@@ -101,7 +129,7 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
   const [matchedPairs, setMatchedPairs] = useState<Set<number>>(new Set());
   const [moves, setMoves] = useState(0);
   const [shakeUid, setShakeUid] = useState<string | null>(null);
-  const [message, setMessage] = useState("Volteá dos cartas — si son traducción correcta se quedan, si no vuelven.");
+  const [message, setMessage] = useState("Voltea dos cartas — si son traducción correcta se quedan, si no vuelven.");
 
   const totalPairs = pairs.length;
   const won = matchedPairs.size === totalPairs;
@@ -152,6 +180,7 @@ function MemoryMatching({ pairs, withTiming }: { pairs: { id: number; aymara_wor
 
   const handleSubmit = withTiming((fd) => {
     fd.set("user_answer", JSON.stringify(won ? pairs.map((p) => p.aymara_word) : []));
+    fd.set("moves", String(moves));
   });
 
   const handleSurrender = () => {

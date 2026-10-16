@@ -3,9 +3,12 @@ import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExercisePlayer } from "@/components/exercise/ExercisePlayer";
+import { ImageGuessGame } from "@/components/exercise/ImageGuessGame";
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
+import type { EstadoJuego } from "@/lib/mascota/guion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice } from "@/lib/exercise-validation";
+import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice, partidaMemoriaPlausible } from "@/lib/exercise-validation";
 import { requireUser } from "@/lib/session";
 import { alumnoPuedeVerLeccion } from "@/lib/rbac";
 import { getOrStartAttempt, recordExerciseAttempt } from "@/lib/lesson-flow";
@@ -46,10 +49,28 @@ export default async function PlayPage({
   const forced = failed >= 3;
   const forcedTopic = forced ? await prisma.lessonTopic.findFirst({ where: { lesson_id: lid, estado: "activo" }, orderBy: { order: "asc" } }) : null;
 
+  // Al navegador sólo viaja lo que hace falta para jugar: nunca `is_correct` ni las
+  // respuestas (la comprobación es del servidor). Del fill_in_the_blank sólo cuántos espacios hay.
   let options, pairs, answers;
-  if (exercise.type === "multiple_choice") options = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid } });
+  if (exercise.type === "multiple_choice" || exercise.type === "drag_card") {
+    options = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid }, select: { id: true, option_text: true, image_id: true }, orderBy: { id: "asc" } });
+  }
   if (exercise.type === "matching") pairs = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
-  if (exercise.type === "fill_in_the_blank") answers = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
+  if (exercise.type === "fill_in_the_blank") answers = (await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid }, select: { id: true } })).map(() => ({ answer_text: "" }));
+  const respuestaDocente = isStaff && exercise.type === "image_guess" ? ((await prisma.fillInTheBlankAnswer.findFirst({ where: { exercise_id: eid }, orderBy: { id: "asc" } }))?.answer_text ?? null) : null;
+
+  // Mallku reacciona al resultado. Los juegos con imágenes traen su propio cóndor dentro, así que
+  // en la introducción sólo aparece aquí en los ejercicios clásicos.
+  const conResultado = !!(sp.done || sp.result || forced);
+  const estadoMallku: EstadoJuego | null = exercise.type === "image_guess" ? null : sp.done
+    ? { tipo: "completada" }
+    : sp.result === "ok"
+      ? { tipo: "acierto" }
+      : sp.result === "fail"
+        ? { tipo: "fallo" }
+        : forced
+          ? { tipo: "forzado" }
+          : exercise.type === "drag_card" ? null : { tipo: "intro", juego: "ejercicio" };
 
   async function submitAction(formData: FormData) {
     "use server";
@@ -57,7 +78,8 @@ export default async function PlayPage({
     const esDocente = u.role !== "estudiante";
     if (!esDocente && !(await alumnoPuedeVerLeccion(u.id, lid))) return;
 
-    const type = String(formData.get("type") ?? exercise!.type);
+    // El tipo es el del ejercicio guardado, no el que diga el formulario.
+    const type = exercise!.type;
     const raw = String(formData.get("user_answer") ?? "");
     const timeMs = Number(formData.get("time_ms") ?? 0);
     let isCorrect = false;
@@ -66,13 +88,13 @@ export default async function PlayPage({
     if (type === "text") {
       isCorrect = checkText(raw, exercise!.answer);
       if (!isCorrect) errorType = "concepto_equivocado";
-    } else if (type === "multiple_choice") {
+    } else if (type === "multiple_choice" || type === "drag_card") {
       const opts = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid }, select: { id: true, is_correct: true } });
       isCorrect = checkMultipleChoice(raw, opts);
       if (!isCorrect) errorType = "seleccion_incorrecta";
     } else if (type === "matching") {
       const ps = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
-      isCorrect = checkMatching(raw, ps);
+      isCorrect = checkMatching(raw, ps) && partidaMemoriaPlausible({ pares: ps.length, movimientos: Number(formData.get("moves") ?? 0), tiempoMs: timeMs });
       if (!isCorrect) errorType = "emparejamiento_incorrecto";
     } else if (type === "fill_in_the_blank") {
       const ans = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
@@ -118,11 +140,12 @@ export default async function PlayPage({
           </p>
         </CardHeader>
         <CardContent>
+          {estadoMallku && <MallkuJuego estado={estadoMallku} semilla={eid} className="mb-4" />}
           {isStaff && (
             <div className="mb-4 rounded-xl aviso-atencion border p-3 flex items-center gap-2 text-sm">
               <Eye className="h-4 w-4 shrink-0" />
               <span className="text-muted-foreground">
-                Vista de revisión: podés responder para comprobar el ejercicio, pero tu respuesta no se guarda.
+                Vista de revisión: puedes responder para comprobar el ejercicio, pero tu respuesta no se guarda.
               </span>
             </div>
           )}
@@ -130,7 +153,7 @@ export default async function PlayPage({
             <div className="mb-4 rounded-xl aviso-info border p-3 flex items-center gap-2 text-sm">
               <Info className="h-4 w-4 shrink-0" />
               <span className="text-muted-foreground">
-                Este ejercicio no entró en el sorteo de tu intento: podés practicarlo, pero no cuenta para completar la lección.
+                Este ejercicio no entró en el sorteo de tu intento: puedes practicarlo, pero no cuenta para completar la lección.
               </span>
             </div>
           )}
@@ -165,7 +188,20 @@ export default async function PlayPage({
             </div>
           )}
 
-          <ExercisePlayer exercise={exercise} options={options as never} pairs={pairs as never} answers={answers as never} action={submitAction} />
+          {exercise.type === "image_guess" && exercise.image_id ? (
+            <ImageGuessGame
+              lessonId={lid}
+              exerciseId={eid}
+              imageId={exercise.image_id}
+              consigna={exercise.question}
+              siguienteHref={nextId ? `/play/${lid}/${nextId}` : null}
+              listaHref={`/lessons/${lid}`}
+              esDocente={isStaff}
+              respuestaDocente={respuestaDocente}
+            />
+          ) : (
+            <ExercisePlayer exercise={{ ...exercise, answer: null }} options={options} pairs={pairs as never} answers={answers as never} action={submitAction} sinMallku={conResultado} />
+          )}
 
           <div className="flex gap-2 mt-6">
             <Link href={`/lessons/${lid}`}><Button variant="outline">Volver</Button></Link>
