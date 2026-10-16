@@ -4,6 +4,8 @@ import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { WiphalaCorner } from "@/components/brand/Chakana";
+import { semillaDelDia } from "@/lib/mascota/guion";
 
 const phrases = [
   "Yatiña — Saber",
@@ -13,39 +15,50 @@ const phrases = [
   "Jaqi — Gente",
 ];
 
-export default function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   async function loginAction(formData: FormData) {
     "use server";
     const username = String(formData.get("username") ?? "");
     const password = String(formData.get("password") ?? "");
     try {
       await signIn("credentials", { username, password, redirectTo: "/dashboard" });
-    } catch (e: any) {
-      if (e?.message?.includes("NEXT_REDIRECT")) throw e;
+    } catch (e) {
+      // `redirect()` lanza internamente un error con este mensaje: hay que
+      // dejarlo pasar, si no Next lo trataría como un fallo de login.
+      if (e instanceof Error && e.message.includes("NEXT_REDIRECT")) throw e;
       redirect("/login?error=1");
     }
   }
 
-  const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+  const { error } = await searchParams;
+  // Cambia por día, no en cada carga: con Math.random() la frase parpadeaba
+  // distinto entre el primer render del servidor y una recarga del cliente.
+  const phrase = phrases[semillaDelDia() % phrases.length];
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-5xl overflow-hidden p-0 grid md:grid-cols-2">
-        <div className="p-8 flex flex-col justify-between bg-gradient-to-br from-blue-600/20 to-purple-600/20">
-          <div>
-            <h2 className="text-2xl font-bold text-gradient">Aymara</h2>
-            <p className="text-sm text-muted-foreground mt-2">Aprende el idioma ancestrales</p>
+        <div
+          className="relative p-8 flex flex-col justify-between overflow-hidden"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}
+        >
+          <span className="absolute inset-0 textil opacity-[0.06]" aria-hidden="true" />
+          <div className="relative">
+            <h2 className="text-2xl font-bold">Aymara</h2>
+            <p className="text-sm opacity-75 mt-2">Aprende el idioma ancestral</p>
           </div>
-          <div className="mt-8 flex flex-col items-center">
+          <div className="relative mt-8 flex flex-col items-center">
             <div className="relative w-40 h-40 animate-float">
-              <Image src="/mascota/mascota_normal.png" alt="Mascota" fill sizes="160px" className="object-contain" />
+              <Image src="/mascota/mascota_normal.png" alt="" fill sizes="160px" className="object-contain" />
             </div>
-            <div className="mt-4 glass rounded-2xl px-4 py-3 relative">
-              <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 glass rotate-45 border-b-0 border-r-0" />
+            <div className="mt-4 rounded-md px-4 py-3 relative bg-white/10">
               <p className="text-sm font-medium text-center">{phrase}</p>
             </div>
           </div>
-          <p className="text-xs text-muted-foreground mt-8 text-center">© 2026 Aymara</p>
+          <div className="relative mt-8 flex items-center justify-between">
+            <WiphalaCorner />
+            <p className="text-xs opacity-60">© 2026 Aymara</p>
+          </div>
         </div>
         <div className="p-8 flex flex-col justify-center">
           <CardHeader className="p-0 mb-6">
@@ -54,6 +67,11 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<{ er
           </CardHeader>
           <CardContent className="p-0">
             <form action={loginAction} className="space-y-4">
+              {error && (
+                <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                  Usuario o contraseña incorrectos.
+                </p>
+              )}
               <Input name="username" placeholder="Usuario" required autoComplete="username" />
               <Input name="password" type="password" placeholder="Contraseña" required autoComplete="current-password" />
               <Button type="submit" variant="gradient" className="w-full">

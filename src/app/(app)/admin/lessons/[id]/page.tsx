@@ -131,13 +131,13 @@ export default async function AdminLessonDetailPage({ params }: { params: Promis
             <label className="text-sm space-y-1"><span className="text-muted-foreground">Mínimo correctos</span><Input name="min_correct" type="number" min={1} defaultValue={lesson.min_correct} /></label>
             <label className="text-sm space-y-1"><span className="text-muted-foreground">Presentar (0 = todos)</span><Input name="present_count" type="number" min={0} defaultValue={lesson.present_count ?? 0} /></label>
             <label className="flex items-center gap-2 text-sm mt-6"><input type="checkbox" name="random_selection" defaultChecked={lesson.random_selection} className="rounded" /> Selección aleatoria</label>
-            <select name="ar_card_id" defaultValue={lesson.ar_card_id ?? ""} className="h-10 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+            <select name="ar_card_id" defaultValue={lesson.ar_card_id ?? ""} className="h-10 rounded-md border border-input bg-card px-3 text-sm">
               <option value="">Sin tarjeta de recompensa</option>
               {arCards.map((a) => <option key={a.id} value={a.id}>{a.card_code} — {a.title ?? "sin título"}</option>)}
             </select>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" name="grants_ar" defaultChecked={lesson.grants_ar} className="rounded" /> Otorga tarjeta al completar</label>
 
-            <div className="md:col-span-2 border-t border-white/10 pt-3 mt-1 space-y-2">
+            <div className="md:col-span-2 border-t border-border pt-3 mt-1 space-y-2">
               <p className="text-xs text-muted-foreground">
                 Un <b>cambio menor</b> (texto, imagen) conserva el progreso de los alumnos. Un <b>cambio mayor</b> (ejercicios, evaluación) caduca los completados previos y obliga a repetir.
               </p>
@@ -157,7 +157,7 @@ export default async function AdminLessonDetailPage({ params }: { params: Promis
         <CardContent className="space-y-2">
           {lesson.lesson_exercises.length === 0 && <p className="text-sm text-muted-foreground">Sin ejercicios enlazados.</p>}
           {lesson.lesson_exercises.map((le, i) => (
-            <div key={le.id} className="flex items-center justify-between glass rounded-xl px-4 py-2 text-sm">
+            <div key={le.id} className="flex items-center justify-between panel rounded-xl px-4 py-2 text-sm">
               <span className="flex items-center gap-2">
                 <Badge variant="outline">{le.exercise.type}</Badge>
                 <Badge variant="secondary">{le.exercise.dificultad}</Badge>
@@ -172,8 +172,8 @@ export default async function AdminLessonDetailPage({ params }: { params: Promis
             </div>
           ))}
 
-          <form action={attachExercise} className="flex gap-2 pt-2 border-t border-white/10 mt-2">
-            <select name="exercise_id" className="h-10 flex-1 rounded-xl border border-input glass bg-transparent px-3 text-sm">
+          <form action={attachExercise} className="flex gap-2 pt-2 border-t border-border mt-2">
+            <select name="exercise_id" className="h-10 flex-1 rounded-md border border-input bg-card px-3 text-sm">
               {poolAvailable.length === 0 && <option value="">— sin ejercicios disponibles en el pool —</option>}
               {poolAvailable.map((e) => <option key={e.id} value={e.id}>[{e.type}/{e.dificultad}] {e.question.slice(0, 70)}</option>)}
             </select>
@@ -189,7 +189,7 @@ export default async function AdminLessonDetailPage({ params }: { params: Promis
         <CardHeader><CardTitle className="text-base">Historial de versiones</CardTitle></CardHeader>
         <CardContent className="space-y-1 text-sm">
           {lesson.versions.map((v) => (
-            <div key={v.id} className="flex items-center gap-2 glass rounded-lg px-3 py-1.5">
+            <div key={v.id} className="flex items-center gap-2 panel rounded-lg px-3 py-1.5">
               <Badge variant={v.tipo_cambio === "mayor" ? "warning" : "secondary"}>v{v.version} · {v.tipo_cambio}</Badge>
               <span className="text-muted-foreground">{v.resumen}</span>
               <span className="ml-auto text-xs text-muted-foreground">{v.created_at.toLocaleDateString()}</span>

@@ -100,11 +100,18 @@ npm test         # vitest
 - `src/app/(app)` — área autenticada: aprendizaje (dashboard, mapa, lecciones, temas, ejercicios, exámenes, tarjetas, logros, diccionario), autoría del profesor y administración
 - `src/app/api` — rutas API (auth, chat, diccionario, AR marker/model, reportes, reentrenamiento ML)
 - `src/lib` — sesión y RBAC (`session`, `rbac`, `paralelo`), flujo de aprendizaje (`lesson-flow`, `student-board`, `rewards`, `logros/`), exámenes (`exams/engine`), analítica (`analytics/aggregate`), ML (`ml/features`, `ml/model`), reportes y AR
-- `prisma/schema.prisma`, `prisma/seed.ts`, `prisma/seed-assets.ts`
+- `src/components/mascota` — Mallku, el cóndor: acompañante flotante (`CondorFlotante`), reacciones dentro de juegos y pantallas (`MallkuJuego`), cabecera de sección con su pose (`MallkuMarca`) y pantallas de mensaje (`MallkuMensaje`). Las frases y poses salen de `src/lib/mascota/guion.ts` (puro y probado)
+- `src/components/topic` — editor de diapositivas tipo Canva de los temas (`SlideEditor`), panel de fondos y de recursos reutilizables
+- `src/components/exercise` y `src/components/exam` — ejercicios (incluidos «adivina la imagen» y «arrastra la tarjeta») y el examen de unir palabras estilo arcade de 8 bits
+- `prisma/schema.prisma`, `prisma/seed.ts`, `prisma/seed-assets.ts`; `prisma/seed-temas.ts` crea como diapositivas los cuatro temas base del curso (`--reemplazar` sustituye las existentes)
 
 ## Notas
 
-- Tras cambiar el esquema: `npx prisma db push && npx prisma generate` y **reiniciar `next dev`** (el proceso cachea el cliente Prisma generado en `src/generated/`).
+- **Migraciones:** el esquema se versiona en `prisma/migrations`. Tras cambiar `schema.prisma`: `npm run db:migrate -- --name <cambio>` (desarrollo) y `npm run db:deploy` (producción), y **reiniciar `next dev`** (el proceso cachea el cliente Prisma generado en `src/generated/`).
+- **Una base que ya existía** (creada antes con `db push`) se enlaza una sola vez con `npx prisma migrate resolve --applied 0_init`; después `db:deploy` sólo aplica lo nuevo. Sin ese paso `migrate deploy` se niega a tocar una base no vacía.
+- **Mantenimiento** (todos idempotentes): `npx tsx prisma/limpiar-diccionario.ts [--aplicar]` (categorías unificadas, repetidas fuera, entradas sin sentido ocultas), `npx tsx prisma/limpiar-huerfanos.ts` (imágenes de ejercicios sin uso y partidas viejas) y, **una vez antes de la migración `1_quitar_diapositivas_antiguas`** en una base con datos, `npx tsx prisma/migrar-diapositivas.ts`.
+- **CI:** `.github/workflows/ci.yml` corre validación del esquema, tipos, lint, pruebas y compilación de producción en cada push y pull request.
+- `npm run db:temas` crea las diapositivas de los cuatro temas base (`-- --reemplazar` sustituye las existentes).
 - El fallback de chat (sin `XAI_API_KEY`) responde con reglas simples sobre el diccionario/lecciones, igual "en streaming" para mantener la misma UI.
 - El visor y el examen AR requieren cámara real del dispositivo (`getUserMedia`) — no simulables en entornos sin cámara. El examen AR incluye un modo manual de respaldo para poder recorrer el flujo igualmente.
 - El modelo predictivo excluye del entrenamiento a los alumnos con menos de 5 respuestas registradas y los marca como «sin datos»: sin actividad no hay evidencia de riesgo.

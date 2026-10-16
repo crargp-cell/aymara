@@ -52,8 +52,11 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
     if (!(image instanceof File) || image.size === 0) return;
     const patt = formData.get("patt");
     const pattBuffer = patt instanceof File && patt.size > 0 ? Buffer.from(await patt.arrayBuffer()) : null;
-    const { code, markerFile, previewFile } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
-    await prisma.arCard.update({ where: { id: cardId }, data: { card_code: code, marker_file: markerFile, image_file: previewFile, updated_by: u.id } });
+    const { code, markerFile, previewFile, pattBuffer: outPatt, patronBuffer, laminaBuffer } = await saveUploadedMarker(Buffer.from(await image.arrayBuffer()), pattBuffer);
+    await prisma.arCard.update({
+      where: { id: cardId },
+      data: { card_code: code, marker_file: markerFile, image_file: previewFile, patt_data: outPatt.toString("utf8"), image_data: new Uint8Array(patronBuffer), lamina_data: new Uint8Array(laminaBuffer), updated_by: u.id },
+    });
     revalidatePath(`/admin/ar-cards/${cardId}`);
     revalidatePath("/admin/ar-cards");
   }
@@ -63,9 +66,12 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
     const u = await guard();
     if (!u) return;
     const model = formData.get("model");
-    if (!(model instanceof File) || model.size === 0 || !model.name.toLowerCase().endsWith(".glb")) return;
-    const url = await saveArModel(card!.card_code, Buffer.from(await model.arrayBuffer()));
-    await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, updated_by: u.id } });
+    if (!(model instanceof File) || model.size === 0) throw new Error("Selecciona un .glb");
+    if (!model.name.toLowerCase().endsWith(".glb")) throw new Error("Solo .glb");
+    if (model.size > 15 * 1024 * 1024) throw new Error("Máximo 15MB");
+    const buffer = Buffer.from(await model.arrayBuffer());
+    const url = await saveArModel(card!.card_code, buffer);
+    await prisma.arCard.update({ where: { id: cardId }, data: { card_data: url, model_data: new Uint8Array(buffer), model_mime: "model/gltf-binary", updated_by: u.id } });
     revalidatePath(`/admin/ar-cards/${cardId}`);
   }
 
@@ -112,11 +118,17 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
         <CardHeader><CardTitle className="text-base">Marcador y modelo 3D</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <form action={replaceMarker} className="grid gap-2">
-            <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="text-sm" />
-            <input type="file" name="patt" accept=".patt" className="text-sm" />
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground text-xs">Imagen nueva. Con esto basta: se regeneran solos el .patt y la lámina para imprimir.</span>
+              <input type="file" name="image" accept="image/jpeg,image/png,image/webp" className="block w-full text-sm" />
+            </label>
+            <label className="text-sm space-y-1">
+              <span className="text-muted-foreground text-xs">Marcador .patt propio (opcional), sólo si prefieres uno entrenado a mano.</span>
+              <input type="file" name="patt" accept=".patt" className="block w-full text-sm" />
+            </label>
             <Button type="submit" variant="secondary">Reemplazar marcador</Button>
           </form>
-          <form action={uploadModel} className="flex items-center gap-2 pt-2 border-t border-white/10">
+          <form action={uploadModel} className="flex items-center gap-2 pt-2 border-t border-border">
             <input type="file" name="model" accept=".glb" required className="text-sm" />
             <Button type="submit" variant="secondary">{card.card_data ? "Reemplazar" : "Subir"} .glb</Button>
           </form>
@@ -128,7 +140,7 @@ export default async function AdminArCardDetailPage({ params }: { params: Promis
         <CardContent className="space-y-2">
           {card.user_cards.length === 0 && <p className="text-sm text-muted-foreground">Ningún alumno la ha desbloqueado.</p>}
           {card.user_cards.map((uc) => (
-            <div key={uc.id} className="glass rounded-xl px-4 py-2 flex items-center justify-between text-sm">
+            <div key={uc.id} className="panel rounded-xl px-4 py-2 flex items-center justify-between text-sm">
               <span className="flex items-center gap-2">
                 {uc.alumno.nombre ?? uc.alumno.username} {uc.alumno.apellido ?? ""}
                 {uc.revocado && <Badge variant="destructive">revocada</Badge>}

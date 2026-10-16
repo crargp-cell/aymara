@@ -24,11 +24,3 @@ export async function setParaleloSeleccionado(formData: FormData) {
   revalidatePath(destino);
   redirect(destino);
 }
-
-/** Olvida el paralelo elegido — vuelve a pedir la selección. */
-export async function limpiarParaleloSeleccionado() {
-  await requireRole(["maestro", "admin"]);
-  const jar = await cookies();
-  jar.delete(PARALELO_COOKIE);
-  redirect("/admin/paralelo");
-}

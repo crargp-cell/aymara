@@ -20,9 +20,9 @@ export function ParaleloSwitcher({
 }) {
   if (!actual) {
     return (
-      <div className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-sm">
+      <div className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-3 text-sm">
         <span className="text-muted-foreground">No hay ningún paralelo seleccionado.</span>
-        <Link href={`/admin/paralelo?next=${encodeURIComponent(back)}`}>
+        <Link href={`/dashboard?next=${encodeURIComponent(back)}`}>
           <Button size="sm" variant="gradient">Elegir paralelo</Button>
         </Link>
       </div>
@@ -30,7 +30,7 @@ export function ParaleloSwitcher({
   }
 
   return (
-    <div className="glass rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+    <div className="panel rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Trabajando en</span>
       <Badge variant="secondary">{actual.gestion}</Badge>
       <b className="text-sm">{actual.nombre}</b>
@@ -42,7 +42,7 @@ export function ParaleloSwitcher({
           <select
             name="paralelo_id"
             defaultValue={actual.id}
-            className="h-9 rounded-lg border border-input glass bg-transparent px-3 text-sm min-w-[220px]"
+            className="h-9 rounded-md border border-input bg-card px-3 text-sm min-w-[220px]"
           >
             {opciones.map((p) => (
               <option key={p.id} value={p.id}>

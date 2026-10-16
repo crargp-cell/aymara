@@ -49,7 +49,7 @@ export default async function GradosPage() {
         <CardHeader><CardTitle className="text-base">Grados ({grados.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {grados.map((g) => (
-            <div key={g.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between text-sm">
+            <div key={g.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between text-sm">
               <span className="flex items-center gap-2">
                 Nivel {g.nivel} · {g.nombre}
                 <Badge variant={badgeVariantContenido(g.estado)}>{g.estado}</Badge>

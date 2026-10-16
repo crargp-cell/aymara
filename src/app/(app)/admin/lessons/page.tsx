@@ -114,7 +114,7 @@ export default async function AdminLessonsPage() {
         <CardContent className="space-y-2">
           {lessons.length === 0 && <p className="text-sm text-muted-foreground">Sin lecciones en este paralelo.</p>}
           {lessons.map((l) => (
-            <div key={l.id} className="flex items-center justify-between glass rounded-xl px-4 py-3">
+            <div key={l.id} className="flex items-center justify-between panel rounded-xl px-4 py-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm font-medium">
                   <span>#{l.orden} · {l.title}</span>

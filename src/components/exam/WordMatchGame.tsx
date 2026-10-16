@@ -1,307 +1,480 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { submitWordMatchExam } from "@/app/(app)/exams/[id]/actions";
+import { Press_Start_2P } from "next/font/google";
+import { Music, Music2, RotateCcw, Type, Volume2, VolumeX } from "lucide-react";
+import { comprobarGrupoAction, finalizarWordMatchAction, iniciarWordMatchAction } from "@/app/(app)/exams/[id]/actions";
+import { Chiptune } from "@/lib/chiptune";
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
+import type { EstadoJuego } from "@/lib/mascota/guion";
+import { GRUPO, PENALTY_PER_ERROR, wordMatchPct } from "@/lib/exams/word-match-score";
+import s from "./arcade.module.css";
+import { useModoLegible } from "@/lib/hooks/useModoLegible";
 
-type Word = { id: number; text: string; category: string };
+/*
+  Examen de unir palabras con estética arcade de 8 bits.
 
-const CATEGORY_COLORS = [
-  "linear-gradient(90deg,#2563eb,#0ea5a4)",
-  "linear-gradient(90deg,#8b5cf6,#7c3aed)",
-  "linear-gradient(90deg,#f59e0b,#d97706)",
-  "linear-gradient(90deg,#10b981,#059669)",
-  "linear-gradient(90deg,#ef4444,#dc2626)",
-  "linear-gradient(90deg,#ec4899,#db2777)",
-];
+  Reglas: el alumno elige GRUPO (4) cartas. Si las cuatro son de la misma
+  categoría se van solas a su cofre; si no, es un error: se rompe la racha, se
+  restan puntos y baja la nota (ver PENALTY_PER_ERROR). Los grupos acertados
+  seguidos suben el multiplicador. El servidor vuelve a calificar con lo que el
+  alumno colocó; el puntaje que se ve aquí es sólo el del juego.
 
-export function WordMatchGame({ examId, timeLimitSeconds, words }: { examId: number; timeLimitSeconds: number; words: Word[] }) {
-  const router = useRouter();
-  const wordsById = useMemo(() => new Map(words.map((w) => [w.id, w])), [words]);
-  const categories = useMemo(() => {
-    const map = new Map<string, number[]>();
-    for (const w of words) map.set(w.category, [...(map.get(w.category) ?? []), w.id]);
-    return map;
-  }, [words]);
-  const categoryColor = useMemo(() => {
-    const m = new Map<string, string>();
-    [...categories.keys()].forEach((cat, i) => m.set(cat, CATEGORY_COLORS[i % CATEGORY_COLORS.length]));
-    return m;
-  }, [categories]);
+  Con `preview` (modo prueba del maestro) nada se guarda y hay ayudas para
+  revisar el examen: ver las respuestas, quitar el límite de tiempo y reiniciar.
+*/
 
-  const requiredSelection = useMemo(() => {
-    const total = words.length;
-    const categoryCount = categories.size || 1;
-    const avgPerCategory = total / categoryCount;
-    if (total < 8 || avgPerCategory < 2) return 2;
-    if (total < 16 || avgPerCategory < 3) return 3;
-    return 4;
-  }, [words.length, categories.size]);
+const pixel = Press_Start_2P({ weight: "400", subsets: ["latin"], display: "swap" });
 
-  const sparseCategories = useMemo(() => [...categories.values()].some((ids) => ids.length < 4), [categories]);
+/** `category` sólo llega en el modo prueba del maestro: al alumno nunca se le manda. */
+type Word = { id: number; text: string; category?: string };
+type Categoria = { nombre: string; total: number };
+type Result = { passed: boolean; percentage: number; arCardId: number | null };
+type Phase = "intro" | "playing" | "done";
+type Game = { placed: Record<number, string>; selected: number[]; shake: number[]; errors: number; streak: number; best: number; score: number; msg: string; ultimo: "acierto" | "fallo" | null };
+type Floater = { id: number; x: number; y: number; text: string; color: string };
 
-  const [selected, setSelected] = useState<number[]>([]);
-  const [shakeIds, setShakeIds] = useState<Set<number>>(new Set());
-  const [dragOverCat, setDragOverCat] = useState<string | null>(null);
-  const [placed, setPlaced] = useState<Map<number, string>>(new Map());
-  const [score, setScore] = useState(0);
-  const [message, setMessage] = useState(
-    sparseCategories ? "Toca o arrastra cada carta hasta su canasta." : "Selecciona cartas de la misma categoría para conectarlas."
-  );
-  const [secondsLeft, setSecondsLeft] = useState(timeLimitSeconds);
-  const [finished, setFinished] = useState(false);
-  const [result, setResult] = useState<{ passed: boolean; percentage: number; arCardId: number | null } | null>(null);
-  const startRef = useRef(Date.now());
-  const finishedRef = useRef(false);
-  const placedRef = useRef(placed);
-  placedRef.current = placed;
+/** Colores de las categorías (sólo se ven en los cofres, nunca en las cartas: así no delatan la respuesta). */
+const PALETA = ["#3ddc84", "#4cc9f0", "#ffd23f", "#ff7b54", "#c77dff", "#ff6b9d", "#80ed99", "#f9a03f"];
 
-  const finish = async () => {
-    if (finishedRef.current) return;
-    finishedRef.current = true;
-    const timeSpent = Math.round((Date.now() - startRef.current) / 1000);
-    const placedNow = placedRef.current;
-    const details = words.map((w) => ({
-      ref: w.text,
-      expected: w.category,
-      respuesta: placedNow.get(w.id) ?? null,
-      correct: placedNow.get(w.id) === w.category,
-    }));
-    const r = await submitWordMatchExam(examId, { totalWords: words.length, correctMatches: placedNow.size, timeSpent, details });
-    setResult(r);
-    setFinished(true);
-  };
+const NUEVO: Game = { placed: {}, selected: [], shake: [], errors: 0, streak: 0, best: 0, score: 0, msg: "", ultimo: null };
+/** x1 el primer grupo, x2 tras uno seguido, … hasta x4. */
+const multiplicador = (racha: number) => Math.min(4, 1 + racha);
+const PUNTOS_GRUPO = 40;
 
-  useEffect(() => {
-    if (finished) return;
-    const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startRef.current) / 1000);
-      const left = timeLimitSeconds - elapsed;
-      setSecondsLeft(left);
-      if (left <= 0) {
-        clearInterval(interval);
-        finish();
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [finished]);
+export function WordMatchGame({
+  examId, timeLimitSeconds, words, categorias, minScore, preview = false,
+}: { examId: number; timeLimitSeconds: number; words: Word[]; categorias: Categoria[]; minScore: number; preview?: boolean }) {
+  const [run, setRun] = useState(0);
+  const [verRespuestas, setVerRespuestas] = useState(false);
+  const [sinLimite, setSinLimite] = useState(false);
 
-  function toggleSelect(id: number) {
-    if (finished || placed.has(id)) return;
-    setSelected((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= requiredSelection) return prev;
-      return [...prev, id];
-    });
+  if (words.length < GRUPO * 2) {
+    return <p className="text-sm text-muted-foreground">No hay suficientes palabras del diccionario para armar este examen todavía (se necesitan al menos {GRUPO} palabras en dos categorías).</p>;
   }
-
-  // Coincidencia automática: al juntar exactamente `requiredSelection` cartas de la misma
-  // categoría por selección (click), da el bonus grande — igual que el sistema viejo.
-  useEffect(() => {
-    if (selected.length !== requiredSelection) return;
-    const t = setTimeout(() => {
-      const cats = selected.map((id) => wordsById.get(id)?.category);
-      const allSame = cats.every((c) => c === cats[0]);
-      if (allSame) {
-        setScore((s) => s + 20);
-        setPlaced((prev) => {
-          const next = new Map(prev);
-          selected.forEach((id) => next.set(id, cats[0]!));
-          if (next.size === words.length) setTimeout(() => finish(), 400);
-          return next;
-        });
-        setSelected([]);
-        setMessage("¡Excelente! +20 puntos");
-      } else {
-        setShakeIds(new Set(selected));
-        setMessage("Las cartas deben ser de la misma categoría");
-        setTimeout(() => {
-          setShakeIds(new Set());
-          setSelected([]);
-        }, 600);
-      }
-    }, 200);
-    return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, requiredSelection]);
-
-  // Arrastrar (o tocar cartas seleccionadas + tocar una canasta): coloca de a una o varias
-  // cartas en una categoría específica, sin necesitar juntar el grupo completo. Esto es lo que
-  // permite completar categorías con pocas palabras (menos de `requiredSelection`).
-  function placeInCategory(ids: number[], category: string) {
-    const pending = ids.filter((id) => !placed.has(id));
-    if (pending.length === 0) return;
-    const allMatch = pending.every((id) => wordsById.get(id)?.category === category);
-    if (!allMatch) {
-      setShakeIds(new Set(pending));
-      setMessage("Esa carta no es de esta categoría");
-      setTimeout(() => setShakeIds(new Set()), 600);
-      setSelected((prev) => prev.filter((id) => !pending.includes(id)));
-      return;
-    }
-    setScore((s) => s + 10 * pending.length);
-    setPlaced((prev) => {
-      const next = new Map(prev);
-      pending.forEach((id) => next.set(id, category));
-      if (next.size === words.length) setTimeout(() => finish(), 400);
-      return next;
-    });
-    setSelected((prev) => prev.filter((id) => !pending.includes(id)));
-    setMessage(`¡Bien! +${10 * pending.length} puntos`);
-  }
-
-  function handleBasketDrop(e: DragEvent, category: string) {
-    e.preventDefault();
-    setDragOverCat(null);
-    const id = Number(e.dataTransfer.getData("text/plain"));
-    if (!Number.isFinite(id)) return;
-    placeInCategory([id], category);
-  }
-
-  function handleBasketClick(category: string) {
-    if (selected.length === 0) return;
-    placeInCategory(selected, category);
-  }
-
-  const pool = words.filter((w) => !placed.has(w.id));
-  const pct = Math.max(0, Math.min(100, (secondsLeft / timeLimitSeconds) * 100));
-  const mm = Math.floor(Math.max(0, secondsLeft) / 60);
-  const ss = Math.max(0, secondsLeft) % 60;
-
-  if (words.length === 0) {
-    return <p className="text-sm text-muted-foreground">No hay suficientes palabras del diccionario para armar este examen todavía.</p>;
-  }
-
-  const basketList = [...categories.keys()].map((cat) => {
-    const total = categories.get(cat)?.length ?? 0;
-    const placedInCat = [...placed.entries()].filter(([, c]) => c === cat);
-    return { cat, total, placedInCat };
-  });
 
   return (
-    <div className="space-y-4 pb-28 md:pb-0">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          Selecciona <strong>{requiredSelection}</strong> cartas del mismo tipo (seleccionadas: {selected.length}), o arrastrá/tocá una carta y su canasta.
-        </p>
-        <div className="flex items-center gap-3">
-          <Badge variant="secondary">★ {score} pts</Badge>
-          <div className="flex items-center gap-2">
-            <div className="w-32 h-2 rounded-full bg-white/10 overflow-hidden">
-              <div className="h-full transition-all" style={{ width: `${pct}%`, background: pct <= 25 ? "linear-gradient(90deg,#ef4444,#f97316)" : "linear-gradient(90deg,#06b6d4,#0ea5a4)" }} />
+    <div className="space-y-3">
+      {preview && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border border-amber-400/50 bg-amber-100/60 px-4 py-2.5 text-sm text-amber-950" role="note">
+          <strong>Modo prueba</strong>
+          <span>Así lo ve el alumno, pero nada se guarda.</span>
+          <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={verRespuestas} onChange={(e) => setVerRespuestas(e.target.checked)} /> Mostrar respuestas</label>
+          <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={sinLimite} onChange={(e) => setSinLimite(e.target.checked)} /> Sin límite de tiempo</label>
+          <button type="button" onClick={() => setRun((r) => r + 1)} className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-amber-500/60 bg-white/70 px-3 py-1 font-medium hover:bg-white">
+            <RotateCcw className="h-4 w-4" /> Reiniciar
+          </button>
+        </div>
+      )}
+      <Game key={run} examId={examId} timeLimitSeconds={timeLimitSeconds} words={words} categorias={categorias} minScore={minScore} preview={preview} verRespuestas={verRespuestas} sinLimite={sinLimite} onReiniciar={() => setRun((r) => r + 1)} />
+    </div>
+  );
+}
+
+function BotonSonido({ activo, onClick, on, off, etiqueta }: { activo: boolean; onClick: () => void; on: React.ReactNode; off: React.ReactNode; etiqueta: string }) {
+  return (
+    <button type="button" onClick={onClick} aria-pressed={activo} aria-label={etiqueta} title={etiqueta} className={`${s.btn} ${s.px} ${activo ? s.btnOn : s.btnAlt} !p-2`}>{activo ? on : off}</button>
+  );
+}
+
+function Game({
+  examId, timeLimitSeconds, words, categorias, minScore, preview, verRespuestas, sinLimite, onReiniciar,
+}: { examId: number; timeLimitSeconds: number; words: Word[]; categorias: Categoria[]; minScore: number; preview: boolean; verRespuestas: boolean; sinLimite: boolean; onReiniciar: () => void }) {
+  const router = useRouter();
+  const [legible, alternarLegible] = useModoLegible();
+  const wordsById = useMemo(() => new Map(words.map((w) => [w.id, w])), [words]);
+  const categories = useMemo(() => new Map(categorias.map((c) => [c.nombre, c.total])), [categorias]);
+  // Categorías que el servidor revela al terminar (para «Te faltaron»); en el modo prueba ya vienen en las palabras.
+  const [reveladas, setReveladas] = useState<Record<number, string>>({});
+  const categoriaDe = (id: number) => wordsById.get(id)?.category ?? reveladas[id];
+  const colorDe = useMemo(() => new Map([...categories.keys()].map((c, i) => [c, PALETA[i % PALETA.length]])), [categories]);
+
+  const [phase, setPhase] = useState<Phase>("intro");
+  const [game, setGame] = useState<Game>(NUEVO);
+  const [left, setLeft] = useState(timeLimitSeconds);
+  const [result, setResult] = useState<Result | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [musicOn, setMusicOn] = useState(true);
+  const [sfxOn, setSfxOn] = useState(true);
+  const [floaters, setFloaters] = useState<Floater[]>([]);
+
+  const gameRef = useRef<Game>(NUEVO);
+  const phaseRef = useRef<Phase>("intro");
+  const startRef = useRef(0);
+  /** Momento (reloj del navegador) en que se acaba el tiempo según el servidor. */
+  const limiteRef = useRef(0);
+  const audio = useRef<Chiptune | null>(null);
+  const floaterId = useRef(0);
+  const ultimoTick = useRef(-1);
+  /** Mientras se resuelve un grupo (acierto o error) no se aceptan más clics. */
+  const evaluando = useRef(false);
+
+  const upd = useCallback((fn: (g: Game) => Game) => {
+    const n = fn(gameRef.current);
+    gameRef.current = n;
+    setGame(n);
+  }, []);
+
+  useEffect(() => {
+    const a = new Chiptune();
+    audio.current = a;
+    // Los ajustes guardados sólo se conocen en el navegador: se leen tras montar.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMusicOn(a.musicOn);
+    setSfxOn(a.sfxOn);
+    return () => a.dispose();
+  }, []);
+
+  /* ───────────── fin de la partida ───────────── */
+
+  const finish = useCallback(async (completo: boolean) => {
+    if (phaseRef.current !== "playing") return;
+    phaseRef.current = "done";
+    const a = audio.current;
+    a?.stopMusic();
+    a?.sfx(completo ? "win" : "lose");
+    const g = gameRef.current;
+    const timeSpent = Math.round((Date.now() - startRef.current) / 1000);
+    if (completo) upd((x) => ({ ...x, score: x.score + Math.max(0, Math.floor(timeLimitSeconds - timeSpent)) }));
+    setPhase("done");
+
+    if (preview) {
+      const pct = wordMatchPct(words.length, Object.keys(g.placed).length, g.errors);
+      setResult({ passed: pct >= minScore, percentage: pct, arCardId: null });
+      return;
+    }
+    // El servidor cierra el intento con lo que él validó y el tiempo que él midió.
+    setEnviando(true);
+    const r = await finalizarWordMatchAction(examId).catch(() => null);
+    setEnviando(false);
+    if (r?.faltantes) setReveladas(Object.fromEntries(r.faltantes.map((f) => [f.id, f.categoria])));
+    setResult(r ?? { passed: false, percentage: 0, arCardId: null });
+  }, [examId, minScore, preview, timeLimitSeconds, upd, words.length]);
+
+  /* ───────────── reloj ───────────── */
+
+  useEffect(() => {
+    if (phase !== "playing" || sinLimite) return;
+    const id = setInterval(() => {
+      const restante = Math.ceil((limiteRef.current - Date.now()) / 1000);
+      setLeft(restante);
+      audio.current?.setHurry(restante <= timeLimitSeconds * 0.25);
+      if (restante > 0 && restante <= 10 && restante !== ultimoTick.current) {
+        ultimoTick.current = restante;
+        audio.current?.sfx("tick");
+      }
+      if (restante <= 0) { clearInterval(id); void finish(false); }
+    }, 250);
+    return () => clearInterval(id);
+  }, [phase, sinLimite, timeLimitSeconds, finish]);
+
+  const [arrancando, setArrancando] = useState(false);
+  const [errorInicio, setErrorInicio] = useState<string | null>(null);
+
+  async function empezar() {
+    if (arrancando) return;
+    const a = audio.current;
+    a?.unlock();
+    // El tiempo y lo ya avanzado los fija el servidor: recargar la página no da otra oportunidad.
+    let restante = timeLimitSeconds;
+    let previo: Game = NUEVO;
+    if (!preview) {
+      setArrancando(true);
+      setErrorInicio(null);
+      const r = await iniciarWordMatchAction(examId).catch(() => null);
+      setArrancando(false);
+      if (!r || !r.ok) { setErrorInicio(r && !r.ok ? r.error : "No se pudo empezar. Inténtalo de nuevo."); return; }
+      restante = r.restante;
+      previo = { ...NUEVO, placed: Object.fromEntries(Object.entries(r.colocadas).map(([id, c]) => [Number(id), c])), errors: r.errores };
+    }
+    a?.startMusic();
+    a?.sfx("start");
+    startRef.current = Date.now();
+    limiteRef.current = Date.now() + restante * 1000;
+    phaseRef.current = "playing";
+    upd(() => ({ ...previo, msg: `Elige ${GRUPO} cartas de la misma categoría.` }));
+    setLeft(restante);
+    setPhase("playing");
+    if (!preview && restante <= 0) void finish(false);
+  }
+
+  /* ───────────── jugadas ───────────── */
+
+  const flotar = useCallback((cat: string | null, text: string, color: string) => {
+    // Sin categoría (error) el aviso sale del centro del tablero.
+    const el = [...document.querySelectorAll<HTMLElement>("[data-cat], [data-tablero]")].find((e) => (cat ? e.dataset.cat === cat : e.dataset.tablero !== undefined) && e.offsetParent !== null);
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const id = ++floaterId.current;
+    setFloaters((f) => [...f, { id, x: r.left + r.width / 2, y: r.top + r.height / 2, text, color }]);
+    setTimeout(() => setFloaters((f) => f.filter((x) => x.id !== id)), 950);
+  }, []);
+
+  /** Resuelve un grupo completo: las GRUPO cartas son de una misma categoría (acierto) o no (error). */
+  const resolver = useCallback(async (ids: number[]) => {
+    const g = gameRef.current;
+    const a = audio.current;
+
+    // Modo prueba: se comprueba aquí (el maestro ya ve las categorías). Alumno: lo decide el servidor.
+    let categoria: string | null;
+    if (preview) {
+      const cats = new Set(ids.map((id) => wordsById.get(id)?.category));
+      categoria = cats.size === 1 ? ([...cats][0] ?? null) : null;
+    } else {
+      const r = await comprobarGrupoAction(examId, ids).catch(() => null);
+      if (!r || !r.ok) {
+        upd((x) => ({ ...x, selected: [], msg: r && !r.ok ? r.error : "Sin conexión con el servidor. Inténtalo de nuevo." }));
+        evaluando.current = false;
+        if (r && !r.ok && /tiempo/i.test(r.error)) void finish(false);
+        return;
+      }
+      categoria = r.categoria;
+    }
+
+    if (categoria) {
+      const cat = categoria;
+      const mult = multiplicador(g.streak);
+      const ganado = PUNTOS_GRUPO * mult;
+      const placed = { ...g.placed };
+      ids.forEach((id) => { placed[id] = cat; });
+      const streak = g.streak + 1;
+      a?.sfx(streak >= 2 ? "combo" : "correct", Math.min(streak, 6));
+      flotar(cat, `+${ganado}${mult > 1 ? ` x${mult}` : ""}`, colorDe.get(cat) ?? "#ffd23f");
+      upd((x) => ({
+        ...x, placed, streak, best: Math.max(x.best, streak), score: x.score + ganado, selected: [], shake: [], ultimo: "acierto",
+        msg: streak >= 2 ? `¡${streak} grupos seguidos! Puntos x${multiplicador(streak)}` : `¡Bien! Eran de «${cat}».`,
+      }));
+      evaluando.current = false;
+      if (Object.keys(placed).length === words.length) setTimeout(() => void finish(true), 600);
+      return;
+    }
+
+    a?.sfx("wrong");
+    navigator.vibrate?.(150);
+    flotar(null, "-5", "#ff4d6d");
+    upd((x) => ({ ...x, shake: ids, errors: x.errors + 1, streak: 0, ultimo: "fallo", score: Math.max(0, x.score - 5), msg: "¡No son de la misma categoría! Pierdes la racha." }));
+    setTimeout(() => {
+      upd((x) => ({ ...x, shake: [], selected: [] }));
+      evaluando.current = false;
+    }, 700);
+  }, [colorDe, examId, finish, flotar, preview, upd, wordsById, words.length]);
+
+  const alternar = useCallback((id: number) => {
+    if (phaseRef.current !== "playing" || evaluando.current || id in gameRef.current.placed) return;
+    const g = gameRef.current;
+    const ya = g.selected.includes(id);
+    if (!ya && g.selected.length >= GRUPO) return;
+    const selected = ya ? g.selected.filter((x) => x !== id) : [...g.selected, id];
+    audio.current?.sfx("select");
+    upd((x) => ({ ...x, selected, msg: selected.length ? `${selected.length}/${GRUPO} elegidas…` : `Elige ${GRUPO} cartas de la misma categoría.` }));
+    if (selected.length === GRUPO) {
+      evaluando.current = true;
+      // Una pausa corta para que se vea la cuarta carta elegida antes de resolver.
+      setTimeout(() => void resolver(selected), 350);
+    }
+  }, [resolver, upd]);
+
+  /* ───────────── derivados ───────────── */
+
+  const pool = words.filter((w) => !(w.id in game.placed));
+  const colocadas = words.length - pool.length;
+  const pct = sinLimite ? 100 : Math.max(0, Math.min(100, (left / timeLimitSeconds) * 100));
+  const apurado = !sinLimite && pct <= 25;
+  const mm = Math.floor(Math.max(0, left) / 60);
+  const ss = Math.max(0, left) % 60;
+  const mult = multiplicador(game.streak);
+
+  const canastas = [...categories.entries()].map(([cat, total]) => ({
+    cat, total, color: colorDe.get(cat)!,
+    dentro: Object.entries(game.placed).filter(([, c]) => c === cat).map(([id]) => ({ id: Number(id), text: wordsById.get(Number(id))!.text })),
+  }));
+
+  const canasta = (c: (typeof canastas)[number], compacta: boolean) => (
+    <div
+      key={c.cat}
+      data-cat={c.cat}
+      role="group"
+      aria-label={`${c.cat}: ${c.dentro.length} de ${c.total}`}
+      className={`${s.basket} ${s.px} ${c.dentro.length === c.total ? s.basketDone : ""} ${compacta ? "shrink-0 w-28 !p-2" : ""}`}
+      style={{ ["--c" as string]: c.dentro.length === c.total ? c.color : "#000", cursor: "default" }}
+    >
+      <span className="flex items-center gap-2 text-[12px] leading-tight" style={{ color: c.color }}>
+        <span className="inline-block h-3 w-3 shrink-0" style={{ background: c.color }} />
+        <span className={compacta ? "line-clamp-1" : ""}>{c.cat}</span>
+      </span>
+      <span className="mt-2 flex flex-wrap gap-1" aria-hidden>
+        {Array.from({ length: c.total }).map((_, i) => <span key={i} className={`${s.pip} ${i < c.dentro.length ? s.pipOn : ""}`} style={{ ["--k" as string]: c.color }} />)}
+      </span>
+      {!compacta && c.dentro.length > 0 && (
+        <span className="mt-2 flex flex-wrap gap-1 text-[10px] leading-tight text-[#e8ecff]/80">
+          {c.dentro.map((d) => <span key={d.id} className="bg-black/30 px-1.5 py-1">{d.text}</span>)}
+        </span>
+      )}
+    </div>
+  );
+
+  const alternarMusica = () => { const a = audio.current; if (!a) return; a.unlock(); a.setMusic(!a.musicOn); setMusicOn(a.musicOn); };
+  const alternarSfx = () => { const a = audio.current; if (!a) return; a.unlock(); a.setSfx(!a.sfxOn); setSfxOn(a.sfxOn); };
+
+  const faltantes = words.filter((w) => !(w.id in game.placed));
+  const estadoMallku: EstadoJuego =
+    phase === "intro"
+      ? { tipo: "intro", juego: "examen" }
+      : phase === "done"
+        ? { tipo: "resultado", aprobado: !!result?.passed }
+        : game.ultimo === "acierto"
+          ? { tipo: "acierto", racha: game.streak }
+          : game.ultimo === "fallo"
+            ? { tipo: "fallo" }
+            : { tipo: "pensando" };
+
+  return (
+    <div className={`${s.screen} ${pixel.className} ${legible ? s.legible : ""} text-[12px] leading-relaxed pb-28 md:pb-4`}>
+      {/* HUD */}
+      <div className="relative z-10 mb-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <div>
+          <p className="text-[10px] text-[#e8ecff]/60">PUNTOS</p>
+          <p className="text-sm text-[#ffd23f]">{String(game.score).padStart(5, "0")}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#e8ecff]/60">RACHA</p>
+          <p className="text-sm" style={{ color: mult > 1 ? "#3ddc84" : "#e8ecff" }}>x{mult}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#e8ecff]/60">ERRORES</p>
+          <p className="text-sm text-[#ff6b9d]">{game.errors}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#e8ecff]/60">CARTAS</p>
+          <p className="text-sm">{colocadas}/{words.length}</p>
+        </div>
+        <div>
+          <p className="text-[10px] text-[#e8ecff]/60">ELEGIDAS</p>
+          <p className="text-sm text-[#ffd23f]">{game.selected.length}/{GRUPO}</p>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          <div className="min-w-[8.5rem]">
+            <p className={`text-[10px] ${apurado ? s.hurry : "text-[#e8ecff]/60"}`}>TIEMPO</p>
+            <p className={`text-sm ${apurado ? s.hurry : ""}`}>{sinLimite ? "∞" : `${mm}:${String(ss).padStart(2, "0")}`}</p>
+            <div className="mt-1 h-2 w-full bg-[#2a3a8c]" aria-hidden>
+              <div className="h-full" style={{ width: `${pct}%`, background: apurado ? "#ff4d6d" : "#4cc9f0", transition: "width .25s steps(4)" }} />
             </div>
-            <Badge variant={pct <= 25 ? "destructive" : "outline"} className="font-mono">
-              {mm}:{String(ss).padStart(2, "0")}
-            </Badge>
           </div>
+          <BotonSonido activo={musicOn} onClick={alternarMusica} on={<Music />} off={<Music2 />} etiqueta={musicOn ? "Silenciar música" : "Activar música"} />
+          <BotonSonido activo={sfxOn} onClick={alternarSfx} on={<Volume2 />} off={<VolumeX />} etiqueta={sfxOn ? "Silenciar efectos" : "Activar efectos"} />
+          <BotonSonido activo={legible} onClick={alternarLegible} on={<Type />} off={<Type />} etiqueta={legible ? "Volver al estilo arcade" : "Texto normal (más legible)"} />
         </div>
       </div>
 
-      <div className="grid md:grid-cols-[1fr_280px] gap-4">
-        <div className="glass rounded-2xl p-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 min-h-[200px]">
+      {/* Mallku acompaña el examen y reacciona a cada grupo */}
+      <MallkuJuego estado={estadoMallku} semilla={game.errors + colocadas} size={64} oscuro className="relative z-10 mb-4" />
+
+      {/* Tablero */}
+      <div className="relative z-10 grid gap-4 md:grid-cols-[1fr_270px]">
+        <div className={`${s.panel} ${s.px} p-4`} data-tablero>
+          <div className="grid min-h-[200px] grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {pool.map((w) => {
-              const isSelected = selected.includes(w.id);
-              const isShaking = shakeIds.has(w.id);
+              const sel = game.selected.includes(w.id);
               return (
                 <button
                   key={w.id}
                   type="button"
-                  draggable={!finished}
-                  onDragStart={(e) => e.dataTransfer.setData("text/plain", String(w.id))}
-                  onClick={() => toggleSelect(w.id)}
-                  disabled={finished}
-                  className={`rounded-xl p-3 text-center font-semibold text-sm transition-all glass hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${isSelected ? "ring-2 ring-primary scale-[1.02]" : ""} ${isShaking ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
+                  disabled={phase !== "playing"}
+                  onClick={() => alternar(w.id)}
+                  aria-pressed={sel}
+                  className={`${s.card} ${s.px} text-[13px] ${sel ? s.cardSel : ""} ${game.shake.includes(w.id) ? s.cardShake : ""}`}
                 >
-                  {w.text}
-                  <div className="h-1 rounded-full w-2/3 mx-auto mt-2" style={{ background: categoryColor.get(w.category) }} />
+                  <span className="break-words">{w.text}</span>
+                  {verRespuestas && <span className="bg-[#1a1030] px-1.5 py-0.5 text-[9px] text-[#3ddc84]">{w.category}</span>}
                 </button>
               );
             })}
+            {pool.length === 0 && <p className="col-span-full self-center text-center text-[#3ddc84]">¡TODAS LAS CARTAS COLOCADAS!</p>}
           </div>
-          <p className="text-xs text-muted-foreground mt-3">{message}</p>
+          <p className="mt-4 min-h-[1.5em] text-[11px] text-[#ffd23f]" role="status">{game.msg}</p>
         </div>
 
-        {/* Canastas — escritorio: lista lateral. Móvil: barra fija abajo (ver más adelante). */}
-        <aside className="hidden md:flex md:flex-col gap-3">
-          {basketList.map(({ cat, total, placedInCat }) => (
-            <div
-              key={cat}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOverCat(cat);
-              }}
-              onDragLeave={() => setDragOverCat((c) => (c === cat ? null : c))}
-              onDrop={(e) => handleBasketDrop(e, cat)}
-              onClick={() => handleBasketClick(cat)}
-              className={`glass rounded-xl p-3 transition-all cursor-pointer ${dragOverCat === cat ? "ring-2 ring-primary scale-[1.02]" : ""} ${selected.length > 0 ? "hover:ring-2 hover:ring-primary/50" : ""}`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: categoryColor.get(cat) }} />
-                  {cat}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  ({placedInCat.length}/{total})
-                </span>
-              </div>
-              <div className="flex flex-wrap gap-1.5 min-h-[28px]">
-                {placedInCat.map(([id]) => (
-                  <span key={id} className="text-xs rounded-lg bg-primary/15 border border-primary/30 px-2 py-1">
-                    {wordsById.get(id)?.text}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+        <aside className="hidden flex-col gap-4 md:flex" aria-label="Categorías">
+          {canastas.map((c) => canasta(c, false))}
         </aside>
       </div>
 
-      {/* Cestas fijas móvil: reemplazan la lista lateral en pantallas chicas. */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur border-t border-white/10 p-2">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {basketList.map(({ cat, total, placedInCat }) => (
-            <div
-              key={cat}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOverCat(cat);
-              }}
-              onDragLeave={() => setDragOverCat((c) => (c === cat ? null : c))}
-              onDrop={(e) => handleBasketDrop(e, cat)}
-              onClick={() => handleBasketClick(cat)}
-              className={`shrink-0 w-24 glass rounded-xl p-2 text-center transition-all ${dragOverCat === cat ? "ring-2 ring-primary scale-105" : ""}`}
-            >
-              <span className="h-2 w-2 rounded-full inline-block mb-1" style={{ background: categoryColor.get(cat) }} />
-              <p className="text-[11px] font-medium leading-tight line-clamp-1">{cat}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {placedInCat.length}/{total}
-              </p>
-            </div>
-          ))}
-        </div>
+      {/* Cofres en móvil: barra fija abajo */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t-4 border-[#2a3a8c] bg-[#0b1020] p-2 md:hidden" aria-label="Categorías">
+        <div className="flex gap-3 overflow-x-auto px-1 py-2">{canastas.map((c) => canasta(c, true))}</div>
       </div>
 
-      {finished && result && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="glass-strong rounded-2xl p-8 max-w-sm w-full text-center space-y-3">
-            <h2 className="text-xl font-bold">{result.passed ? "¡Examen aprobado! 🎉" : "Examen completado"}</h2>
-            <p className="text-sm">Puntuación: {score} pts</p>
-            <p className="text-sm">Palabras conectadas: {placed.size}/{words.length}</p>
-            <p className="text-sm">Porcentaje: {result.percentage}%</p>
-            {result.arCardId && <p className="text-sm text-emerald-400">🎯 ¡Desbloqueaste una tarjeta AR!</p>}
-            <p className={`text-sm ${result.passed ? "text-emerald-400" : "text-red-400"}`}>{result.passed ? "Aprobaste el examen." : "No alcanzaste el puntaje mínimo."}</p>
-            <div className="flex gap-2 justify-center pt-2">
-              <Button variant="gradient" onClick={() => router.push("/map")}>
-                Volver al mapa
-              </Button>
-              <Button variant="outline" onClick={() => router.push("/exams")}>
-                Ver exámenes
-              </Button>
+      {floaters.map((f) => <span key={f.id} className={`${s.floater} ${pixel.className}`} style={{ left: f.x, top: f.y, ["--k" as string]: f.color }}>{f.text}</span>)}
+
+      {/* Pantalla de inicio */}
+      {phase === "intro" && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-[#0b1020]/95 p-4">
+          <div className={`${s.panel} ${s.px} w-full max-w-lg space-y-5 p-6 text-center`}>
+            <h2 className="text-lg leading-snug text-[#ffd23f]">UNIR PALABRAS</h2>
+            <ul className="space-y-3 text-left text-[11px] leading-relaxed">
+              <li>▸ Elige {GRUPO} cartas que sean de la misma categoría.</li>
+              <li>▸ Si las {GRUPO} coinciden, se van solas a su cofre. Si no, es un error.</li>
+              <li>▸ Los grupos acertados seguidos suben tus puntos: x2, x3… hasta x4.</li>
+              <li>▸ Cada error rompe la racha y resta nota ({PENALTY_PER_ERROR} carta). ¡Piénsalo antes de elegir la cuarta!</li>
+              <li>▸ {words.length} cartas · {categories.size} categorías · {sinLimite ? "sin límite de tiempo" : `${Math.round(timeLimitSeconds / 60)} min`} · mínimo {minScore}% para aprobar.</li>
+            </ul>
+            <div className="flex items-center justify-center gap-3">
+              <BotonSonido activo={musicOn} onClick={alternarMusica} on={<Music />} off={<Music2 />} etiqueta={musicOn ? "Silenciar música" : "Activar música"} />
+              <BotonSonido activo={sfxOn} onClick={alternarSfx} on={<Volume2 />} off={<VolumeX />} etiqueta={sfxOn ? "Silenciar efectos" : "Activar efectos"} />
+          <BotonSonido activo={legible} onClick={alternarLegible} on={<Type />} off={<Type />} etiqueta={legible ? "Volver al estilo arcade" : "Texto normal (más legible)"} />
+              <button type="button" onClick={() => void empezar()} disabled={arrancando} className={`${s.btn} ${s.px} text-xs`}>{arrancando ? "…" : "▶ Jugar"}</button>
             </div>
+            {errorInicio && <p role="alert" className="text-[11px] text-[#ff6b9d]">{errorInicio}</p>}
+            {preview && <p className="text-[10px] text-[#3ddc84]">MODO PRUEBA · NO SE GUARDA</p>}
+            <p className={`text-[10px] text-[#e8ecff]/50 ${s.blink}`}>PRESIONA JUGAR</p>
+          </div>
+        </div>
+      )}
+
+      {/* Resultado */}
+      {phase === "done" && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div className={`${s.panel} ${s.px} ${pixel.className} max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto p-6 text-center text-[12px] leading-relaxed text-[#e8ecff]`}>
+            {enviando || !result ? (
+              <p className={s.blink}>GUARDANDO RESULTADO…</p>
+            ) : (
+              <>
+                <h2 className="text-base leading-snug" style={{ color: result.passed ? "#3ddc84" : "#ff6b9d" }}>{result.passed ? "¡APROBADO!" : colocadas === words.length ? "COMPLETADO" : "FIN DEL JUEGO"}</h2>
+                <p className="text-3xl text-[#ffd23f]">{result.percentage}%</p>
+                <div className="grid grid-cols-2 gap-2 text-left text-[11px]">
+                  <span>Puntos</span><span className="text-right text-[#ffd23f]">{game.score}</span>
+                  <span>Cartas</span><span className="text-right">{colocadas}/{words.length}</span>
+                  <span>Errores</span><span className="text-right text-[#ff6b9d]">{game.errors}</span>
+                  <span>Mejor racha</span><span className="text-right text-[#3ddc84]">{game.best}</span>
+                  <span>Mínimo</span><span className="text-right">{minScore}%</span>
+                </div>
+                {result.arCardId && <p className="text-[#ffd23f]">★ ¡DESBLOQUEASTE UNA TARJETA AR! ★</p>}
+                {preview && <p className="text-[#3ddc84]">MODO PRUEBA: NO SE GUARDÓ.</p>}
+
+                {faltantes.length > 0 && (
+                  <div className="space-y-2 text-left">
+                    <p className="text-[#e8ecff]/70">Te faltaron:</p>
+                    <ul className="max-h-40 space-y-1 overflow-y-auto text-[11px]">
+                      {faltantes.map((w) => (
+                        <li key={w.id} className="flex justify-between gap-3 bg-black/30 px-2 py-1.5"><span>{w.text}</span><span style={{ color: colorDe.get(categoriaDe(w.id) ?? "") }}>{categoriaDe(w.id)}</span></li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  {preview ? (
+                    <button type="button" className={`${s.btn} ${s.px}`} onClick={onReiniciar}>Jugar otra vez</button>
+                  ) : (
+                    <>
+                      <button type="button" className={`${s.btn} ${s.px}`} onClick={() => router.push("/map")}>Mapa</button>
+                      <button type="button" className={`${s.btn} ${s.btnAlt} ${s.px}`} onClick={() => router.push("/exams")}>Exámenes</button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

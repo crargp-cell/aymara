@@ -4,14 +4,15 @@ import { getParaleloSeleccionado } from "@/lib/paralelo";
 
 /**
  * Preámbulo de las páginas de autoría. El contenido pertenece a un paralelo
- * (Negocio.md §31), así que lo primero es elegir con cuál se va a trabajar:
- * si no hay uno seleccionado, se redirige al selector antes de cargar nada.
+ * (Negocio.md §31), así que lo primero es elegir con cuál se va a trabajar: si
+ * no hay uno seleccionado se vuelve a Inicio, que es donde se elige, y desde
+ * allí se regresa a la pestaña que se quería abrir.
  *
  * @param backPath ruta a la que volver una vez elegido el paralelo.
  */
 export async function maestroContext(backPath: string) {
   const user = await requireRole(["maestro", "admin"]);
   const { actual, opciones } = await getParaleloSeleccionado(user.role, user.id);
-  if (!actual) redirect(`/admin/paralelo?next=${encodeURIComponent(backPath)}`);
+  if (!actual) redirect(`/dashboard?next=${encodeURIComponent(backPath)}`);
   return { user, paralelo: actual, opciones };
 }

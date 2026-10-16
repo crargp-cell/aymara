@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { checkText, checkMatching, checkFillInTheBlank } from "./exercise-validation";
+import { checkText, checkMatching, checkFillInTheBlank, partidaMemoriaPlausible } from "./exercise-validation";
 
 describe("checkText", () => {
   it("matches case-insensitively and ignores surrounding whitespace", () => {
@@ -61,5 +61,16 @@ describe("checkFillInTheBlank", () => {
 
   it("rejects invalid JSON instead of throwing", () => {
     expect(checkFillInTheBlank("not json", validAnswers)).toBe(false);
+  });
+});
+
+describe("partidaMemoriaPlausible", () => {
+  it("acepta una partida con movimientos y tiempo creíbles", () => {
+    expect(partidaMemoriaPlausible({ pares: 4, movimientos: 6, tiempoMs: 30_000 })).toBe(true);
+  });
+  it("rechaza ganar sin mover o en un instante", () => {
+    expect(partidaMemoriaPlausible({ pares: 4, movimientos: 0, tiempoMs: 30_000 })).toBe(false);
+    expect(partidaMemoriaPlausible({ pares: 4, movimientos: 8, tiempoMs: 300 })).toBe(false);
+    expect(partidaMemoriaPlausible({ pares: 0, movimientos: 3, tiempoMs: 9_000 })).toBe(false);
   });
 });

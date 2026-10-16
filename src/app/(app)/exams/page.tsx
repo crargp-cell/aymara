@@ -1,3 +1,4 @@
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { getParaleloActivoAlumno, getParaleloSeleccionado } from "@/lib/paralelo";
@@ -40,7 +41,7 @@ export default async function ExamsPage() {
       <Link href="/exams/history" className="text-sm text-primary hover:underline">Ver historial de intentos →</Link>
       <div className="grid md:grid-cols-2 gap-4">
         {rows.map(({ exam: e, gate, eff }) => (
-          <Card key={e.id} className="hover:shadow-glow">
+          <Card key={e.id} activa>
             <CardHeader>
               <CardTitle className="text-base flex items-center justify-between">
                 {e.title}
@@ -56,7 +57,7 @@ export default async function ExamsPage() {
                 {eff && <Badge variant={eff.passed ? "success" : "warning"}>tu nota: {eff.score}%</Badge>}
               </div>
               {isStudent && !gate.ok ? (
-                <p className="text-xs text-amber-300">{gate.motivo}</p>
+                <p className="text-xs" style={{ color: "var(--ruta-futuro)" }}>{gate.motivo}</p>
               ) : (
                 <Link href={`/exams/${e.id}`}>
                   <Button variant="gradient" size="sm" className="w-full">{isStudent ? "Rendir" : "Ver"}</Button>
@@ -65,7 +66,7 @@ export default async function ExamsPage() {
             </CardContent>
           </Card>
         ))}
-        {exams.length === 0 && <p className="text-sm text-muted-foreground">No hay exámenes.</p>}
+        {exams.length === 0 && <MallkuJuego estado={{ tipo: "vacio", donde: "examenes" }} />}
       </div>
     </div>
   );

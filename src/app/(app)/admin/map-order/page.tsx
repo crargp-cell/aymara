@@ -72,7 +72,7 @@ export default async function MapOrderPage() {
         <CardContent className="space-y-2">
           {rows.length === 0 && <p className="text-sm text-muted-foreground">Sin contenido en este paralelo todavía.</p>}
           {rows.map((r) => (
-            <div key={r.contentOrderId} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div key={r.contentOrderId} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3 flex-1">
                 <Badge variant={r.type === "exam" ? "warning" : "secondary"}>{r.type}</Badge>
                 <span className="text-sm font-medium">{r.title}</span>

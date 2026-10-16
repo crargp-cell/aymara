@@ -109,7 +109,7 @@ async function persist(
   score: (f: StudentFeatures) => number,
   accuracy: number,
 ) {
-  await prisma.mlModelo.updateMany({ data: { activo: false } });
+  await prisma.mlModelo.updateMany({ where: { tipo: "logistic_regression_risk" }, data: { activo: false } });
   await prisma.mlModelo.create({
     data: {
       version,

@@ -1,3 +1,4 @@
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +51,7 @@ export default async function LessonDetailPage({ params }: { params: Promise<{ i
 
   return (
     <div className="space-y-6">
-      <div className="glass rounded-2xl overflow-hidden">
+      <div className="panel rounded-2xl overflow-hidden">
         <div className="relative h-40 w-full">
           <Image src={lessonCoverUrl(lesson.orden)} alt={lesson.title} fill sizes="100vw" priority className="object-cover" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
@@ -96,12 +97,12 @@ export default async function LessonDetailPage({ params }: { params: Promise<{ i
                 <Button variant="gradient">{progress?.completed ? "Repasar ejercicios" : progress?.current_index ? "Continuar" : "Comenzar ejercicios"}</Button>
               </Link>
             ) : (
-              <p className="text-sm text-muted-foreground">Esta lección todavía no tiene ejercicios.</p>
+              <MallkuJuego estado={{ tipo: "vacio", donde: "ejercicios" }} />
             )}
             {isStaff && (
               <div className="space-y-1 pt-2">
                 {exercises.map((e, i) => (
-                  <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between glass rounded-xl px-4 py-2 text-sm hover:shadow-glow">
+                  <Link key={e.id} href={`/play/${lesson.id}/${e.id}`} className="flex items-center justify-between panel rounded-xl px-4 py-2 text-sm tarjeta-activa">
                     <span className="line-clamp-1">{i + 1}. {e.question}</span>
                     <Badge variant="outline">{e.type}</Badge>
                   </Link>

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { materialDeTarjeta } from "@/lib/ar/material";
 import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,33 +37,51 @@ export default async function ArCardViewPage({ params }: { params: Promise<{ cod
     if (!allowed) notFound();
   }
 
-  const previewFile = card.image_file ?? `marker_${card.card_code}.png`;
-  const hasPreview = await fileExists(path.join(AR_DIR, previewFile));
-  const hasPatt = await fileExists(path.join(AR_DIR, `marker_${card.card_code}.patt`));
-  const modelUrl = card.card_data && card.card_data.startsWith("/ar/models/") ? card.card_data : null;
+  /*
+    Qué hay guardado se pregunta a la base, no se deduce leyendo los blobs: están
+    excluidos de las consultas por peso. El disco es sólo el respaldo de las
+    tarjetas anteriores al cambio.
+  */
+  const material = await materialDeTarjeta(card.card_code);
+  const hasPreview =
+    material.imagen ||
+    !!card.image_file ||
+    (await fileExists(path.join(AR_DIR, card.image_file ?? `marker_${card.card_code}.png`)));
+  const previewUrl = `/api/ar/file?code=${card.card_code}&type=image`;
+  // El modelo se sirve por la ruta si está en la base; si no, queda la ruta de
+  // disco antigua, que en la nube ya no resuelve.
+  const modelUrl = material.modelo
+    ? `/api/ar/file?code=${card.card_code}&type=model`
+    : card.card_data && card.card_data.startsWith("/ar/")
+      ? card.card_data
+      : null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>{card.title ?? card.card_code}</CardTitle>
+    <div className="max-w-6xl mx-auto space-y-6 px-2 sm:px-0">
+      <Card className="overflow-hidden">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-xl sm:text-2xl">{card.title ?? card.card_code}</CardTitle>
           <p className="text-sm text-muted-foreground">{card.description}</p>
+          <p className="text-xs font-mono text-muted-foreground/70">Marcador: {card.card_code} · {modelUrl ? "modelo 3D ✓" : "sin modelo"}</p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-5 p-3 sm:p-6">
           {hasPreview ? (
-            <ArScene markerImageUrl={`/ar/${previewFile}`} modelUrl={modelUrl} />
+            <ArScene markerImageUrl={previewUrl} modelUrl={modelUrl} />
           ) : (
-            <div className="h-64 bg-black rounded-xl flex items-center justify-center text-white text-sm px-4 text-center">
+            <div className="h-[52vh] min-h-[360px] bg-black rounded-2xl flex items-center justify-center text-white text-sm px-4 text-center border border-border">
               Esta tarjeta no tiene un marcador de imagen todavía — pide a un docente que suba la imagen de referencia.
             </div>
           )}
-          <div className="flex gap-2">
-            {hasPatt && (
-              <a href={`/api/ar/marker?code=${card.card_code}`} download>
-                <Button variant="outline">Descargar .patt</Button>
-              </a>
-            )}
-            <Link href="/ar-cards"><Button variant="secondary">Volver</Button></Link>
+          <div className="flex flex-wrap gap-2 justify-between items-center">
+            <div className="flex gap-2">
+              {hasPreview && (
+                <a href={previewUrl} download={`tarjeta-${card.card_code}.png`}>
+                  <Button variant="outline">Descargar tarjeta</Button>
+                </a>
+              )}
+              <Link href="/ar-cards"><Button variant="secondary">Volver</Button></Link>
+            </div>
+            <span className="text-xs text-muted-foreground hidden sm:block">Usa el mini visor para centrar la tarjeta · Vista previa 3D no necesita cámara</span>
           </div>
         </CardContent>
       </Card>

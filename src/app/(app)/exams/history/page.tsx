@@ -25,7 +25,7 @@ export default async function ExamHistoryPage() {
         <CardContent className="space-y-2">
           {attempts.length === 0 && <p className="text-sm text-muted-foreground">Todavía no rendiste ningún examen.</p>}
           {attempts.map((a) => (
-            <div key={a.id} className="glass rounded-xl px-4 py-3 flex items-center justify-between gap-2">
+            <div key={a.id} className="panel rounded-xl px-4 py-3 flex items-center justify-between gap-2">
               <div className="flex-1">
                 <p className="text-sm font-medium">{a.exam.title} <span className="text-xs text-muted-foreground">· intento {a.attempt_no}</span></p>
                 <p className="text-xs text-muted-foreground">{a.exam.type} · {Math.round(a.time_spent_ms / 1000)}s · {a.completed_at?.toLocaleString()}</p>

@@ -3,13 +3,16 @@ import { notFound, redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExercisePlayer } from "@/components/exercise/ExercisePlayer";
+import { ImageGuessGame } from "@/components/exercise/ImageGuessGame";
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
+import type { EstadoJuego } from "@/lib/mascota/guion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice } from "@/lib/exercise-validation";
+import { checkText, checkMatching, checkFillInTheBlank, checkMultipleChoice, partidaMemoriaPlausible } from "@/lib/exercise-validation";
 import { requireUser } from "@/lib/session";
 import { alumnoPuedeVerLeccion } from "@/lib/rbac";
 import { getOrStartAttempt, recordExerciseAttempt } from "@/lib/lesson-flow";
-import { CheckCircle2, XCircle, Trophy, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, Trophy, Sparkles, Eye, Info } from "lucide-react";
 
 export default async function PlayPage({
   params,
@@ -46,18 +49,37 @@ export default async function PlayPage({
   const forced = failed >= 3;
   const forcedTopic = forced ? await prisma.lessonTopic.findFirst({ where: { lesson_id: lid, estado: "activo" }, orderBy: { order: "asc" } }) : null;
 
+  // Al navegador sólo viaja lo que hace falta para jugar: nunca `is_correct` ni las
+  // respuestas (la comprobación es del servidor). Del fill_in_the_blank sólo cuántos espacios hay.
   let options, pairs, answers;
-  if (exercise.type === "multiple_choice") options = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid } });
+  if (exercise.type === "multiple_choice" || exercise.type === "drag_card") {
+    options = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid }, select: { id: true, option_text: true, image_id: true }, orderBy: { id: "asc" } });
+  }
   if (exercise.type === "matching") pairs = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
-  if (exercise.type === "fill_in_the_blank") answers = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
+  if (exercise.type === "fill_in_the_blank") answers = (await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid }, select: { id: true } })).map(() => ({ answer_text: "" }));
+  const respuestaDocente = isStaff && exercise.type === "image_guess" ? ((await prisma.fillInTheBlankAnswer.findFirst({ where: { exercise_id: eid }, orderBy: { id: "asc" } }))?.answer_text ?? null) : null;
+
+  // Mallku reacciona al resultado. Los juegos con imágenes traen su propio cóndor dentro, así que
+  // en la introducción sólo aparece aquí en los ejercicios clásicos.
+  const conResultado = !!(sp.done || sp.result || forced);
+  const estadoMallku: EstadoJuego | null = exercise.type === "image_guess" ? null : sp.done
+    ? { tipo: "completada" }
+    : sp.result === "ok"
+      ? { tipo: "acierto" }
+      : sp.result === "fail"
+        ? { tipo: "fallo" }
+        : forced
+          ? { tipo: "forzado" }
+          : exercise.type === "drag_card" ? null : { tipo: "intro", juego: "ejercicio" };
 
   async function submitAction(formData: FormData) {
     "use server";
     const u = await requireUser();
-    if (u.role !== "estudiante") return;
-    if (!(await alumnoPuedeVerLeccion(u.id, lid))) return;
+    const esDocente = u.role !== "estudiante";
+    if (!esDocente && !(await alumnoPuedeVerLeccion(u.id, lid))) return;
 
-    const type = String(formData.get("type") ?? exercise!.type);
+    // El tipo es el del ejercicio guardado, no el que diga el formulario.
+    const type = exercise!.type;
     const raw = String(formData.get("user_answer") ?? "");
     const timeMs = Number(formData.get("time_ms") ?? 0);
     let isCorrect = false;
@@ -66,18 +88,24 @@ export default async function PlayPage({
     if (type === "text") {
       isCorrect = checkText(raw, exercise!.answer);
       if (!isCorrect) errorType = "concepto_equivocado";
-    } else if (type === "multiple_choice") {
+    } else if (type === "multiple_choice" || type === "drag_card") {
       const opts = await prisma.multipleChoiceOption.findMany({ where: { exercise_id: eid }, select: { id: true, is_correct: true } });
       isCorrect = checkMultipleChoice(raw, opts);
       if (!isCorrect) errorType = "seleccion_incorrecta";
     } else if (type === "matching") {
       const ps = await prisma.matchingPair.findMany({ where: { exercise_id: eid }, orderBy: [{ orden: "asc" }, { id: "asc" }] });
-      isCorrect = checkMatching(raw, ps);
+      isCorrect = checkMatching(raw, ps) && partidaMemoriaPlausible({ pares: ps.length, movimientos: Number(formData.get("moves") ?? 0), tiempoMs: timeMs });
       if (!isCorrect) errorType = "emparejamiento_incorrecto";
     } else if (type === "fill_in_the_blank") {
       const ans = await prisma.fillInTheBlankAnswer.findMany({ where: { exercise_id: eid } });
       isCorrect = checkFillInTheBlank(raw, ans.map((a) => a.answer_text));
       if (!isCorrect) errorType = "concepto_equivocado";
+    }
+
+    // El docente puede probar el ejercicio y ver si su respuesta es la correcta,
+    // pero no se registra nada: el historial pertenece al alumno (Negocio.md §32).
+    if (esDocente) {
+      redirect(`/play/${lid}/${eid}?result=${isCorrect ? "ok" : "fail"}`);
     }
 
     const res = await recordExerciseAttempt({
@@ -108,21 +136,38 @@ export default async function PlayPage({
             <Badge variant="outline">{exercise.type}</Badge>
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Lección {lid} · Ejercicio {idx >= 0 ? idx + 1 : "?"}/{presented.length} · Dificultad {exercise.dificultad}
+            {idx >= 0 ? `Ejercicio ${idx + 1} de ${presented.length}` : "Ejercicio de práctica"} · Dificultad {exercise.dificultad}
           </p>
         </CardHeader>
         <CardContent>
+          {estadoMallku && <MallkuJuego estado={estadoMallku} semilla={eid} className="mb-4" />}
+          {isStaff && (
+            <div className="mb-4 rounded-xl aviso-atencion border p-3 flex items-center gap-2 text-sm">
+              <Eye className="h-4 w-4 shrink-0" />
+              <span className="text-muted-foreground">
+                Vista de revisión: puedes responder para comprobar el ejercicio, pero tu respuesta no se guarda.
+              </span>
+            </div>
+          )}
+          {!isStaff && idx < 0 && (
+            <div className="mb-4 rounded-xl aviso-info border p-3 flex items-center gap-2 text-sm">
+              <Info className="h-4 w-4 shrink-0" />
+              <span className="text-muted-foreground">
+                Este ejercicio no entró en el sorteo de tu intento: puedes practicarlo, pero no cuenta para completar la lección.
+              </span>
+            </div>
+          )}
           {sp.done && (
-            <div className="mb-4 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-4 space-y-2">
-              <p className="flex items-center gap-2 text-emerald-400 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>
-              {sp.reward && <p className="flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4 text-amber-300" /> Desbloqueaste una tarjeta AR.</p>}
+            <div className="mb-4 rounded-xl aviso-ok border p-4 space-y-2">
+              <p className="flex items-center gap-2 font-medium"><Trophy className="h-5 w-5" /> ¡Lección completada!</p>
+              {sp.reward && <p className="flex items-center gap-2 text-sm"><Sparkles className="h-4 w-4" /> Desbloqueaste una tarjeta AR.</p>}
               {sp.logros && <p className="text-sm">Nuevos logros: {sp.logros.split("|").join(", ")}</p>}
               <Link href={`/lessons/${lid}`}><Button size="sm" variant="gradient">Volver a la lección</Button></Link>
             </div>
           )}
           {sp.result === "ok" && !sp.done && (
-            <div className="mb-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-emerald-400 text-sm font-medium"><CheckCircle2 className="h-5 w-5" /> ¡Correcto!</span>
+            <div className="mb-4 rounded-xl aviso-ok border p-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-sm font-medium"><CheckCircle2 className="h-5 w-5" /> ¡Correcto!</span>
               {nextId ? (
                 <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="gradient">Siguiente</Button></Link>
               ) : (
@@ -131,19 +176,32 @@ export default async function PlayPage({
             </div>
           )}
           {sp.result === "fail" && (
-            <div className="mb-4 rounded-xl border border-red-400/30 bg-red-400/10 p-4 flex items-center justify-between gap-3">
-              <span className="flex items-center gap-2 text-red-400 text-sm font-medium"><XCircle className="h-5 w-5" /> Incorrecto — inténtalo de nuevo.</span>
+            <div className="mb-4 rounded-xl aviso-error border p-4 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-2 text-sm font-medium"><XCircle className="h-5 w-5" /> Incorrecto — inténtalo de nuevo.</span>
               {nextId && <Link href={`/play/${lid}/${nextId}`}><Button size="sm" variant="outline">Saltar</Button></Link>}
             </div>
           )}
           {forced && forcedTopic && (
-            <div className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4">
+            <div className="mb-4 rounded-xl aviso-atencion border p-4">
               <p className="text-sm font-medium">Has fallado 3 veces — repasa la teoría</p>
               <Link href={`/topics/${forcedTopic.id}`}><Button size="sm" className="mt-2">Ir a lectura: {forcedTopic.title}</Button></Link>
             </div>
           )}
 
-          <ExercisePlayer exercise={exercise} options={options as never} pairs={pairs as never} answers={answers as never} action={submitAction} />
+          {exercise.type === "image_guess" && exercise.image_id ? (
+            <ImageGuessGame
+              lessonId={lid}
+              exerciseId={eid}
+              imageId={exercise.image_id}
+              consigna={exercise.question}
+              siguienteHref={nextId ? `/play/${lid}/${nextId}` : null}
+              listaHref={`/lessons/${lid}`}
+              esDocente={isStaff}
+              respuestaDocente={respuestaDocente}
+            />
+          ) : (
+            <ExercisePlayer exercise={{ ...exercise, answer: null }} options={options} pairs={pairs as never} answers={answers as never} action={submitAction} sinMallku={conResultado} />
+          )}
 
           <div className="flex gap-2 mt-6">
             <Link href={`/lessons/${lid}`}><Button variant="outline">Volver</Button></Link>
