@@ -6,11 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { WordMatchGame } from "@/components/exam/WordMatchGame";
 import { ArExamRunner } from "@/components/exam/ArExamRunner";
 import { requireUser } from "@/lib/session";
-import { alumnoPuedeRendirExamen } from "@/lib/rbac";
+import { alumnoPuedeRendirExamen, assertMaestroOwnsContent } from "@/lib/rbac";
+import { getWordMatchPool, mezclar } from "@/lib/exams/word-match";
 import Link from "next/link";
-
-const MIN_POOL = 12;
-const MAX_POOL = 40;
 
 export default async function ExamPlayPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -25,6 +23,12 @@ export default async function ExamPlayPage({ params }: { params: Promise<{ id: s
     include: { details: true, ar_cards: { include: { ar_card: true } } },
   });
   if (!exam) notFound();
+
+  // Un maestro sólo puede probar los exámenes de sus propios paralelos.
+  if (isStaff) {
+    const { ok } = await assertMaestroOwnsContent(user.role, user.id, "exam", eid);
+    if (!ok) notFound();
+  }
 
   if (!isStaff) {
     const gate = await alumnoPuedeRendirExamen(user.id, eid);
@@ -100,47 +104,47 @@ export default async function ExamPlayPage({ params }: { params: Promise<{ id: s
   }
 
   // -------- Conectar palabras --------
-  const detail = exam.details.find((d) => d.config_type === "categories");
-  const categories: string[] = detail ? safeParseArray(detail.config_value) : [];
-
-  let rows = categories.length
-    ? await prisma.diccionario.findMany({ where: { categoria: { in: categories }, estado: "activo" }, take: MAX_POOL })
-    : await prisma.diccionario.findMany({ where: { estado: "activo", categoria: { not: "" } }, take: MAX_POOL });
-  if (rows.length < MIN_POOL) {
-    const extra = await prisma.diccionario.findMany({
-      where: { estado: "activo", categoria: { not: "" }, id: { notIn: rows.map((w) => w.id) } },
-      take: MAX_POOL - rows.length,
-    });
-    rows = [...rows, ...extra];
-  }
-  const words = rows
-    .filter((w) => (w.aymara || w.espanol) && w.categoria)
-    .map((w) => ({ id: w.id, text: (w.aymara || w.espanol)!, category: w.categoria }));
+  const { words, categories } = await getWordMatchPool(exam.details);
+  // Al alumno se le manda sólo el texto de cada carta y cuántas hay por categoría: a qué categoría
+  // pertenece cada una lo decide el servidor al comprobar cada grupo. El maestro (modo prueba) sí las ve.
+  const mezcladas = mezclar(words).map((w) => (isStaff ? w : { id: w.id, text: w.text }));
+  const porCategoria = new Map<string, string[]>();
+  for (const w of words) porCategoria.set(w.category, [...(porCategoria.get(w.category) ?? []), w.text]);
+  const categorias = [...porCategoria.entries()].map(([nombre, items]) => ({ nombre, total: items.length }));
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">{exam.title} <Badge variant="secondary">mínimo {exam.min_score}%</Badge></CardTitle>
           <p className="text-sm text-muted-foreground">{exam.description}</p>
         </CardHeader>
-        <CardContent>
-          {isStaff ? (
-            <p className="text-sm text-muted-foreground">Vista docente — categorías: {categories.join(", ") || "(todas)"} · {words.length} palabras en el pool.</p>
-          ) : (
-            <WordMatchGame examId={exam.id} timeLimitSeconds={(exam.time_limit ?? 15) * 60} words={words} />
+        <CardContent className="space-y-4">
+          <WordMatchGame
+            examId={exam.id}
+            timeLimitSeconds={(exam.time_limit ?? 15) * 60}
+            words={mezcladas}
+            categorias={categorias}
+            minScore={exam.min_score}
+            preview={isStaff}
+          />
+          {isStaff && (
+            <details className="panel rounded-xl p-3 text-sm">
+              <summary className="cursor-pointer font-medium">
+                Palabras del examen ({words.length}) · categorías: {categories.join(", ") || "(todas)"}
+              </summary>
+              <div className="grid gap-3 pt-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[...porCategoria.entries()].map(([cat, items]) => (
+                  <div key={cat}>
+                    <p className="font-semibold">{cat} <span className="font-normal text-muted-foreground">({items.length})</span></p>
+                    <p className="text-muted-foreground">{items.join(", ")}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
           )}
         </CardContent>
       </Card>
     </div>
   );
-}
-
-function safeParseArray(s: string): string[] {
-  try {
-    const v = JSON.parse(s);
-    return Array.isArray(v) ? v.map(String) : [];
-  } catch {
-    return [];
-  }
 }

@@ -1,3 +1,4 @@
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 import { prisma } from "@/lib/prisma";
 import { requireUser } from "@/lib/session";
 import { getParaleloActivoAlumno, getParaleloSeleccionado } from "@/lib/paralelo";
@@ -65,7 +66,7 @@ export default async function ExamsPage() {
             </CardContent>
           </Card>
         ))}
-        {exams.length === 0 && <p className="text-sm text-muted-foreground">No hay exámenes.</p>}
+        {exams.length === 0 && <MallkuJuego estado={{ tipo: "vacio", donde: "examenes" }} />}
       </div>
     </div>
   );

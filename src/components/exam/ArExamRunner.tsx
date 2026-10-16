@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { submitArExam } from "@/app/(app)/exams/[id]/ar-actions";
+import { useLazyRef } from "@/lib/hooks/useLazyRef";
+import { MallkuJuego } from "@/components/mascota/MallkuJuego";
 
 type Card = { id: number; code: string; title: string; markerImageUrl: string; modelUrl?: string | null };
 type ReqResult = { requestedCode: string; requestedTitle: string; detectedCode: string | null; correct: boolean; timeMs: number };
@@ -46,17 +48,21 @@ export function ArExamRunner({
   const [step, setStep] = useState(0);
   const [detectedIndex, setDetectedIndex] = useState<number | null>(null);
   const detectedRef = useRef<number | null>(null);
-  detectedRef.current = detectedIndex;
+  useEffect(() => {
+    detectedRef.current = detectedIndex;
+  }, [detectedIndex]);
 
   const [results, setResults] = useState<ReqResult[]>([]);
   const resultsRef = useRef<ReqResult[]>([]);
-  resultsRef.current = results;
+  useEffect(() => {
+    resultsRef.current = results;
+  }, [results]);
 
   const [secondsLeft, setSecondsLeft] = useState(timeLimitSeconds);
   const [finished, setFinished] = useState(false);
   const [finalResult, setFinalResult] = useState<{ passed: boolean; percentage: number; arCardId: number | null } | null>(null);
-  const startRef = useRef(Date.now());
-  const stepStartRef = useRef(Date.now());
+  const startRef = useLazyRef(() => Date.now());
+  const stepStartRef = useLazyRef(() => Date.now());
   const finishedRef = useRef(false);
 
   const finish = useCallback(async () => {
@@ -66,7 +72,10 @@ export function ArExamRunner({
     const r = await submitArExam(examId, { timeSpent, results: resultsRef.current });
     setFinalResult(r);
     setFinished(true);
-  }, [examId]);
+    // startRef/resultsRef son refs estables (nunca cambian de identidad):
+    // exhaustive-deps no puede saberlo tratándose de un hook propio, pero no
+    // hace falta reaccionar a ellos como si fueran props.
+  }, [examId, startRef, resultsRef]);
 
   const submitCurrent = useCallback(
     (detected: number | null) => {
@@ -90,7 +99,7 @@ export function ArExamRunner({
         stepStartRef.current = Date.now();
       }
     },
-    [requests, step, cards, finish],
+    [requests, step, cards, finish, stepStartRef, resultsRef],
   );
 
   // Cronómetro
@@ -106,7 +115,7 @@ export function ArExamRunner({
       }
     }, 1000);
     return () => clearInterval(t);
-  }, [finished, timeLimitSeconds, finish]);
+  }, [finished, timeLimitSeconds, finish, startRef]);
 
   // Montaje de la escena AR con TODAS las tarjetas como targets
   useEffect(() => {
@@ -169,8 +178,8 @@ export function ArExamRunner({
           </a-scene>`;
 
         sceneEl = containerRef.current.querySelector("a-scene");
-        const foundTimers = new Map<number, any>();
-        const lostTimers = new Map<number, any>();
+        const foundTimers = new Map<number, ReturnType<typeof setTimeout>>();
+        const lostTimers = new Map<number, ReturnType<typeof setTimeout>>();
         let pendingIdx: number | null = null;
         containerRef.current.querySelectorAll("[mindar-image-target]").forEach((el) => {
           const idx = Number((el as HTMLElement).dataset.idx);
@@ -206,6 +215,9 @@ export function ArExamRunner({
       }
     }
     init();
+    // Copiado aquí y no leído como `containerRef.current` dentro del cleanup:
+    // para cuando ese cleanup corra puede no ser ya el mismo contenedor.
+    const container = containerRef.current;
     return () => {
       cancelled = true;
       try {
@@ -217,7 +229,7 @@ export function ArExamRunner({
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       if (streamRef.current) { streamRef.current.getTracks().forEach((t) => t.stop()); streamRef.current = null; }
       try {
-        if (containerRef.current) containerRef.current.innerHTML = "";
+        if (container) container.innerHTML = "";
       } catch {
         /* ignore */
       }
@@ -231,6 +243,7 @@ export function ArExamRunner({
   if (finished && finalResult) {
     return (
       <div className="panel-strong rounded-2xl p-8 max-w-sm mx-auto text-center space-y-3">
+        <MallkuJuego estado={{ tipo: "resultado", aprobado: finalResult.passed }} className="justify-center" />
         <h2 className="text-xl font-bold">{finalResult.passed ? "¡Examen AR aprobado! 🎉" : "Examen AR completado"}</h2>
         <p className="text-sm">Aciertos: {results.filter((r) => r.correct).length}/{requests.length}</p>
         <p className="text-sm">Porcentaje: {finalResult.percentage}% (mínimo {minScore}%)</p>
@@ -245,8 +258,15 @@ export function ArExamRunner({
 
   const progressPct = ((step) / requests.length) * 100;
 
+  const ultimo = results[results.length - 1];
+
   return (
     <div className="space-y-5">
+      <MallkuJuego
+        estado={ultimo ? (ultimo.correct ? { tipo: "acierto", racha: results.filter((r) => r.correct).length } : { tipo: "fallo" }) : { tipo: "intro", juego: "examen" }}
+        semilla={results.length}
+        size={64}
+      />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-base sm:text-lg font-semibold">
@@ -281,7 +301,7 @@ export function ArExamRunner({
             </div>
             <span className="absolute bottom-0.5 left-1 text-[8px] font-mono bg-black/60 text-white px-1 rounded">mini visor</span>
           </div>
-          <span className="text-[10px] text-white/70 bg-black/40 backdrop-blur px-2 py-0.5 rounded-full w-fit">Apuntá al centro</span>
+          <span className="text-[10px] text-white/70 bg-black/40 backdrop-blur px-2 py-0.5 rounded-full w-fit">Apunta al centro</span>
         </div>
 
         <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -298,7 +318,7 @@ export function ArExamRunner({
         )}
         {status === "ready" && detectedIndex == null && (
           <div className="absolute bottom-3 inset-x-3 text-center text-xs bg-black/60 text-white/80 rounded-xl py-1.5 backdrop-blur border border-border px-2">
-            Mostrá «{reqCard?.title}» bien iluminada, a 20-30cm, mantené firme 1s. Si parpadea, limpiá la cámara.
+            Muestra «{reqCard?.title}» bien iluminada, a 20-30cm, mantén firme 1s. Si parpadea, limpia la cámara.
           </div>
         )}
       </div>
@@ -314,7 +334,7 @@ export function ArExamRunner({
 
       {status === "manual" && (
         <div className="panel rounded-2xl p-5 space-y-3 border border-amber-500/20">
-          <p className="text-sm text-amber-300">{errorMsg} — Modo sin cámara: elegí qué tarjeta estás mostrando.</p>
+          <p className="text-sm text-amber-300">{errorMsg} — Modo sin cámara: elige qué tarjeta estás mostrando.</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {cards.map((c, i) => (
               <Button key={c.id} variant="outline" onClick={() => submitCurrent(i)} className="justify-start">{c.title}</Button>

@@ -118,7 +118,7 @@ export default async function AdminExamsPage() {
               </div>
               <div className="flex gap-2">
                 <Link href={`/admin/exams/${e.id}`}><Button size="sm" variant="outline">Editar</Button></Link>
-                <a href={`/exams/${e.id}`}><Button size="sm" variant="outline">Ver</Button></a>
+                <Link href={`/exams/${e.id}`}><Button size="sm" variant="outline">Probar</Button></Link>
                 <form action={toggleActive}><input type="hidden" name="id" value={e.id} /><Button size="sm" variant="secondary" type="submit">{e.estado === "activo" ? "Desactivar" : "Activar"}</Button></form>
               </div>
             </div>
